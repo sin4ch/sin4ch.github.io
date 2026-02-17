@@ -582,6 +582,17 @@
       height: auto;
     }
 
+    .gallery-skeleton {
+      background-color: var(--line-color);
+      border-radius: 0;
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes skeleton-pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 0.3; }
+    }
+
 
     /* ============================================
        9. PHOTO CAROUSEL
@@ -631,6 +642,15 @@
 
     .photo-carousel img.carousel-img-loaded {
       opacity: 1;
+    }
+
+    .carousel-skeleton {
+      height: 100%;
+      width: 140px;
+      flex-shrink: 0;
+      margin-right: 8px;
+      background-color: var(--line-color);
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
     }
 
     .photo-carousel.loading, .photo-carousel .error {
@@ -1816,6 +1836,8 @@
     let animating = false;
     let galleryColumns = [];
     let columnHeights = [];
+    let skeletonQueue = [];
+    let carouselSkeletonQueue = [];
     let wordIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
@@ -1895,7 +1917,7 @@
           chunks.push(value);
           onBytes(value.length);
         }
-        const blob = new Blob(chunks);
+        const blob = new Blob(chunks, { type: res.headers.get('Content-Type') || 'image/webp' });
         const blobUrl = URL.createObjectURL(blob);
         const img = new Image();
         img.src = blobUrl;
@@ -1944,13 +1966,16 @@
           imgData.naturalHeight = img.naturalHeight;
           loadedGalleryImages.push(imgData);
           appendToGalleryGrid(imgData);
-          const track = document.querySelector('.photo-carousel-track');
-          if (track) {
-            const imgEl = document.createElement('img');
-            imgEl.src = imgData.url;
-            imgEl.alt = imgData.title || 'Gallery photo';
-            imgEl.className = 'carousel-img-loaded';
-            track.appendChild(imgEl);
+          const imgEl = document.createElement('img');
+          imgEl.src = imgData.url;
+          imgEl.alt = imgData.title || 'Gallery photo';
+          imgEl.className = 'carousel-img-loaded';
+          const carouselSkeleton = carouselSkeletonQueue.length > 0 ? carouselSkeletonQueue.shift() : null;
+          if (carouselSkeleton && carouselSkeleton.parentNode) {
+            carouselSkeleton.parentNode.replaceChild(imgEl, carouselSkeleton);
+          } else {
+            const track = document.querySelector('.photo-carousel-track');
+            if (track) track.appendChild(imgEl);
           }
           loadNext();
         };
@@ -2020,6 +2045,7 @@
         galleryColumns[shortestIdx].appendChild(createGalleryItem(img, index));
         columnHeights[shortestIdx] += getRenderedHeight(img) + 6;
       });
+      buildSkeletonPlaceholders();
     }
 
     function createGalleryItem(img, index) {
@@ -2033,9 +2059,32 @@
     function appendToGalleryGrid(imgData) {
       if (galleryColumns.length === 0) return;
       const index = loadedGalleryImages.indexOf(imgData);
-      const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
-      galleryColumns[shortestIdx].appendChild(createGalleryItem(imgData, index));
-      columnHeights[shortestIdx] += getRenderedHeight(imgData) + 6;
+      const item = createGalleryItem(imgData, index);
+      const skeleton = skeletonQueue.length > 0 ? skeletonQueue.shift() : null;
+      if (skeleton && skeleton.parentNode) {
+        skeleton.parentNode.replaceChild(item, skeleton);
+      } else {
+        const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
+        galleryColumns[shortestIdx].appendChild(item);
+        columnHeights[shortestIdx] += getRenderedHeight(imgData) + 6;
+      }
+    }
+
+    function buildSkeletonPlaceholders() {
+      skeletonQueue = [];
+      if (!preloadedGalleryData || galleryColumns.length === 0) return;
+      const colWidth = galleryColumns[0].offsetWidth || 200;
+      const skeletonHeight = colWidth * 1.25;
+      const remainingCount = preloadedGalleryData.images.length - loadedGalleryImages.length;
+      for (let i = 0; i < remainingCount; i++) {
+        const skeleton = document.createElement('div');
+        skeleton.className = 'gallery-skeleton';
+        skeleton.style.height = skeletonHeight + 'px';
+        const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
+        galleryColumns[shortestIdx].appendChild(skeleton);
+        columnHeights[shortestIdx] += skeletonHeight + 6;
+        skeletonQueue.push(skeleton);
+      }
     }
 
 
@@ -2286,7 +2335,7 @@
         if (typewriterText) typewriterText.textContent = savedText;
         const contactRect = contactBar.getBoundingClientRect();
         const fontSize = parseFloat(getComputedStyle(aboutIntro).fontSize);
-        const oneLineHeight = fontSize * 1.2;
+        const oneLineHeight = fontSize * 1.6;
         const maxIntroBottom = introRect.top + Math.min(introRect.height, window.innerHeight * 0.5 + oneLineHeight);
         const topPos = maxIntroBottom + oneLineHeight;
         const availableHeight = contactRect.top - topPos;
@@ -2366,6 +2415,16 @@
         imgEl.className = 'carousel-img-loaded';
         track.appendChild(imgEl);
       });
+      carouselSkeletonQueue = [];
+      if (preloadedGalleryData) {
+        const remainingCount = preloadedGalleryData.images.length - loadedGalleryImages.length;
+        for (let i = 0; i < remainingCount; i++) {
+          const skeleton = document.createElement('div');
+          skeleton.className = 'carousel-skeleton';
+          track.appendChild(skeleton);
+          carouselSkeletonQueue.push(skeleton);
+        }
+      }
       carousel.innerHTML = '';
       carousel.appendChild(track);
       requestAnimationFrame(() => initCarouselScroll(track));
