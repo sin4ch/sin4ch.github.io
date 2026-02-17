@@ -2180,6 +2180,7 @@
       const targetSection = document.getElementById(targetId);
       if (targetSection) {
         targetSection.classList.add('active');
+        if (typeof badgeRectsDirty !== 'undefined') badgeRectsDirty = true;
       }
       navItems.forEach(nav => {
         nav.classList.remove('active');
@@ -2583,37 +2584,160 @@
     const cursorFollower = document.getElementById('cursorFollower');
     const isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.matchMedia('(hover: none)').matches;
 
-    if (!isTouchDevice) {
-      let mouseX = 0;
-      let mouseY = 0;
-      let followerX = 0;
-      let followerY = 0;
-      const ease = 0.15;
+    var badgeRectsDirty = true;
 
-      document.addEventListener('mousemove', (e) => {
+    if (!isTouchDevice) {
+      var mouseX = 0;
+      var mouseY = 0;
+      var followerX = 0;
+      var followerY = 0;
+      var badgeElements = [];
+      var activeBadge = null;
+
+      var MAGNETIC_RADIUS = 20;
+      var EASE_DEFAULT = 0.15;
+      var EASE_ATTRACT = 0.12;
+      var BASE_SIZE = 12;
+      var SHAPE_EASE_IN = 0.07;
+      var SHAPE_EASE_OUT = 0.15;
+
+      // Lerped shape state for fluid morph
+      var currentScaleX = 1;
+      var currentScaleY = 1;
+      var currentBorderRadius = 6; // px (6 = circle for 12px element)
+
+      function distToRect(px, py, r) {
+        var dx = Math.max(r.left - px, 0, px - r.right);
+        var dy = Math.max(r.top - py, 0, py - r.bottom);
+        return Math.sqrt(dx * dx + dy * dy);
+      }
+
+      function cacheBadgeElements() {
+        var badges = document.querySelectorAll('.stat-badge, .role-badge');
+        badgeElements = [];
+        badges.forEach(function(badge) {
+          var section = badge.closest('section');
+          if (section && !section.classList.contains('active')) return;
+          badgeElements.push(badge);
+        });
+        badgeRectsDirty = false;
+      }
+
+      document.addEventListener('mousemove', function(e) {
         mouseX = e.clientX;
         mouseY = e.clientY;
       });
 
       function animateFollower() {
-        followerX += (mouseX - followerX) * ease;
-        followerY += (mouseY - followerY) * ease;
+        if (badgeRectsDirty) cacheBadgeElements();
+
+        // Find closest badge (fresh rects every frame — no stale positions)
+        var closestDist = MAGNETIC_RADIUS;
+        var closestRect = null;
+        var closestEl = null;
+        for (var i = 0; i < badgeElements.length; i++) {
+          var rect = badgeElements[i].getBoundingClientRect();
+          if (rect.width === 0 || rect.height === 0) continue;
+          var d = distToRect(mouseX, mouseY, rect);
+          if (d < closestDist) {
+            closestDist = d;
+            closestRect = rect;
+            closestEl = badgeElements[i];
+          }
+        }
+
+        // Compute magnetic pull
+        var targetX = mouseX;
+        var targetY = mouseY;
+        var strength = 0;
+        var targetScaleX = 1;
+        var targetScaleY = 1;
+        var targetRadius = 6; // px (6 = circle)
+
+        if (closestRect) {
+          strength = 1 - closestDist / MAGNETIC_RADIUS;
+          strength = strength * strength; // quadratic ease-in
+          var cx = closestRect.left + closestRect.width / 2;
+          var cy = closestRect.top + closestRect.height / 2;
+          targetX = mouseX + (cx - mouseX) * strength;
+          targetY = mouseY + (cy - mouseY) * strength;
+
+          // Target: fill inside the badge
+          targetScaleX = 1 + (closestRect.width / BASE_SIZE - 1) * strength;
+          targetScaleY = 1 + (closestRect.height / BASE_SIZE - 1) * strength;
+          // Lerp toward 2px border-radius (matches badge border-radius)
+          targetRadius = 6 + (2 - 6) * strength;
+        }
+
+        // Lerp position
+        var ease = closestRect ? EASE_ATTRACT : EASE_DEFAULT;
+        followerX += (targetX - followerX) * ease;
+        followerY += (targetY - followerY) * ease;
+
+        // Lerp shape — slow approach, fast retreat
+        var shapeEase = closestRect ? SHAPE_EASE_IN : SHAPE_EASE_OUT;
+        currentScaleX += (targetScaleX - currentScaleX) * shapeEase;
+        currentScaleY += (targetScaleY - currentScaleY) * shapeEase;
+        currentBorderRadius += (targetRadius - currentBorderRadius) * shapeEase;
+
+        // Position (same as original — left/top)
         cursorFollower.style.left = followerX + 'px';
         cursorFollower.style.top = followerY + 'px';
+
+        // Track proximity separately from visual morph
+        activeBadge = closestEl || null;
+
+        // Shape: only apply transform/borderRadius when morphing
+        var isBlob = Math.abs(currentScaleX - 1) > 0.01 || Math.abs(currentScaleY - 1) > 0.01;
+
+        if (isBlob && closestRect) {
+          // Near a badge: morph and suppress link hover
+          cursorFollower.classList.remove('hovering');
+          cursorFollower.style.transform =
+            'translate(-50%, -50%) scale(' + currentScaleX.toFixed(3) + ',' + currentScaleY.toFixed(3) + ')';
+          cursorFollower.style.borderRadius = currentBorderRadius.toFixed(1) + 'px';
+        } else if (isBlob && !closestRect && cursorFollower.classList.contains('hovering')) {
+          // Left badge, now on a link: snap morph to default so CSS hover works
+          currentScaleX = 1;
+          currentScaleY = 1;
+          currentBorderRadius = 6;
+          cursorFollower.style.transform = '';
+          cursorFollower.style.borderRadius = '';
+        } else if (isBlob) {
+          // Left badge, empty space: smooth retreat animation
+          cursorFollower.style.transform =
+            'translate(-50%, -50%) scale(' + currentScaleX.toFixed(3) + ',' + currentScaleY.toFixed(3) + ')';
+          cursorFollower.style.borderRadius = currentBorderRadius.toFixed(1) + 'px';
+        } else {
+          // Not morphing: clean default
+          currentScaleX = 1;
+          currentScaleY = 1;
+          currentBorderRadius = 6;
+          cursorFollower.style.transform = '';
+          cursorFollower.style.borderRadius = '';
+        }
+
         requestAnimationFrame(animateFollower);
       }
 
       animateFollower();
 
-      const interactiveElements = document.querySelectorAll('a, button, .theme-toggle');
-      interactiveElements.forEach(el => {
-        el.addEventListener('mouseenter', () => {
-          cursorFollower.classList.add('hovering');
+      // Link hover — original behaviour (CSS width/height transition)
+      var interactiveElements = document.querySelectorAll('a, button, .theme-toggle');
+      interactiveElements.forEach(function(el) {
+        el.addEventListener('mouseenter', function() {
+          if (!activeBadge) cursorFollower.classList.add('hovering');
         });
-        el.addEventListener('mouseleave', () => {
+        el.addEventListener('mouseleave', function() {
           cursorFollower.classList.remove('hovering');
         });
       });
+
+      // Invalidate badge element cache on scroll and resize
+      sections.forEach(function(s) {
+        s.addEventListener('scroll', function() { badgeRectsDirty = true; }, { passive: true });
+      });
+      window.addEventListener('resize', function() { badgeRectsDirty = true; }, { passive: true });
     }
 
 
@@ -2767,6 +2891,7 @@
         el.innerHTML =
           '<span class="stat-badge"><svg viewBox="0 0 16 16" fill="currentColor"><path d="' + STAR_PATH + '"/></svg> ' + stars + '</span>' +
           '<span class="stat-badge"><svg viewBox="0 0 16 16" fill="currentColor"><path d="' + FORK_PATH + '"/></svg> ' + forks + '</span>';
+        if (typeof badgeRectsDirty !== 'undefined') badgeRectsDirty = true;
       }
 
       els.forEach(function(el) {
