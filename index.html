@@ -140,11 +140,6 @@
       font-family: 'Geist Mono';
       color: var(--text-dark);
       line-height: 1.6;
-      transition: background-color 0.8s ease-in-out, color 0.8s ease-in-out;
-    }
-
-    *, *::before, *::after {
-      transition: background-color 0.8s ease-in-out, color 0.8s ease-in-out, border-color 0.8s ease-in-out;
     }
 
     a {
@@ -280,7 +275,6 @@
       padding: 24px var(--spacing) var(--spacing);
       background-color: var(--bg-light);
       z-index: 100;
-      transition: background-color 0.8s ease-in-out;
     }
 
     .profile-photo {
@@ -340,7 +334,7 @@
       flex-direction: column;
       opacity: 0;
       visibility: hidden;
-      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, background-color 0.8s ease-in-out, color 0.8s ease-in-out;
+      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
       will-change: opacity;
       overflow-y: auto;
       scroll-behavior: smooth;
@@ -823,6 +817,12 @@
       --line-color: #3d3d3d;
     }
 
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.4s;
+      animation-timing-function: ease-in-out;
+    }
+
 
     /* ============================================
        12. LOADING SCREEN
@@ -997,7 +997,6 @@
         top: 0;
         right: 0;
         z-index: 10020;
-        transition: background-color 0.8s ease-in-out;
       }
 
       .mobile-top-bar .theme-toggle {
@@ -1033,13 +1032,12 @@
         padding: 60px var(--spacing);
         opacity: 0;
         visibility: hidden;
-        transition: background-color 0.8s ease-in-out;
       }
 
       .sidebar.menu-open {
         opacity: 1;
         visibility: visible;
-        transition: opacity 0.3s ease, visibility 0.3s ease, background-color 0.8s ease-in-out;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
       }
 
       .nav-links {
@@ -2560,10 +2558,18 @@
     /* ============================================
        10. THEME TOGGLE
        ============================================ */
-    function toggleTheme() {
+    function applyThemeToggle() {
       const isDark = document.body.classList.toggle('dark-mode');
       document.documentElement.classList.toggle('dark-mode', isDark);
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    function toggleTheme() {
+      if (document.startViewTransition) {
+        document.startViewTransition(applyThemeToggle);
+      } else {
+        applyThemeToggle();
+      }
     }
 
     if (localStorage.getItem('theme') === 'dark') {
