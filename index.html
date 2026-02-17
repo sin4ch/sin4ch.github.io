@@ -65,6 +65,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+  <script>
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.classList.add('dark-mode');
+    }
+  </script>
   <style>
     /* ============================================
        CSS TABLE OF CONTENTS
@@ -144,7 +149,7 @@
 
     a {
       color: var(--text-dark);
-      text-decoration: none;
+      text-decoration: underline;
     }
 
     a:hover {
@@ -272,7 +277,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: var(--spacing);
+      padding: 24px var(--spacing) var(--spacing);
       background-color: var(--bg-light);
       z-index: 100;
       transition: background-color 0.8s ease-in-out;
@@ -307,6 +312,7 @@
       letter-spacing: 0.15em;
       text-transform: uppercase;
       color: var(--text-muted);
+      text-decoration: none;
       transition: color 0.2s ease;
     }
 
@@ -425,10 +431,29 @@
     .item-content {
       grid-column: 2;
       display: flex;
-      flex-direction: column;
+      flex-wrap: wrap;
+      align-items: baseline;
       gap: 4px;
       padding-top: 4px;
       border-top: 1px solid var(--line-color);
+    }
+
+    .item-content > * {
+      flex-basis: 100%;
+    }
+
+    .item-subtitle:has(+ .item-tags) {
+      flex-basis: auto;
+    }
+
+    .item-tags {
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted-70);
+      flex-basis: auto;
+      margin-top: 0;
+      margin-left: 4px;
     }
 
     .item-title {
@@ -476,35 +501,18 @@
       margin-top: 8px;
     }
 
-    .item-tags {
-      font-size: 10px;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-muted-70);
-      margin-top: 4px;
-    }
-
 
     /* ============================================
        7. ABOUT SECTION
        ============================================ */
     .about-intro {
       font-size: clamp(18px, 3.5vw, 54px);
-      overflow: hidden;
-    }
-
-    #about {
-      overflow: hidden !important;
     }
 
     .about-intro a {
       color: var(--text-dark);
-      text-decoration: none;
     }
 
-    .about-static a {
-      text-decoration: underline;
-    }
 
     .typewriter-text {
       font-family: 'Instrument Serif';
@@ -750,11 +758,11 @@
       background-color: var(--text-dark);
       cursor: pointer;
       transition: all 0.5s ease-in-out;
-      margin-top: 16px;
+      margin-top: 8px;
       flex-shrink: 0;
     }
 
-    body.dark-mode {
+    .dark-mode {
       --bg-light: #121212;
       --text-dark: #ffead3;
       --text-muted: #a89880;
@@ -807,9 +815,8 @@
     /* ============================================
        13. SCROLL INDICATOR
        ============================================ */
-    .scroll-indicator {
+    .scroll-indicator-btn {
       position: absolute;
-      bottom: 56px;
       right: 12px;
       opacity: 0;
       visibility: hidden;
@@ -825,29 +832,52 @@
       justify-content: center;
       cursor: pointer;
       pointer-events: auto;
+      padding: 0;
+      font: inherit;
     }
 
-    .scroll-indicator:hover {
+    .scroll-indicator-btn:hover {
       border-color: var(--text-muted);
     }
 
-    .scroll-indicator.visible {
+    .scroll-indicator-btn.visible {
       opacity: 1;
       visibility: visible;
     }
 
-    .scroll-indicator svg {
+    .scroll-indicator-down {
+      bottom: 56px;
+    }
+
+    .scroll-indicator-up {
+      top: 12px;
+    }
+
+    .scroll-indicator-btn svg {
       width: 16px;
       height: 16px;
       stroke: var(--text-muted);
-      animation: bounce 2s infinite;
       will-change: transform;
     }
 
-    @keyframes bounce {
+    .scroll-indicator-down svg {
+      animation: bounce-down 2s infinite;
+    }
+
+    .scroll-indicator-up svg {
+      animation: bounce-up 2s infinite;
+    }
+
+    @keyframes bounce-down {
       0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
       40% { transform: translateY(3px); }
       60% { transform: translateY(1px); }
+    }
+
+    @keyframes bounce-up {
+      0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-3px); }
+      60% { transform: translateY(-1px); }
     }
 
 
@@ -952,24 +982,25 @@
         padding: 60px var(--spacing);
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.3s ease, visibility 0.3s ease, background-color 0.8s ease-in-out;
-        will-change: opacity;
+        transition: background-color 0.8s ease-in-out;
       }
 
       .sidebar.menu-open {
         opacity: 1;
         visibility: visible;
+        transition: opacity 0.3s ease, visibility 0.3s ease, background-color 0.8s ease-in-out;
       }
 
       .nav-links {
         flex-direction: column;
-        gap: 20px;
+        gap: 24px;
         align-items: center;
       }
 
       .nav-item {
         font-size: 14px;
         letter-spacing: 0.2em;
+        padding: 6px 12px;
       }
 
       .contact-bar .contact-links {
@@ -990,13 +1021,8 @@
         min-height: 0;
       }
 
-      #about {
-        overflow-y: auto !important;
-      }
-
       .about-intro {
         font-size: 10vw !important;
-        max-height: none !important;
         line-height: 1.2 !important;
       }
 
@@ -1016,10 +1042,6 @@
 
       .item-meta:empty {
         display: none;
-      }
-
-      .photo-carousel-wrapper {
-        display: none !important;
       }
 
       .lightbox {
@@ -1083,9 +1105,16 @@
         border: none;
       }
 
-      .scroll-indicator {
-        bottom: 40px;
+      .scroll-indicator-btn {
         right: 8px;
+      }
+
+      .scroll-indicator-down {
+        bottom: 40px;
+      }
+
+      .scroll-indicator-up {
+        top: 8px;
       }
 
       .contact-bar {
@@ -1194,11 +1223,16 @@
         </div>
       </nav>
       <main class="content">
-        <div class="scroll-indicator" id="scroll-indicator">
+        <button class="scroll-indicator-btn scroll-indicator-down" id="scroll-indicator-down" aria-label="Scroll to bottom">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
-        </div>
+        </button>
+        <button class="scroll-indicator-btn scroll-indicator-up" id="scroll-indicator-up" aria-label="Scroll to top">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 15 12 9 18 15"></polyline>
+          </svg>
+        </button>
 
         <!-- About -->
         <section id="about" class="active">
@@ -1938,6 +1972,7 @@
         setTimeout(updateScrollIndicator, 100);
         setTimeout(() => {
           positionCarousel();
+          fitAboutText();
           loadPhotoCarousel();
         }, 850);
         setTimeout(() => {
@@ -2056,6 +2091,8 @@
         carouselWrapper.classList.toggle('visible', targetId === 'about');
         carouselWrapper.classList.toggle('hidden', targetId !== 'about');
       }
+      positionCarousel();
+      fitAboutText();
       updateScrollIndicator();
     }
 
@@ -2076,15 +2113,51 @@
     const sidebar = document.getElementById('sidebar');
     const carouselWrapperEl = document.getElementById('carousel-wrapper');
 
+    function getFocusableMenuElements() {
+      return sidebar.querySelectorAll('button.nav-item, button.theme-toggle');
+    }
+
+    function handleMenuFocusTrap(e) {
+      if (e.key === 'Escape') {
+        sidebar.classList.remove('menu-open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-label', 'Open menu');
+        document.body.style.overflow = '';
+        if (carouselWrapperEl) carouselWrapperEl.style.display = '';
+        document.removeEventListener('keydown', handleMenuFocusTrap);
+        hamburger.focus();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      e.preventDefault();
+      const focusable = Array.from(getFocusableMenuElements());
+      focusable.push(hamburger);
+      if (focusable.length === 0) return;
+      const currentIndex = focusable.indexOf(document.activeElement);
+      let nextIndex;
+      if (e.shiftKey) {
+        nextIndex = currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1;
+      } else {
+        nextIndex = currentIndex >= focusable.length - 1 ? 0 : currentIndex + 1;
+      }
+      focusable[nextIndex].focus();
+    }
+
     hamburger.addEventListener('click', () => {
       const isOpen = sidebar.classList.toggle('menu-open');
       hamburger.classList.toggle('open');
       if (isOpen) {
         document.body.style.overflow = 'hidden';
         if (carouselWrapperEl) carouselWrapperEl.style.display = 'none';
+        hamburger.setAttribute('aria-label', 'Close menu');
+        const firstNav = sidebar.querySelector('button.nav-item');
+        if (firstNav) firstNav.focus();
+        document.addEventListener('keydown', handleMenuFocusTrap);
       } else {
         document.body.style.overflow = '';
         if (carouselWrapperEl) carouselWrapperEl.style.display = '';
+        hamburger.setAttribute('aria-label', 'Open menu');
+        document.removeEventListener('keydown', handleMenuFocusTrap);
       }
     });
 
@@ -2098,8 +2171,10 @@
           sections.forEach(s => s.style.transition = '');
           sidebar.classList.remove('menu-open');
           hamburger.classList.remove('open');
+          hamburger.setAttribute('aria-label', 'Open menu');
           document.body.style.overflow = '';
           if (carouselWrapperEl) carouselWrapperEl.style.display = '';
+          document.removeEventListener('keydown', handleMenuFocusTrap);
         } else {
           showSection(targetId);
         }
@@ -2126,18 +2201,52 @@
     /* ============================================
        7. SCROLL INDICATOR
        ============================================ */
-    const scrollIndicator = document.getElementById('scroll-indicator');
+    const scrollIndicatorDown = document.getElementById('scroll-indicator-down');
+    const scrollIndicatorUp = document.getElementById('scroll-indicator-up');
+    let lastScrollTop = 0;
+    let scrollDirection = 'down';
 
     function updateScrollIndicator() {
       const activeSection = document.querySelector('section.active');
-      if (!activeSection || !scrollIndicator) return;
+      if (!activeSection) return;
       const isScrollable = activeSection.scrollHeight > activeSection.clientHeight;
       const isAtBottom = activeSection.scrollTop + activeSection.clientHeight >= activeSection.scrollHeight - 20;
-      if (isScrollable && !isAtBottom) {
-        scrollIndicator.classList.add('visible');
-      } else {
-        scrollIndicator.classList.remove('visible');
+      const isAtTop = activeSection.scrollTop <= 20;
+      const currentScrollTop = activeSection.scrollTop;
+
+      if (currentScrollTop < lastScrollTop) {
+        scrollDirection = 'up';
+      } else if (currentScrollTop > lastScrollTop) {
+        scrollDirection = 'down';
       }
+      lastScrollTop = currentScrollTop;
+
+      const showUp = isScrollable && scrollDirection === 'up' && !isAtTop;
+      const showDown = isScrollable && !isAtBottom && !showUp;
+      if (scrollIndicatorDown) {
+        scrollIndicatorDown.classList.toggle('visible', showDown);
+      }
+      if (scrollIndicatorUp) {
+        scrollIndicatorUp.classList.toggle('visible', showUp);
+      }
+    }
+
+    if (scrollIndicatorDown) {
+      scrollIndicatorDown.addEventListener('click', () => {
+        const activeSection = document.querySelector('section.active');
+        if (activeSection) {
+          activeSection.scrollTo({ top: activeSection.scrollHeight, behavior: 'smooth' });
+        }
+      });
+    }
+
+    if (scrollIndicatorUp) {
+      scrollIndicatorUp.addEventListener('click', () => {
+        const activeSection = document.querySelector('section.active');
+        if (activeSection) {
+          activeSection.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      });
     }
 
     sections.forEach(section => {
@@ -2159,13 +2268,35 @@
       const contactBar = document.getElementById('contact-bar');
       if (!wrapper || !themeToggle || !contactBar) return;
       if (isMobileLayout()) {
-        const viewportHeight = window.innerHeight;
-        const carouselHeight = Math.max(Math.round(viewportHeight * 0.22), 100);
-        const topPos = Math.round(viewportHeight * 0.50);
+        if (sidebar.classList.contains('menu-open')) {
+          wrapper.style.display = 'none';
+          return;
+        }
+        const aboutSection = document.getElementById('about');
+        const isAboutActive = aboutSection && aboutSection.classList.contains('active');
+        if (!isAboutActive) { wrapper.style.display = 'none'; return; }
+        const aboutIntro = document.querySelector('.about-intro');
+        if (!aboutIntro) return;
+        const typewriterText = document.getElementById('typewriter-text');
+        // Save and clear typewriter content so we measure static text only
+        const savedText = typewriterText ? typewriterText.textContent : '';
+        if (typewriterText) typewriterText.textContent = '';
+        const introRect = aboutIntro.getBoundingClientRect();
+        // Restore typewriter content
+        if (typewriterText) typewriterText.textContent = savedText;
+        const contactRect = contactBar.getBoundingClientRect();
+        const fontSize = parseFloat(getComputedStyle(aboutIntro).fontSize);
+        const oneLineHeight = fontSize * 1.2;
+        const maxIntroBottom = introRect.top + Math.min(introRect.height, window.innerHeight * 0.5 + oneLineHeight);
+        const topPos = maxIntroBottom + oneLineHeight;
+        const availableHeight = contactRect.top - topPos;
+        if (availableHeight < 60) { wrapper.style.display = 'none'; return; }
+        wrapper.style.display = '';
         wrapper.style.bottom = 'auto';
         wrapper.style.top = topPos + 'px';
-        wrapper.style.height = carouselHeight + 'px';
+        wrapper.style.height = availableHeight + 'px';
       } else {
+        wrapper.style.display = '';
         wrapper.style.bottom = 'auto';
         const toggleRect = themeToggle.getBoundingClientRect();
         const contactRect = contactBar.getBoundingClientRect();
@@ -2176,6 +2307,51 @@
         wrapper.style.top = top + 'px';
         wrapper.style.height = Math.max(height, 100) + 'px';
       }
+    }
+
+    function fitAboutText() {
+      if (isMobileLayout()) return;
+      const aboutIntro = document.querySelector('.about-intro');
+      const themeToggle = document.getElementById('themeToggle');
+      const aboutSection = document.getElementById('about');
+      const typewriterText = document.getElementById('typewriter-text');
+      if (!aboutIntro || !themeToggle || !aboutSection) return;
+      if (!aboutSection.classList.contains('active')) return;
+
+      const toggleRect = themeToggle.getBoundingClientRect();
+      const sectionRect = aboutSection.getBoundingClientRect();
+      const carouselTop = toggleRect.bottom + 24;
+      const availableHeight = carouselTop - sectionRect.top;
+
+      // Save and clear typewriter content so we measure static text only
+      const savedText = typewriterText ? typewriterText.textContent : '';
+      if (typewriterText) typewriterText.textContent = '';
+
+      // Find the longest typewriter word to check if it wraps
+      const longestWord = TYPEWRITER_WORDS.reduce((a, b) => a.length > b.length ? a : b, '');
+
+      let lo = 18, hi = 80;
+      for (let i = 0; i < 10; i++) {
+        const mid = (lo + hi) / 2;
+        aboutIntro.style.fontSize = mid + 'px';
+
+        // Check if the longest typewriter word would wrap to a new line
+        const staticHeight = aboutIntro.scrollHeight;
+        typewriterText.textContent = longestWord;
+        const withWordHeight = aboutIntro.scrollHeight;
+        typewriterText.textContent = '';
+
+        const lineGap = (withWordHeight > staticHeight) ? mid * 1.6 : mid * 0.6;
+        if (aboutIntro.scrollHeight + lineGap <= availableHeight) {
+          lo = mid;
+        } else {
+          hi = mid;
+        }
+      }
+      aboutIntro.style.fontSize = lo + 'px';
+
+      // Restore typewriter content
+      if (typewriterText) typewriterText.textContent = savedText;
     }
 
     function loadPhotoCarousel() {
@@ -2238,12 +2414,28 @@
     let lastColCount = getColumnCount();
 
     window.addEventListener('resize', () => {
+      if (window.innerWidth > 768 && sidebar.classList.contains('menu-open')) {
+        sidebar.classList.remove('menu-open');
+        hamburger.classList.remove('open');
+        hamburger.setAttribute('aria-label', 'Open menu');
+        document.body.style.overflow = '';
+        if (carouselWrapperEl) carouselWrapperEl.style.display = '';
+        document.removeEventListener('keydown', handleMenuFocusTrap);
+      }
       updateScrollIndicator();
       positionCarousel();
+      fitAboutText();
       const newColCount = getColumnCount();
       if (newColCount !== lastColCount) {
         lastColCount = newColCount;
         buildGalleryGrid();
+      }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        positionCarousel();
+        fitAboutText();
       }
     });
 
@@ -2254,11 +2446,13 @@
        ============================================ */
     function toggleTheme() {
       const isDark = document.body.classList.toggle('dark-mode');
+      document.documentElement.classList.toggle('dark-mode', isDark);
       localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }
 
     if (localStorage.getItem('theme') === 'dark') {
       document.body.classList.add('dark-mode');
+      document.documentElement.classList.add('dark-mode');
     }
 
     const themeToggle = document.getElementById('themeToggle');
