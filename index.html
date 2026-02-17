@@ -2691,7 +2691,13 @@
         cursorFollower.style.top = followerY + 'px';
 
         // Track proximity separately from visual morph
+        var wasBadge = !!activeBadge;
         activeBadge = closestEl || null;
+
+        // Re-apply hover when leaving badge but still over a link
+        if (wasBadge && !activeBadge && isOverInteractive) {
+          cursorFollower.classList.add('hovering');
+        }
 
         // Shape: only apply transform/borderRadius when morphing
         var isBlob = Math.abs(currentScaleX - 1) > 0.01 || Math.abs(currentScaleY - 1) > 0.01;
@@ -2702,8 +2708,8 @@
           cursorFollower.style.transform =
             'translate(-50%, -50%) scale(' + currentScaleX.toFixed(3) + ',' + currentScaleY.toFixed(3) + ')';
           cursorFollower.style.borderRadius = currentBorderRadius.toFixed(1) + 'px';
-        } else if (isBlob && !closestRect && cursorFollower.classList.contains('hovering')) {
-          // Left badge, now on a link: snap morph to default so CSS hover works
+        } else if (isBlob && cursorFollower.classList.contains('hovering')) {
+          // Left badge, on a link: snap morph to default so CSS hover works
           currentScaleX = 1;
           currentScaleY = 1;
           currentBorderRadius = 6;
@@ -2729,12 +2735,15 @@
       animateFollower();
 
       // Link hover — original behaviour (CSS width/height transition)
+      var isOverInteractive = false;
       var interactiveElements = document.querySelectorAll('a, button, .theme-toggle');
       interactiveElements.forEach(function(el) {
         el.addEventListener('mouseenter', function() {
+          isOverInteractive = true;
           if (!activeBadge) cursorFollower.classList.add('hovering');
         });
         el.addEventListener('mouseleave', function() {
+          isOverInteractive = false;
           cursorFollower.classList.remove('hovering');
         });
       });
