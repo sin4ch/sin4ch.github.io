@@ -442,18 +442,11 @@
       flex-basis: 100%;
     }
 
-    .item-subtitle:has(+ .item-tags) {
-      flex-basis: auto;
-    }
-
     .item-tags {
       font-size: 10px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--text-muted-70);
-      flex-basis: auto;
-      margin-top: 0;
-      margin-left: 4px;
     }
 
     .item-title {
@@ -498,8 +491,46 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--text-muted-70);
-      margin-top: 8px;
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      flex-basis: auto;
+      margin-top: 0;
+      margin-left: 4px;
     }
+
+    .item-title:has(+ .item-stats) {
+      flex-basis: auto;
+    }
+
+    .stat-badge {
+      background: var(--bg-light);
+      color: var(--text-dark);
+      border: 1px solid var(--text-dark);
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-size: 10px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .stat-badge svg {
+      width: 10px;
+      height: 10px;
+    }
+
+    .role-badge {
+      background: var(--bg-light);
+      color: var(--text-dark);
+      border: 1px solid var(--text-dark);
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
 
 
     /* ============================================
@@ -1264,48 +1295,75 @@
           <div class="section-description">Selected projects.</div>
           <div class="items">
             <div class="item">
-              <div class="item-meta">2025</div>
+              <div class="item-meta">2026</div>
               <div class="item-content">
-                <div class="item-title"><a href="https://github.com/sin4ch/mono-mcp" target="_blank" rel="noopener">Mono Banking MCP Server</a></div>
-                <div class="item-description">MCP server for Nigerian banking operations via Mono Open Banking API</div>
-                <div class="item-tools">Python, FastMCP, PostgreSQL, Claude</div>
-                <div class="item-stats">53 Stars · 11 Forks</div>
+                <div class="item-title"><a href="https://github.com/sin4ch/flappy-bird-mcp" target="_blank" rel="noopener">Flappy Bird MCP</a></div>
+                <div class="item-stats" data-repo="sin4ch/flappy-bird-mcp"></div>
+                <div class="item-description">Play Flappy Bird directly in your AI assistant via Model Context Protocol</div>
+                <div class="item-tools">TypeScript, MCP</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
-                <div class="item-title"><a href="https://github.com/sin4ch/qgjob" target="_blank" rel="noopener">QualGent Job Orchestrator</a></div>
-                <div class="item-description">Production-ready job orchestration system for AppWright automated tests on BrowserStack and GitHub Actions runners</div>
-                <div class="item-tools">Python, Click, FastAPI, Redis, PostgreSQL, Docker, GitHub Actions</div>
-                <div class="item-stats">2 Stars · 1 Fork</div>
-              </div>
-            </div>
-            <div class="item">
-              <div class="item-meta"></div>
-              <div class="item-content">
-                <div class="item-title"><a href="https://github.com/sin4ch/aws-innovation-sb-api" target="_blank" rel="noopener">AWS Innovation Sandbox API</a></div>
-                <div class="item-description">FastAPI application for managing AWS Innovation Sandbox accounts and resources</div>
-                <div class="item-tools">Python, FastAPI, Boto3, AWS STS, httpx</div>
-                <div class="item-stats">1 Star · 1 Fork</div>
-              </div>
-            </div>
-            <div class="item">
-              <div class="item-meta"></div>
-              <div class="item-content">
-                <div class="item-title"><a href="https://github.com/sin4ch/quick-face-sort" target="_blank" rel="noopener">Quick Face Sort</a></div>
-                <div class="item-description">Scan a folder with media and sort out images & videos based on reference images</div>
-                <div class="item-tools">Python, Terraform, AWS Rekognition, AWS Lambda, S3</div>
-                <div class="item-stats">5 Stars · 1 Fork</div>
+                <div class="item-title"><a href="https://github.com/sin4ch/nigerian-fintech-llms-txt" target="_blank" rel="noopener">Nigerian Fintech LLMs.txt</a></div>
+                <div class="item-stats" data-repo="sin4ch/nigerian-fintech-llms-txt"></div>
+                <div class="item-description">Curated llms.txt files for Nigerian fintech API documentation</div>
+                <div class="item-tools">LLMs, Fintech APIs</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/sin4ch/resume-to-latex" target="_blank" rel="noopener">Resume to LaTeX</a></div>
+                <div class="item-stats" data-repo="sin4ch/resume-to-latex"></div>
                 <div class="item-description">Convert resumes to clean LaTeX format using AI</div>
                 <div class="item-tools">Python, FastAPI, React, Tailwind CSS, Gemini</div>
-                <div class="item-stats">7 Stars · 1 Fork</div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-meta">2025</div>
+              <div class="item-content">
+                <div class="item-title"><a href="https://github.com/sin4ch/mono-mcp" target="_blank" rel="noopener">Mono Banking MCP Server</a></div>
+                <div class="item-stats" data-repo="sin4ch/mono-mcp"></div>
+                <div class="item-description">MCP server for Nigerian banking operations via Mono Open Banking API</div>
+                <div class="item-tools">Python, FastMCP, PostgreSQL, Claude</div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-meta"></div>
+              <div class="item-content">
+                <div class="item-title"><a href="https://github.com/sin4ch/qgjob" target="_blank" rel="noopener">QualGent Job Orchestrator</a></div>
+                <div class="item-stats" data-repo="sin4ch/qgjob"></div>
+                <div class="item-description">Production-ready job orchestration system for AppWright automated tests on BrowserStack and GitHub Actions runners</div>
+                <div class="item-tools">Python, Click, FastAPI, Redis, PostgreSQL, Docker, GitHub Actions</div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-meta"></div>
+              <div class="item-content">
+                <div class="item-title"><a href="https://github.com/sin4ch/aws-innovation-sb-api" target="_blank" rel="noopener">AWS Innovation Sandbox API</a></div>
+                <div class="item-stats" data-repo="sin4ch/aws-innovation-sb-api"></div>
+                <div class="item-description">FastAPI application for managing AWS Innovation Sandbox accounts and resources</div>
+                <div class="item-tools">Python, FastAPI, Boto3, AWS STS, httpx</div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-meta"></div>
+              <div class="item-content">
+                <div class="item-title"><a href="https://github.com/sin4ch/quick-face-sort" target="_blank" rel="noopener">Quick Face Sort</a></div>
+                <div class="item-stats" data-repo="sin4ch/quick-face-sort"></div>
+                <div class="item-description">Scan a folder with media and sort out images & videos based on reference images</div>
+                <div class="item-tools">Python, Terraform, AWS Rekognition, AWS Lambda, S3</div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-meta"></div>
+              <div class="item-content">
+                <div class="item-title"><a href="https://github.com/sin4ch/exchange-rate-mcp" target="_blank" rel="noopener">Exchange Rate MCP Server</a></div>
+                <div class="item-stats" data-repo="sin4ch/exchange-rate-mcp"></div>
+                <div class="item-description">MCP server for real-time currency exchange rate lookups</div>
+                <div class="item-tools">Python, FastMCP, ExchangeRate API</div>
               </div>
             </div>
           </div>
@@ -1397,7 +1455,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://sin4ch1.substack.com/p/llms-might-not-be-human-level-intelligent" target="_blank" rel="noopener">LLMs might not be human-level intelligent, but they sure are human</a></div>
                 <div class="item-subtitle">Oct 1</div>
-                <div class="item-tags">AI · LLMS · OPINION</div>
               </div>
             </div>
             <div class="item">
@@ -1405,7 +1462,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/building-a-simple-exchange-rate-mcp-server-using-fastmcp-c87d7a454545" target="_blank" rel="noopener">Building a Simple Exchange Rate MCP Server using FastMCP</a></div>
                 <div class="item-subtitle">Sep 29</div>
-                <div class="item-tags">AI · MCP · PYTHON · TUTORIAL</div>
               </div>
             </div>
             <div class="item">
@@ -1413,7 +1469,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://sin4ch1.substack.com/p/the-need-for-compromise-in-innovation" target="_blank" rel="noopener">The need for compromise in innovation communication in the age of AI</a></div>
                 <div class="item-subtitle">Sep 11</div>
-                <div class="item-tags">AI · INNOVATION · OPINION</div>
               </div>
             </div>
             <div class="item">
@@ -1421,7 +1476,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://sin4ch1.substack.com/p/were-the-ones-holding-our-tech-back" target="_blank" rel="noopener">We might just be the ones holding our tech back</a></div>
                 <div class="item-subtitle">Aug 27</div>
-                <div class="item-tags">TECH · OPINION</div>
               </div>
             </div>
             <div class="item">
@@ -1429,7 +1483,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/understanding-model-context-protocol-mcp-2f8f0e7e9240" target="_blank" rel="noopener">Understanding Model Context Protocol (MCP)</a></div>
                 <div class="item-subtitle">Aug 6</div>
-                <div class="item-tags">AI · MCP · LLMS</div>
               </div>
             </div>
             <div class="item">
@@ -1437,7 +1490,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/deploying-a-fastapi-number-classification-api-with-docker-nginx-and-aws-ec2-fe2358ef7835" target="_blank" rel="noopener">Deploying a FastAPI Number Classification API with Docker, Nginx, and AWS EC2</a></div>
                 <div class="item-subtitle">May 3</div>
-                <div class="item-tags">CLOUD · AWS · DEVOPS · DOCKER · TUTORIAL</div>
               </div>
             </div>
             <div class="item">
@@ -1445,7 +1497,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/why-tech-innovation-seems-slower-these-days-fe79b14d0f99" target="_blank" rel="noopener">Why Tech Innovation Seems Slower These Days</a></div>
                 <div class="item-subtitle">Apr 18</div>
-                <div class="item-tags">TECH · INNOVATION · OPINION</div>
               </div>
             </div>
             <div class="item">
@@ -1453,7 +1504,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://www.everythingdevops.dev/blog/understanding-ssh-and-ssh-keys" target="_blank" rel="noopener">Understanding SSH and SSH Keys</a></div>
                 <div class="item-subtitle">Feb 25</div>
-                <div class="item-tags">DEVOPS · LINUX · TUTORIAL</div>
               </div>
             </div>
             <div class="item">
@@ -1461,7 +1511,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/hng-stage-0-serving-a-simple-webpage-through-nginx-on-an-amazon-ec2-instance-c885225c3bd7" target="_blank" rel="noopener">Serving A Simple Webpage Through NGINX On An Amazon EC2 Instance</a></div>
                 <div class="item-subtitle">Jan 31</div>
-                <div class="item-tags">CLOUD · AWS · NGINX · TUTORIAL</div>
               </div>
             </div>
             <div class="item">
@@ -1469,7 +1518,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/infrastructure-is-the-future-of-ai-72fd31dd7c03" target="_blank" rel="noopener">Infrastructure is the Future of AI</a></div>
                 <div class="item-subtitle">Dec 7</div>
-                <div class="item-tags">AI · CLOUD · INFRASTRUCTURE</div>
               </div>
             </div>
             <div class="item">
@@ -1477,7 +1525,6 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/road-to-my-aws-community-builder-application-in-january-2025-f4626330076d" target="_blank" rel="noopener">Road to My AWS Community Builder Application</a></div>
                 <div class="item-subtitle">Oct 20</div>
-                <div class="item-tags">AWS · CLOUD · CAREER</div>
               </div>
             </div>
           </div>
@@ -1492,7 +1539,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://gdg.community.dev/events/details/google-gdg-on-campus-university-of-benin-benin-nigeria-presents-building-a-career-from-open-source-contribution-2025-11-13/" target="_blank" rel="noopener">Building a Career from Open Source Contribution</a></div>
                 <div class="item-subtitle">GDG on Campus UNIBEN</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1500,7 +1547,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://www.linkedin.com/posts/awscloudsecwestafrica_awscommunityday-genai-awscd25-activity-7378412697677107201-ASBh" target="_blank" rel="noopener">AI, Cloud, and the African Hustle: Turning Challenges into Opportunities</a></div>
                 <div class="item-subtitle">AWS Community Day West Africa 2025</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1508,7 +1555,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/sin4ch/status/1958408726601453857" target="_blank" rel="noopener">Arthurite x AWS GenAI 2025</a></div>
                 <div class="item-subtitle">Arthurite Integrated</div>
-                <div class="item-tags">HOST</div>
+                <div class="item-tags"><span class="role-badge">HOST</span></div>
               </div>
             </div>
             <div class="item">
@@ -1516,7 +1563,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/Geektutor/status/1953746378267509132" target="_blank" rel="noopener">From Local to Global: Real Stories of Landing Global Internships</a></div>
                 <div class="item-subtitle">X Space</div>
-                <div class="item-tags">HOST</div>
+                <div class="item-tags"><span class="role-badge">HOST</span></div>
               </div>
             </div>
             <div class="item">
@@ -1524,7 +1571,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/sin4ch/status/1941218347275673925" target="_blank" rel="noopener">Building an Impactful Tech Career</a></div>
                 <div class="item-subtitle">X Space with Julian Duru</div>
-                <div class="item-tags">HOST</div>
+                <div class="item-tags"><span class="role-badge">HOST</span></div>
               </div>
             </div>
             <div class="item">
@@ -1532,7 +1579,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/thedevopsdojo/status/1935989233115648313" target="_blank" rel="noopener">Remote DevOps Work: Real talk & Tips</a></div>
                 <div class="item-subtitle">DevOps Dojo</div>
-                <div class="item-tags">HOST</div>
+                <div class="item-tags"><span class="role-badge">HOST</span></div>
               </div>
             </div>
             <div class="item">
@@ -1540,7 +1587,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/NexaScaleHQ/status/1933898503735885951" target="_blank" rel="noopener">NexaScale 2nd Anniversary: Level Up or Get Left Behind</a></div>
                 <div class="item-subtitle">NexaScale</div>
-                <div class="item-tags">HOST</div>
+                <div class="item-tags"><span class="role-badge">HOST</span></div>
               </div>
             </div>
             <div class="item">
@@ -1548,7 +1595,7 @@
               <div class="item-content">
                 <div class="item-title">Introduction to RESTful APIs with FastAPI</div>
                 <div class="item-subtitle">NexaScale</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1556,7 +1603,7 @@
               <div class="item-content">
                 <div class="item-title">Why Tech Matters</div>
                 <div class="item-subtitle">DheGroup Birthday Event</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1564,7 +1611,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://gdg.community.dev/events/details/google-gdg-on-campus-university-of-ilorin-ilorin-nigeria-presents-build-with-ai-2025/" target="_blank" rel="noopener">Infrastructure is the Future of AI</a></div>
                 <div class="item-subtitle">Build with AI 2025, GDG on Campus University of Ilorin</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1572,7 +1619,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://www.youtube.com/live/h-9Ph-J7Bh8" target="_blank" rel="noopener">Ultimate Beginner Guide to Acing the AWS CCP Exam</a></div>
                 <div class="item-subtitle">Cloud with Anne Academy</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1580,7 +1627,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/sin4ch/status/1895475604759449713" target="_blank" rel="noopener">Breaking into Tech (AMA)</a></div>
                 <div class="item-subtitle">TRIIBE Network</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1588,7 +1635,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/sin4ch/status/1883135211556475122" target="_blank" rel="noopener">Getting Started in Cloud</a></div>
                 <div class="item-subtitle">AWS Cloud Clubs, FUTO</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1596,7 +1643,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/sin4ch/status/1877432769967423878" target="_blank" rel="noopener">Guide to Joining the AWS Community Builder's Program</a></div>
                 <div class="item-subtitle">DevOps Conclave</div>
-                <div class="item-tags">HOST</div>
+                <div class="item-tags"><span class="role-badge">HOST</span></div>
               </div>
             </div>
             <div class="item">
@@ -1604,7 +1651,7 @@
               <div class="item-content">
                 <div class="item-title">Tech Vision Board for 2025</div>
                 <div class="item-subtitle">The Virtual Assistant Hub</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1612,7 +1659,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/sin4ch/status/1865479789089349976" target="_blank" rel="noopener">Infrastructure is the Future of AI</a></div>
                 <div class="item-subtitle">DevFest Benin, GDG Benin</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1620,7 +1667,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/sin4ch/status/1862059187137573097" target="_blank" rel="noopener">How to Build a Personal Brand to Stand Out</a></div>
                 <div class="item-subtitle">Assem Lucem, NFCS UNIBEN</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1628,7 +1675,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/sin4ch/status/1856038008257986582" target="_blank" rel="noopener">Navigating Your Career</a></div>
                 <div class="item-subtitle">ACES UNIBEN Tech Week</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1636,7 +1683,7 @@
               <div class="item-content">
                 <div class="item-title">ACES Software Developer Club Launch</div>
                 <div class="item-subtitle">ACES, UNIBEN</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1644,7 +1691,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://www.linkedin.com/posts/osinachiokpara_october-was-amazing-who-am-i-kidding-activity-7257994792989560832-wO2U" target="_blank" rel="noopener">The Young and Thriving Youth Conference (AMA)</a></div>
                 <div class="item-subtitle">SCIWA</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1652,7 +1699,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://www.linkedin.com/posts/osinachiokpara_october-was-amazing-who-am-i-kidding-activity-7257994792989560832-wO2U" target="_blank" rel="noopener">Maximize Technology to Supercharge YOU</a></div>
                 <div class="item-subtitle">UNIBEN Tech Wave 2.0</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1660,7 +1707,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/awssecwestafri/status/1837146709333336118" target="_blank" rel="noopener">The Human Side of Cloud Innovation: Everyday Solutions with AWS</a></div>
                 <div class="item-subtitle">AWS Cloud Security User Group West Africa</div>
-                <div class="item-tags">HOST</div>
+                <div class="item-tags"><span class="role-badge">HOST</span></div>
               </div>
             </div>
             <div class="item">
@@ -1668,7 +1715,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/sin4ch/status/1830628464602251310" target="_blank" rel="noopener">Leveraging Global Opportunities to Build your Tech Career</a></div>
                 <div class="item-subtitle">Effjays Tech Hub</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1676,7 +1723,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://x.com/thecloudcrowdng/status/1805239437082697827" target="_blank" rel="noopener">What, Really, is the Cloud and Why Should I Care?</a></div>
                 <div class="item-subtitle">The Cloud Crowd</div>
-                <div class="item-tags">HOST</div>
+                <div class="item-tags"><span class="role-badge">HOST</span></div>
               </div>
             </div>
             <div class="item">
@@ -1684,7 +1731,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://www.linkedin.com/posts/osinachiokpara_bfff-activity-7197109513995374592-GkcX" target="_blank" rel="noopener">AMA Session on The Future of Technology</a></div>
                 <div class="item-subtitle">Blockchain For Financial Freedom, UNIBEN</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1692,7 +1739,7 @@
               <div class="item-content">
                 <div class="item-title">Taking Your Business to the Global Stage</div>
                 <div class="item-subtitle">Path-Finders Christian Assembly</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1700,7 +1747,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://www.linkedin.com/posts/osinachiokpara_navigating-into-tech-doesnt-have-to-be-hard-activity-7171934520479236096--EWi" target="_blank" rel="noopener">Upskilling: The New Currency in the World of Work</a></div>
                 <div class="item-subtitle">Cenfortech TechSkillUpEdo</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
             <div class="item">
@@ -1708,7 +1755,7 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://www.linkedin.com/posts/osinachiokpara_yesterday-was-probably-up-there-among-the-activity-7156958483416784896-TIks" target="_blank" rel="noopener">How to Leverage Social Media for Career Growth</a></div>
                 <div class="item-subtitle">LinkedIn Local Benin</div>
-                <div class="item-tags">SPEAKER</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
           </div>
@@ -1725,24 +1772,31 @@
           <div class="section-description">Professional experience in developer advocacy, community building, and DevOps.</div>
           <div class="items">
             <div class="item">
+              <div class="item-meta">Feb 2026 - Present</div>
+              <div class="item-content">
+                <div class="item-title">Software Engineer</div>
+                <div class="item-subtitle"><a href="https://textcortex.com" target="_blank" rel="noopener">TextCortex</a> · Berlin, Germany</div>
+              </div>
+            </div>
+            <div class="item">
               <div class="item-meta">Oct 2025 - Present</div>
               <div class="item-content">
                 <div class="item-title">Developer Advocate</div>
-                <div class="item-subtitle">Hackmamba · San Francisco, CA, US</div>
+                <div class="item-subtitle"><a href="https://hackmamba.io" target="_blank" rel="noopener">Hackmamba</a> · San Francisco, CA, US</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta">Jan 2024 - Present</div>
               <div class="item-content">
                 <div class="item-title">Developer Advocate & Technical Programs Lead</div>
-                <div class="item-subtitle">NexaScale · Washington, DC, US</div>
+                <div class="item-subtitle"><a href="https://nexascale.org" target="_blank" rel="noopener">NexaScale</a> · Washington, DC, US</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta">Jan 2025 - Feb 2025</div>
               <div class="item-content">
                 <div class="item-title">Developer Advocate</div>
-                <div class="item-subtitle">Learn To Cloud · New York, US</div>
+                <div class="item-subtitle"><a href="https://learntocloud.guide" target="_blank" rel="noopener">Learn To Cloud</a> · New York, US</div>
               </div>
             </div>
             <div class="item">
@@ -1756,7 +1810,7 @@
               <div class="item-meta">Jun 2024 - Jul 2024</div>
               <div class="item-content">
                 <div class="item-title">DevOps Engineer Intern</div>
-                <div class="item-subtitle">Hotels.ng · Lagos, NG</div>
+                <div class="item-subtitle"><a href="https://hotels.ng" target="_blank" rel="noopener">Hotels.ng</a> · Lagos, NG</div>
               </div>
             </div>
           </div>
@@ -1799,7 +1853,8 @@
        11. Cursor Follower
        12. Lightbox / Image Viewer
        13. Typewriter Effect
-       14. Boot
+       14. GitHub Stats
+       15. Boot
        ============================================ */
 
 
@@ -1990,6 +2045,7 @@
       loadingComplete = true;
       loadingPercentage.textContent = '100%';
       buildGalleryGrid();
+      fetchGitHubStats();
       setTimeout(() => {
         loadingScreen.classList.add('hidden');
         mainWrapper.classList.add('visible');
@@ -2698,7 +2754,57 @@
 
 
     /* ============================================
-       14. BOOT
+       14. GITHUB STATS
+       ============================================ */
+    function fetchGitHubStats() {
+      const els = document.querySelectorAll('[data-repo]');
+      if (!els.length) return;
+
+      const STAR_PATH = 'M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z';
+      const FORK_PATH = 'M5 3.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm0 2.122a2.25 2.25 0 1 0-1.5 0v.878A2.25 2.25 0 0 0 5.75 8.5h1.5v2.128a2.251 2.251 0 1 0 1.5 0V8.5h1.5a2.25 2.25 0 0 0 2.25-2.25v-.878a2.25 2.25 0 1 0-1.5 0v.878a.75.75 0 0 1-.75.75h-4.5A.75.75 0 0 1 5 6.25v-.878Zm3.75 7.378a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm3-8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z';
+
+      function renderStats(el, stars, forks) {
+        el.innerHTML =
+          '<span class="stat-badge"><svg viewBox="0 0 16 16" fill="currentColor"><path d="' + STAR_PATH + '"/></svg> ' + stars + '</span>' +
+          '<span class="stat-badge"><svg viewBox="0 0 16 16" fill="currentColor"><path d="' + FORK_PATH + '"/></svg> ' + forks + '</span>';
+      }
+
+      els.forEach(function(el) {
+        var repo = el.getAttribute('data-repo');
+        var cacheKey = 'gh-stats-' + repo;
+        var cached = null;
+        try {
+          cached = JSON.parse(localStorage.getItem(cacheKey));
+        } catch(e) {}
+
+        var isFresh = cached && (Date.now() - cached.ts < 3600000);
+
+        if (isFresh) {
+          renderStats(el, cached.stars, cached.forks);
+          return;
+        }
+
+        if (cached) {
+          renderStats(el, cached.stars, cached.forks);
+        }
+
+        fetch('https://api.github.com/repos/' + repo)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (typeof data.stargazers_count === 'number') {
+              var stars = data.stargazers_count;
+              var forks = data.forks_count;
+              localStorage.setItem(cacheKey, JSON.stringify({ stars: stars, forks: forks, ts: Date.now() }));
+              renderStats(el, stars, forks);
+            }
+          })
+          .catch(function() {});
+      });
+    }
+
+
+    /* ============================================
+       15. BOOT
        ============================================ */
     createRoundedFavicon();
     initLoadingSequence();
