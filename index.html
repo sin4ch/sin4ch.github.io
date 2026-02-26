@@ -132,7 +132,6 @@
     html, body {
       height: 100%;
       overflow: hidden;
-      scroll-behavior: smooth;
       background-color: var(--bg-light);
     }
 
@@ -337,8 +336,8 @@
       transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
       will-change: opacity;
       overflow-y: auto;
-      scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
       padding-bottom: 52px;
       scrollbar-width: thin;
       scrollbar-color: transparent transparent;
@@ -975,6 +974,10 @@
       .content {
         grid-column: 2 / 3;
       }
+
+      .cursor-follower {
+        display: none !important;
+      }
     }
 
 
@@ -985,6 +988,7 @@
       html, body {
         overflow: auto;
         height: auto;
+        overscroll-behavior: contain;
       }
 
       .mobile-top-bar {
@@ -2214,6 +2218,12 @@
       if (targetSection) {
         targetSection.classList.add('active');
         if (typeof badgeRectsDirty !== 'undefined') badgeRectsDirty = true;
+        // Reset smooth scroller to current scroll position of newly active section
+        const scroller = smoothScrollInstances.get(targetSection);
+        if (scroller) {
+          scroller.targetScroll = targetSection.scrollTop;
+          scroller.currentScroll = targetSection.scrollTop;
+        }
       }
       navItems.forEach(nav => {
         nav.classList.remove('active');
@@ -2338,7 +2348,253 @@
 
 
     /* ============================================
-       7. SCROLL INDICATOR
+       7. SMOOTH SCROLL ENGINE (iPhone-style damped)
+       ============================================ */
+    const smoothScrollInstances = new Map();
+
+    class SmoothScroller {
+      constructor(el) {
+        this.el = el;
+        this.targetScroll = el.scrollTop;
+        this.currentScroll = el.scrollTop;
+        this.running = false;
+        this.lerpFactor = 0.1;        // deceleration: lower = smoother/slower stop
+        this.maxWheelDelta = 120;      // cap per wheel event (prevents overshooting)
+        this.touchMultiplier = 1.0;    // touch swipe sensitivity
+        this.maxTouchVelocity = 6;     // cap touch fling speed
+        this.velocityDecay = 0.92;     // touch momentum decay per frame
+
+        // Touch state
+        this._touchStartY = 0;
+        this._touchLastY = 0;
+        this._touchVelocity = 0;
+        this._touchTimestamp = 0;
+        this._isTouching = false;
+        this._touchMomentum = false;
+
+        // Bind handlers
+        this._onWheel = this._onWheel.bind(this);
+        this._onTouchStart = this._onTouchStart.bind(this);
+        this._onTouchMove = this._onTouchMove.bind(this);
+        this._onTouchEnd = this._onTouchEnd.bind(this);
+        this._onKeyDown = this._onKeyDown.bind(this);
+        this._tick = this._tick.bind(this);
+
+        this._attach();
+      }
+
+      _attach() {
+        this.el.addEventListener('wheel', this._onWheel, { passive: false });
+        this.el.addEventListener('touchstart', this._onTouchStart, { passive: true });
+        this.el.addEventListener('touchmove', this._onTouchMove, { passive: false });
+        this.el.addEventListener('touchend', this._onTouchEnd, { passive: true });
+      }
+
+      destroy() {
+        this.el.removeEventListener('wheel', this._onWheel);
+        this.el.removeEventListener('touchstart', this._onTouchStart);
+        this.el.removeEventListener('touchmove', this._onTouchMove);
+        this.el.removeEventListener('touchend', this._onTouchEnd);
+        this.running = false;
+      }
+
+      get maxScroll() {
+        return Math.max(0, this.el.scrollHeight - this.el.clientHeight);
+      }
+
+      get isScrollable() {
+        return this.el.scrollHeight > this.el.clientHeight;
+      }
+
+      _clamp(val) {
+        return Math.max(0, Math.min(val, this.maxScroll));
+      }
+
+      scrollTo(target, immediate) {
+        this.targetScroll = this._clamp(target);
+        if (immediate) {
+          this.currentScroll = this.targetScroll;
+          this.el.scrollTop = this.currentScroll;
+        }
+        this._touchMomentum = false;
+        this._startLoop();
+      }
+
+      _onWheel(e) {
+        if (!this.isScrollable) return;
+        // Don't hijack horizontal scrolling
+        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+        e.preventDefault();
+
+        // Clamp the delta to prevent overshooting from fast flicks
+        let delta = e.deltaY;
+        if (e.deltaMode === 1) delta *= 40;  // line mode
+        if (e.deltaMode === 2) delta *= this.el.clientHeight; // page mode
+        delta = Math.max(-this.maxWheelDelta, Math.min(this.maxWheelDelta, delta));
+
+        this.targetScroll = this._clamp(this.targetScroll + delta);
+        this._touchMomentum = false;
+        this._startLoop();
+      }
+
+      _onTouchStart(e) {
+        if (!this.isScrollable) return;
+        const touch = e.touches[0];
+        this._touchStartY = touch.clientY;
+        this._touchLastY = touch.clientY;
+        this._touchVelocity = 0;
+        this._touchTimestamp = performance.now();
+        this._isTouching = true;
+        this._touchMomentum = false;
+        // Sync target to current actual position to stop any ongoing animation
+        this.targetScroll = this.el.scrollTop;
+        this.currentScroll = this.el.scrollTop;
+      }
+
+      _onTouchMove(e) {
+        if (!this._isTouching || !this.isScrollable) return;
+        const touch = e.touches[0];
+        const now = performance.now();
+        const dt = now - this._touchTimestamp;
+        const dy = this._touchLastY - touch.clientY;
+
+        // Only prevent default if we're actually scrolling vertically
+        if (Math.abs(dy) > 0) {
+          e.preventDefault();
+        }
+
+        // Calculate velocity (px/ms)
+        if (dt > 0) {
+          this._touchVelocity = (dy / dt) * this.touchMultiplier;
+        }
+
+        this._touchLastY = touch.clientY;
+        this._touchTimestamp = now;
+
+        // Apply touch movement directly (1:1 tracking while finger is down)
+        this.targetScroll = this._clamp(this.targetScroll + dy);
+        this.currentScroll = this.targetScroll;
+        this.el.scrollTop = this.currentScroll;
+        updateScrollIndicator();
+      }
+
+      _onTouchEnd() {
+        if (!this._isTouching) return;
+        this._isTouching = false;
+
+        // Cap the velocity for damped momentum
+        this._touchVelocity = Math.max(
+          -this.maxTouchVelocity,
+          Math.min(this.maxTouchVelocity, this._touchVelocity)
+        );
+
+        // If there's meaningful velocity, start momentum
+        if (Math.abs(this._touchVelocity) > 0.05) {
+          this._touchMomentum = true;
+          this._startLoop();
+        }
+      }
+
+      _onKeyDown(e) {
+        if (!this.isScrollable) return;
+
+        let delta = 0;
+        const pageStep = this.el.clientHeight * 0.85;
+
+        switch (e.key) {
+          case 'ArrowDown': delta = 60; break;
+          case 'ArrowUp': delta = -60; break;
+          case 'PageDown': delta = pageStep; break;
+          case 'PageUp': delta = -pageStep; break;
+          case ' ':
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            delta = e.shiftKey ? -pageStep : pageStep;
+            break;
+          case 'Home':
+            this.targetScroll = 0;
+            this._touchMomentum = false;
+            this._startLoop();
+            e.preventDefault();
+            return;
+          case 'End':
+            this.targetScroll = this.maxScroll;
+            this._touchMomentum = false;
+            this._startLoop();
+            e.preventDefault();
+            return;
+          default: return;
+        }
+
+        e.preventDefault();
+        this.targetScroll = this._clamp(this.targetScroll + delta);
+        this._touchMomentum = false;
+        this._startLoop();
+      }
+
+      _startLoop() {
+        if (!this.running) {
+          this.running = true;
+          requestAnimationFrame(this._tick);
+        }
+      }
+
+      _tick() {
+        if (!this.running) return;
+
+        if (this._touchMomentum) {
+          // Damped momentum from touch fling
+          this._touchVelocity *= this.velocityDecay;
+          this.targetScroll = this._clamp(this.targetScroll + this._touchVelocity * 16);
+
+          // Stop when velocity is negligible
+          if (Math.abs(this._touchVelocity) < 0.01) {
+            this._touchMomentum = false;
+          }
+        }
+
+        // Lerp toward target
+        const diff = this.targetScroll - this.currentScroll;
+
+        if (Math.abs(diff) < 0.5) {
+          // Close enough, snap and stop
+          this.currentScroll = this.targetScroll;
+          this.el.scrollTop = this.currentScroll;
+          this.running = false;
+          updateScrollIndicator();
+          return;
+        }
+
+        this.currentScroll += diff * this.lerpFactor;
+        this.el.scrollTop = this.currentScroll;
+        updateScrollIndicator();
+
+        requestAnimationFrame(this._tick);
+      }
+    }
+
+    // Initialize smooth scrollers for all sections
+    function initSmoothScrollers() {
+      sections.forEach(section => {
+        if (!smoothScrollInstances.has(section)) {
+          const scroller = new SmoothScroller(section);
+          smoothScrollInstances.set(section, scroller);
+        }
+      });
+    }
+
+    initSmoothScrollers();
+
+    // Global keyboard scroll handler (sections don't receive focus natively)
+    document.addEventListener('keydown', function(e) {
+      const activeSection = document.querySelector('section.active');
+      if (!activeSection) return;
+      const scroller = smoothScrollInstances.get(activeSection);
+      if (scroller) scroller._onKeyDown(e);
+    });
+
+
+    /* ============================================
+       7b. SCROLL INDICATOR
        ============================================ */
     const scrollIndicatorDown = document.getElementById('scroll-indicator-down');
     const scrollIndicatorUp = document.getElementById('scroll-indicator-up');
@@ -2348,10 +2604,11 @@
     function updateScrollIndicator() {
       const activeSection = document.querySelector('section.active');
       if (!activeSection) return;
+      const scroller = smoothScrollInstances.get(activeSection);
       const isScrollable = activeSection.scrollHeight > activeSection.clientHeight;
-      const isAtBottom = activeSection.scrollTop + activeSection.clientHeight >= activeSection.scrollHeight - 20;
-      const isAtTop = activeSection.scrollTop <= 20;
-      const currentScrollTop = activeSection.scrollTop;
+      const currentScrollTop = scroller ? scroller.currentScroll : activeSection.scrollTop;
+      const isAtBottom = currentScrollTop + activeSection.clientHeight >= activeSection.scrollHeight - 20;
+      const isAtTop = currentScrollTop <= 20;
 
       if (currentScrollTop < lastScrollTop) {
         scrollDirection = 'up';
@@ -2373,7 +2630,11 @@
     if (scrollIndicatorDown) {
       scrollIndicatorDown.addEventListener('click', () => {
         const activeSection = document.querySelector('section.active');
-        if (activeSection) {
+        if (!activeSection) return;
+        const scroller = smoothScrollInstances.get(activeSection);
+        if (scroller) {
+          scroller.scrollTo(scroller.maxScroll);
+        } else {
           activeSection.scrollTo({ top: activeSection.scrollHeight, behavior: 'smooth' });
         }
       });
@@ -2382,15 +2643,15 @@
     if (scrollIndicatorUp) {
       scrollIndicatorUp.addEventListener('click', () => {
         const activeSection = document.querySelector('section.active');
-        if (activeSection) {
+        if (!activeSection) return;
+        const scroller = smoothScrollInstances.get(activeSection);
+        if (scroller) {
+          scroller.scrollTo(0);
+        } else {
           activeSection.scrollTo({ top: 0, behavior: 'smooth' });
         }
       });
     }
-
-    sections.forEach(section => {
-      section.addEventListener('scroll', updateScrollIndicator);
-    });
 
 
 
