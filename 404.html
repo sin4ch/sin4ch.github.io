@@ -12,12 +12,15 @@
       'x': 'https://x.com/sin4ch',
       'twitter': 'https://x.com/sin4ch',
       'email': 'mailto:okparaosi17@gmail.com',
-      'resume': 'https://drive.google.com/file/d/16Zw9Vj8JVRSGUOkDNtXtd3UBYu-TIaz1/view'
+      'resume': 'https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view'
     };
+    const validSections = ['about', 'projects', 'opensource', 'writing', 'talks', 'gallery', 'experience'];
     
-    const path = window.location.pathname.replace(/^\//, '').toLowerCase();
+    const path = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase();
     if (externalRedirects[path]) {
       window.location.replace(externalRedirects[path]);
+    } else if (validSections.includes(path)) {
+      window.location.replace('/?section=' + encodeURIComponent(path));
     } else {
       // Redirect to home page for any unknown paths
       window.location.replace('/');

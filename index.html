@@ -2226,13 +2226,29 @@
       'x': 'https://x.com/sin4ch',
       'twitter': 'https://x.com/sin4ch',
       'email': 'mailto:okparaosi17@gmail.com',
-      'resume': 'https://drive.google.com/file/d/16Zw9Vj8JVRSGUOkDNtXtd3UBYu-TIaz1/view'
+      'resume': 'https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view'
     };
     const TYPEWRITER_WORDS = ['writing', 'MCP', 'agents', 'LLMs', 'AI', 'open source', 'python', 'AWS', 'cloud'];
     const TYPING_SPEED = 150;
     const DELETING_SPEED = 100;
     const PAUSE_AFTER_WORD = 2500;
     const PAUSE_BEFORE_DELETE = 800;
+
+    function getSectionPath(sectionId) {
+      return sectionId === 'about' ? '/' : `/${sectionId}`;
+    }
+
+    function getPathRoute() {
+      return window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase();
+    }
+
+    function getHashRoute() {
+      return window.location.hash.replace('#', '').toLowerCase();
+    }
+
+    function getQueryRoute() {
+      return new URLSearchParams(window.location.search).get('section')?.toLowerCase() || '';
+    }
 
 
 
@@ -2587,8 +2603,7 @@
         }
       });
       if (updateUrl) {
-        const newHash = targetId === 'about' ? '' : '#' + targetId;
-        history.pushState({ section: targetId }, '', '/' + newHash);
+        history.pushState({ section: targetId }, '', getSectionPath(targetId));
       }
       const carouselWrapper = document.getElementById('carousel-wrapper');
       if (carouselWrapper) {
@@ -2601,15 +2616,16 @@
     }
 
     function handleInitialRoute() {
-      const path = window.location.pathname.replace(/^\//, '').toLowerCase();
+      const path = getPathRoute();
       if (EXTERNAL_REDIRECTS[path]) {
         window.location.replace(EXTERNAL_REDIRECTS[path]);
         return;
       }
-      const hash = window.location.hash.replace('#', '').toLowerCase() || 'about';
-      const targetSection = VALID_SECTIONS.includes(hash) ? hash : 'about';
-      const newHash = targetSection === 'about' ? '' : '#' + targetSection;
-      history.replaceState({ section: targetSection }, '', '/' + newHash);
+      const query = getQueryRoute();
+      const hash = getHashRoute();
+      const route = query || path || hash || 'about';
+      const targetSection = VALID_SECTIONS.includes(route) ? route : 'about';
+      history.replaceState({ section: targetSection }, '', getSectionPath(targetSection));
       showSection(targetSection, false);
     }
 
@@ -2687,15 +2703,17 @@
       if (event.state && event.state.section) {
         showSection(event.state.section, false);
       } else {
-        const hash = window.location.hash.replace('#', '') || 'about';
-        showSection(hash, false);
+        const route = getPathRoute() || getHashRoute() || 'about';
+        const targetSection = VALID_SECTIONS.includes(route) ? route : 'about';
+        showSection(targetSection, false);
       }
     });
 
     window.addEventListener('hashchange', () => {
-      const hash = window.location.hash.replace('#', '').toLowerCase() || 'about';
+      const hash = getHashRoute() || 'about';
       const targetSection = VALID_SECTIONS.includes(hash) ? hash : 'about';
       showSection(targetSection, false);
+      history.replaceState({ section: targetSection }, '', getSectionPath(targetSection));
     });
 
 
