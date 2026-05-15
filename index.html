@@ -818,6 +818,7 @@
     .photo-carousel-wrapper.visible {
       opacity: 1;
       visibility: visible;
+      pointer-events: auto;
     }
 
     .photo-carousel-wrapper.hidden {
@@ -828,13 +829,27 @@
     .photo-carousel {
       width: 100%;
       height: 100%;
-      overflow: hidden;
+      overflow-x: auto;
+      overflow-y: hidden;
+      overscroll-behavior-x: contain;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      touch-action: pan-x;
+      cursor: grab;
+    }
+
+    .photo-carousel::-webkit-scrollbar {
+      display: none;
+    }
+
+    .photo-carousel.is-dragging {
+      cursor: grabbing;
     }
 
     .photo-carousel-track {
       display: flex;
+      width: max-content;
       height: 100%;
-      will-change: transform;
     }
 
     .photo-carousel img {
@@ -2809,38 +2824,61 @@
     }
 
     function initCarouselScroll(track) {
-      let offset = 0;
+      const carousel = track.parentElement;
+      if (!carousel) return;
       let lastTimestamp = 0;
       let isPaused = false;
-      const speed = 14;
+      let resumeTimer = null;
+      const speed = 20;
+
+      function pauseTemporarily(duration = 1400) {
+        isPaused = true;
+        window.clearTimeout(resumeTimer);
+        resumeTimer = window.setTimeout(() => {
+          isPaused = false;
+          lastTimestamp = 0;
+        }, duration);
+      }
 
       function tick(timestamp) {
         if (!lastTimestamp) lastTimestamp = timestamp;
         const deltaMs = Math.min(timestamp - lastTimestamp, 100);
         lastTimestamp = timestamp;
         if (!isPaused && speed > 0) {
-          offset -= speed * (deltaMs / 1000);
+          carousel.scrollLeft += speed * (deltaMs / 1000);
           const first = track.firstElementChild;
           if (first) {
             const firstWidth = first.offsetWidth + 8;
-            if (firstWidth > 0 && Math.abs(offset) >= firstWidth) {
-              offset += firstWidth;
+            if (firstWidth > 0 && carousel.scrollLeft >= firstWidth) {
               track.appendChild(first);
+              carousel.scrollLeft -= firstWidth;
             }
           }
-          track.style.transform = `translateX(${offset}px)`;
         }
         requestAnimationFrame(tick);
       }
 
       requestAnimationFrame(tick);
-      track.addEventListener('mouseenter', () => {
+      carousel.addEventListener('mouseenter', () => {
         isPaused = true;
       });
-      track.addEventListener('mouseleave', () => {
+      carousel.addEventListener('mouseleave', () => {
         isPaused = false;
         lastTimestamp = 0;
       });
+      carousel.addEventListener('pointerdown', () => {
+        carousel.classList.add('is-dragging');
+        pauseTemporarily(2500);
+      });
+      carousel.addEventListener('pointerup', () => {
+        carousel.classList.remove('is-dragging');
+        pauseTemporarily();
+      });
+      carousel.addEventListener('pointercancel', () => {
+        carousel.classList.remove('is-dragging');
+        pauseTemporarily();
+      });
+      carousel.addEventListener('wheel', () => pauseTemporarily(), { passive: true });
     }
 
 
