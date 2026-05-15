@@ -4,7 +4,7 @@
   <!-- Redirect sin4ch.github.io to sin4.ch -->
   <script>
     if (window.location.hostname === 'sin4ch.github.io') {
-      window.location.replace('https://sin4.ch' + window.location.pathname + window.location.hash);
+      window.location.replace('https://sin4.ch' + window.location.pathname + window.location.search);
     }
   </script>
 
@@ -674,7 +674,6 @@
     .home-intro {
       --home-name-size: clamp(32px, 4.8vw, 52px);
       --home-role-size: clamp(17px, 1.85vw, 23px);
-      --home-meta-size: 11px;
       font-size: var(--home-name-size);
       line-height: 1.08;
       display: flex;
@@ -713,42 +712,6 @@
       font-size: var(--home-role-size);
       line-height: 1.35;
     }
-
-    .home-interest {
-      color: var(--text-muted);
-      font-family: 'Geist Mono';
-      font-size: var(--home-meta-size);
-      letter-spacing: 0.05em;
-      line-height: 1.6;
-      margin-top: 4px;
-      text-transform: uppercase;
-    }
-
-
-    .typewriter-text {
-      font-family: 'InterVariable';
-      font-size: var(--home-role-size);
-      font-weight: 400;
-      letter-spacing: 0;
-      text-transform: none;
-      color: var(--item-secondary);
-    }
-
-    .typewriter-cursor {
-      font-family: 'InterVariable';
-      font-size: var(--home-role-size);
-      font-weight: 400;
-      letter-spacing: 0;
-      color: var(--item-secondary);
-      animation: blink 0.7s infinite;
-      margin-left: 2px;
-    }
-
-    @keyframes blink {
-      0%, 50% { opacity: 1; }
-      51%, 100% { opacity: 0; }
-    }
-
 
     /* ============================================
        8. GALLERY
@@ -2012,6 +1975,14 @@
           <div class="section-description">Speaking and hosting engagements at industry events and conferences.</div>
           <div class="items">
             <div class="item">
+              <div class="item-meta">2026</div>
+              <div class="item-content">
+                <div class="item-title"><a href="https://www.linkedin.com/posts/fernwoodsystems_speakerannouncement-aiforbusiness-cloudcomputing-ugcPost-7429594344464117761-PFzH" target="_blank" rel="noopener">AI That Works For Your Business: AWS Solutions for SMBs</a></div>
+                <div class="item-subtitle">Fernwood Systems</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
+              </div>
+            </div>
+            <div class="item">
               <div class="item-meta">2025</div>
               <div class="item-content">
                 <div class="item-title"><a href="https://gdg.community.dev/events/details/google-gdg-on-campus-university-of-benin-benin-nigeria-presents-building-a-career-from-open-source-contribution-2025-11-13/" target="_blank" rel="noopener">Building a Career from Open Source Contribution</a></div>
@@ -2096,6 +2067,14 @@
               <div class="item-content">
                 <div class="item-title"><a href="https://www.youtube.com/live/h-9Ph-J7Bh8" target="_blank" rel="noopener">Ultimate Beginner Guide to Acing the AWS CCP Exam</a></div>
                 <div class="item-subtitle">Cloud with Anne Academy</div>
+                <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-meta"></div>
+              <div class="item-content">
+                <div class="item-title"><a href="https://3mttedostate.substack.com/i/196139996/community-highlights" target="_blank" rel="noopener">The Audacity to Win in Tech</a></div>
+                <div class="item-subtitle">3MTT Edo State Community</div>
                 <div class="item-tags"><span class="role-badge">SPEAKER</span></div>
               </div>
             </div>
@@ -2361,22 +2340,12 @@
       'email': 'mailto:okparaosi17@gmail.com',
       'resume': 'https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view'
     };
-    const TYPEWRITER_WORDS = ['writing', 'MCP', 'agents', 'LLMs', 'AI', 'open source', 'python', 'AWS', 'cloud'];
-    const TYPING_SPEED = 150;
-    const DELETING_SPEED = 100;
-    const PAUSE_AFTER_WORD = 2500;
-    const PAUSE_BEFORE_DELETE = 800;
-
     function getSectionPath(sectionId) {
       return sectionId === 'home' ? '/' : `/${sectionId}`;
     }
 
     function getPathRoute() {
       return window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase();
-    }
-
-    function getHashRoute() {
-      return window.location.hash.replace('#', '').toLowerCase();
     }
 
     function getQueryRoute() {
@@ -2392,7 +2361,6 @@
     /* ============================================
        2. SHARED STATE
        ============================================ */
-    let loadingComplete = false;
     let preloadedGalleryData = null;
     let loadedGalleryImages = [];
     let actualPct = 0;
@@ -2403,10 +2371,6 @@
     let skeletonMap = {};
     let shuffledOrder = [];
     let carouselSkeletonQueue = [];
-    let wordIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let isPaused = false;
     const loadingScreen = document.getElementById('loading-screen');
     const loadingPercentage = document.getElementById('loading-percentage');
     const mainWrapper = document.getElementById('main-wrapper');
@@ -2447,7 +2411,7 @@
         .then(data => {
           if (data.images && data.images.length > 0) preloadedGalleryData = data;
         })
-        .catch(() => console.log('Could not load gallery JSON'));
+        .catch(() => {});
       const profileImg = document.querySelector('.profile-photo img');
       const profilePromise = profileImg && !profileImg.complete
         ? new Promise(r => { profileImg.onload = r; profileImg.onerror = r; })
@@ -2574,7 +2538,6 @@
     }
 
     function completeLoading() {
-      loadingComplete = true;
       loadingPercentage.textContent = '100%';
       buildGalleryGrid();
       fetchGitHubStats();
@@ -2759,8 +2722,7 @@
         return;
       }
       const query = getQueryRoute();
-      const hash = getHashRoute();
-      const route = normalizeSectionRoute(query || path || hash || 'home');
+      const route = normalizeSectionRoute(query || path || 'home');
       const targetSection = VALID_SECTIONS.includes(route)  ? route : 'home';
       history.replaceState({ section: targetSection }, '', getSectionPath(targetSection));
       showSection(targetSection, false);
@@ -2840,17 +2802,10 @@
       if (event.state && event.state.section) {
         showSection(event.state.section, false);
       } else {
-        const route = normalizeSectionRoute(getPathRoute() || getHashRoute() || 'home');
+        const route = normalizeSectionRoute(getPathRoute() || 'home');
         const targetSection = VALID_SECTIONS.includes(route)  ? route : 'home';
         showSection(targetSection, false);
       }
-    });
-
-    window.addEventListener('hashchange', () => {
-      const hash = normalizeSectionRoute(getHashRoute() || 'home');
-      const targetSection = VALID_SECTIONS.includes(hash)  ? hash : 'home';
-      showSection(targetSection, false);
-      history.replaceState({ section: targetSection }, '', getSectionPath(targetSection));
     });
 
 
@@ -3429,53 +3384,8 @@
       }
     });
 
-
-
     /* ============================================
-       13. TYPEWRITER EFFECT
-       ============================================ */
-    const typewriterText = document.getElementById('typewriter-text');
-
-    function typeWriter() {
-      if (!typewriterText) return;
-      const currentWord = TYPEWRITER_WORDS[wordIndex];
-      if (isPaused) {
-        return;
-      }
-      if (!isDeleting) {
-        typewriterText.textContent = currentWord.substring(0, charIndex + 1);
-        charIndex++;
-        if (charIndex === currentWord.length) {
-          isPaused = true;
-          setTimeout(() => {
-            isPaused = false;
-            isDeleting = true;
-            typeWriter();
-          }, PAUSE_AFTER_WORD);
-          return;
-        }
-      } else {
-        typewriterText.textContent = currentWord.substring(0, charIndex - 1);
-        charIndex--;
-        if (charIndex === 0) {
-          isDeleting = false;
-          wordIndex = (wordIndex + 1) % TYPEWRITER_WORDS.length;
-          isPaused = true;
-          setTimeout(() => {
-            isPaused = false;
-            typeWriter();
-          }, PAUSE_BEFORE_DELETE);
-          return;
-        }
-      }
-      const speed = isDeleting ? DELETING_SPEED : TYPING_SPEED;
-      setTimeout(typeWriter, speed);
-    }
-
-
-
-    /* ============================================
-       14. GITHUB STATS
+       13. GITHUB STATS
        ============================================ */
     function fetchGitHubStats() {
       const els = document.querySelectorAll('[data-repo]');
@@ -3526,7 +3436,7 @@
 
 
     /* ============================================
-       15. BOOT
+       14. BOOT
        ============================================ */
     createRoundedFavicon();
     initLoadingSequence();
