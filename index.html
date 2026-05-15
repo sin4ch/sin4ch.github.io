@@ -913,6 +913,127 @@
       pointer-events: auto;
     }
 
+    .lightbox-story-bar {
+      position: absolute;
+      top: calc(var(--spacing) + 18px);
+      left: var(--spacing);
+      right: calc(var(--spacing) + 46px);
+      z-index: 3;
+      height: 2px;
+      overflow: hidden;
+      background-color: rgba(255, 234, 211, 0.18);
+    }
+
+    .lightbox-story-progress {
+      width: 100%;
+      height: 100%;
+      background-color: #ffead3;
+      transform: scaleX(0);
+      transform-origin: left center;
+    }
+
+    .lightbox.active .lightbox-story-progress.is-running {
+      animation: story-progress 5s linear forwards;
+    }
+
+    @keyframes story-progress {
+      from { transform: scaleX(0); }
+      to { transform: scaleX(1); }
+    }
+
+    .lightbox-tap-zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      z-index: 2;
+      width: 25%;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .lightbox-tap-zone:focus {
+      outline: none;
+    }
+
+    .lightbox-hint-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 3;
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 1fr;
+      align-items: center;
+      justify-items: center;
+      gap: 12px;
+      padding: calc(var(--spacing) * 2);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.38) 32%, transparent 68%),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.55), transparent 28%, transparent 72%, rgba(0, 0, 0, 0.55));
+      backdrop-filter: blur(3px);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .lightbox-hint-overlay.is-visible {
+      animation: lightbox-hint 3s ease-out forwards;
+    }
+
+    .lightbox-hint-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      color: #ffead3;
+      font-family: 'InterVariable';
+      font-size: 13px;
+      line-height: 1.25;
+      letter-spacing: 0;
+      text-transform: none;
+      text-align: center;
+    }
+
+    .lightbox-hint-dot {
+      width: 48px;
+      height: 48px;
+      border: 1px solid rgba(255, 234, 211, 0.72);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffead3;
+      background: rgba(0, 0, 0, 0.24);
+    }
+
+    .lightbox-tap-prev {
+      left: 0;
+    }
+
+    .lightbox-pause-zone {
+      left: 25%;
+      width: 50%;
+      cursor: default;
+    }
+
+    .lightbox-tap-next {
+      right: 0;
+    }
+
+    @keyframes lightbox-hint {
+      0% {
+        opacity: 0;
+      }
+      16% {
+        opacity: 1;
+      }
+      78% {
+        opacity: 1;
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+
     .lightbox-content {
       position: relative;
       max-width: 90vw;
@@ -928,7 +1049,7 @@
       object-fit: contain;
     }
 
-    .lightbox-close, .lightbox-prev, .lightbox-next {
+    .lightbox-close {
       position: absolute;
       background: transparent;
       border: 1px solid rgba(255, 234, 211, 0.35);
@@ -945,17 +1066,7 @@
       font-family: 'InterVariable';
     }
 
-    .lightbox-prev svg,
-    .lightbox-next svg,
-    .lightbox-prev-mobile svg,
-    .lightbox-next-mobile svg {
-      width: 22px;
-      height: 22px;
-      stroke: currentColor;
-      will-change: transform;
-    }
-
-    .lightbox-close:hover, .lightbox-prev:hover, .lightbox-next:hover {
+    .lightbox-close:hover {
       border-color: #ffead3;
       color: #ffead3;
     }
@@ -963,6 +1074,7 @@
     .lightbox-close {
       top: var(--spacing);
       right: var(--spacing);
+      z-index: 4;
       background: none;
       border: none;
       border-radius: 0;
@@ -975,56 +1087,6 @@
     .lightbox-close:hover {
       background: none;
       color: #ffead3;
-    }
-
-    .lightbox-prev:focus,
-    .lightbox-next:focus,
-    .lightbox-prev-mobile:focus,
-    .lightbox-next-mobile:focus {
-      outline: none;
-      background: transparent;
-    }
-
-    .lightbox-prev:active,
-    .lightbox-next:active,
-    .lightbox-prev-mobile:active,
-    .lightbox-next-mobile:active {
-      border-color: #ffead3;
-      color: #ffead3;
-    }
-
-    .lightbox-prev, .lightbox-next {
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
-    .lightbox-prev:hover {
-      transform: translateY(-50%) translateX(-2px);
-    }
-
-    .lightbox-next:hover {
-      transform: translateY(-50%) translateX(2px);
-    }
-
-    .lightbox-prev {
-      left: var(--spacing);
-    }
-
-    .lightbox-next {
-      right: var(--spacing);
-    }
-
-    .lightbox-nav-row {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      order: 1;
-      margin-bottom: 16px;
-    }
-
-    .lightbox-prev-mobile, .lightbox-next-mobile {
-      display: none;
     }
 
     .lightbox-counter {
@@ -1475,14 +1537,10 @@
         padding: 56px 12px 44px;
       }
 
-      .lightbox-desktop-nav, .lightbox-desktop-counter {
-        display: none !important;
-      }
-
-      .lightbox-nav-row {
-        display: block;
-        order: initial;
-        margin-bottom: 0;
+      .lightbox-story-bar {
+        top: 33px;
+        left: 12px;
+        right: 56px;
       }
 
       .lightbox-close {
@@ -1493,72 +1551,6 @@
         height: 44px;
         font-size: 18px;
         border: none;
-      }
-
-      .lightbox-prev-mobile, .lightbox-next-mobile {
-        position: absolute;
-        top: 50%;
-        z-index: 2;
-        background: transparent;
-        border: 1px solid rgba(255, 234, 211, 0.35);
-        color: rgba(255, 234, 211, 0.68);
-        font-size: 17px;
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        font-family: 'InterVariable';
-        transform: translateY(-50%);
-        transition: color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
-      }
-
-      .lightbox-prev-mobile {
-        left: 12px;
-      }
-
-      .lightbox-next-mobile {
-        right: 12px;
-      }
-
-      .lightbox-prev-mobile:hover, .lightbox-next-mobile:hover {
-        border-color: #ffead3;
-        color: #ffead3;
-      }
-
-      .lightbox-prev-mobile:hover {
-        transform: translateY(-50%) translateX(-2px);
-      }
-
-      .lightbox-next-mobile:hover {
-        transform: translateY(-50%) translateX(2px);
-      }
-
-      @media (hover: none) {
-        .lightbox-prev:hover,
-        .lightbox-next:hover,
-        .lightbox-prev-mobile:hover,
-        .lightbox-next-mobile:hover {
-          border-color: rgba(255, 234, 211, 0.35);
-          color: rgba(255, 234, 211, 0.68);
-        }
-
-        .lightbox-prev:hover,
-        .lightbox-next:hover,
-        .lightbox-prev-mobile:hover,
-        .lightbox-next-mobile:hover {
-          transform: translateY(-50%);
-        }
-
-        .lightbox-prev:active,
-        .lightbox-next:active,
-        .lightbox-prev-mobile:active,
-        .lightbox-next-mobile:active {
-          border-color: #ffead3;
-          color: #ffead3;
-        }
       }
 
       .lightbox-content {
@@ -1573,7 +1565,7 @@
         max-height: 80dvh;
       }
 
-      .lightbox-nav-row .lightbox-counter {
+      .lightbox-counter {
         position: absolute;
         bottom: 18px;
         left: 50%;
@@ -1649,38 +1641,31 @@
 
   <!-- Lightbox -->
   <div class="lightbox" id="lightbox">
+    <div class="lightbox-story-bar" aria-hidden="true">
+      <div class="lightbox-story-progress" id="lightbox-story-progress"></div>
+    </div>
     <button class="lightbox-close" id="lightbox-close" aria-label="Close">&#x2715;</button>
-    <button class="lightbox-prev lightbox-desktop-nav" id="lightbox-prev" aria-label="Previous">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M19 12H5"></path>
-        <path d="M12 5l-7 7 7 7"></path>
-      </svg>
-    </button>
-    <div class="lightbox-nav-row" id="lightbox-nav-row">
-      <button class="lightbox-prev-mobile" aria-label="Previous">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M19 12H5"></path>
-          <path d="M12 5l-7 7 7 7"></path>
-        </svg>
-      </button>
-      <div class="lightbox-counter" id="lightbox-counter"></div>
-      <button class="lightbox-next-mobile" aria-label="Next">
-        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M5 12h14"></path>
-          <path d="M12 5l7 7-7 7"></path>
-        </svg>
-      </button>
+    <button class="lightbox-tap-zone lightbox-tap-prev" id="lightbox-tap-prev" aria-label="Previous image"></button>
+    <button class="lightbox-tap-zone lightbox-pause-zone" id="lightbox-pause-zone" aria-label="Pause or play slideshow"></button>
+    <button class="lightbox-tap-zone lightbox-tap-next" id="lightbox-tap-next" aria-label="Next image"></button>
+    <div class="lightbox-hint-overlay" id="lightbox-hint-overlay" aria-hidden="true">
+      <div class="lightbox-hint-item">
+        <span class="lightbox-hint-dot">←</span>
+        <span>Tap left</span>
+      </div>
+      <div class="lightbox-hint-item">
+        <span class="lightbox-hint-dot">•</span>
+        <span>Tap to pause</span>
+      </div>
+      <div class="lightbox-hint-item">
+        <span class="lightbox-hint-dot">→</span>
+        <span>Tap right</span>
+      </div>
     </div>
     <div class="lightbox-content">
       <img src="" alt="Gallery image" id="lightbox-img">
     </div>
-    <button class="lightbox-next lightbox-desktop-nav" id="lightbox-next" aria-label="Next">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-        <path d="M5 12h14"></path>
-        <path d="M12 5l7 7-7 7"></path>
-      </svg>
-    </button>
-    <div class="lightbox-counter lightbox-desktop-counter" id="lightbox-counter-desktop"></div>
+    <div class="lightbox-counter" id="lightbox-counter"></div>
   </div>
 
   <!-- Cursor Follower -->
@@ -3295,11 +3280,18 @@
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
     const lightboxClose = document.getElementById('lightbox-close');
-    const lightboxPrev = document.getElementById('lightbox-prev');
-    const lightboxNext = document.getElementById('lightbox-next');
+    const lightboxTapPrev = document.getElementById('lightbox-tap-prev');
+    const lightboxTapNext = document.getElementById('lightbox-tap-next');
+    const lightboxPauseZone = document.getElementById('lightbox-pause-zone');
+    const lightboxHintOverlay = document.getElementById('lightbox-hint-overlay');
     const lightboxCounter = document.getElementById('lightbox-counter');
-    const lightboxCounterDesktop = document.getElementById('lightbox-counter-desktop');
+    const lightboxStoryProgress = document.getElementById('lightbox-story-progress');
+    const STORY_DURATION = 5000;
     let currentImageIndex = 0;
+    let storyTimer = null;
+    let storyStartedAt = 0;
+    let storyRemaining = STORY_DURATION;
+    let storyPaused = false;
 
     function openLightbox(index) {
       if (loadedGalleryImages.length === 0) return;
@@ -3307,11 +3299,15 @@
       updateLightboxImage();
       lightbox.classList.add('active');
       document.body.style.overflow = 'hidden';
+      startStoryTimer();
+      showTapHint();
     }
 
     function closeLightbox() {
       lightbox.classList.remove('active');
       document.body.style.overflow = '';
+      stopStoryTimer();
+      storyPaused = false;
     }
 
     function updateLightboxImage() {
@@ -3320,31 +3316,101 @@
       lightboxImg.alt = img.title || 'Gallery photo';
       const counterText = `${currentImageIndex + 1} / ${loadedGalleryImages.length}`;
       lightboxCounter.textContent = counterText;
-      if (lightboxCounterDesktop) lightboxCounterDesktop.textContent = counterText;
+    }
+
+    function stopStoryTimer() {
+      if (storyTimer) {
+        clearTimeout(storyTimer);
+        storyTimer = null;
+      }
+      if (lightboxStoryProgress) {
+        lightboxStoryProgress.classList.remove('is-running');
+      }
+    }
+
+    function startStoryTimer(duration = STORY_DURATION) {
+      stopStoryTimer();
+      if (!lightboxStoryProgress || !lightbox.classList.contains('active')) return;
+      storyRemaining = duration;
+      storyStartedAt = performance.now();
+      storyPaused = false;
+      lightboxStoryProgress.style.animation = 'none';
+      lightboxStoryProgress.offsetHeight;
+      lightboxStoryProgress.style.animation = `story-progress ${duration}ms linear forwards`;
+      lightboxStoryProgress.classList.add('is-running');
+      storyTimer = setTimeout(showNextImage, duration);
+    }
+
+    function pauseStoryTimer() {
+      if (storyPaused || !lightboxStoryProgress || !lightbox.classList.contains('active')) return;
+      if (storyTimer) {
+        clearTimeout(storyTimer);
+        storyTimer = null;
+      }
+      storyRemaining = Math.max(250, storyRemaining - (performance.now() - storyStartedAt));
+      const computedWidth = getComputedStyle(lightboxStoryProgress).width;
+      lightboxStoryProgress.classList.remove('is-running');
+      lightboxStoryProgress.style.animation = 'none';
+      lightboxStoryProgress.style.width = computedWidth;
+      lightboxStoryProgress.style.transform = 'none';
+      storyPaused = true;
+    }
+
+    function resumeStoryTimer() {
+      if (!storyPaused) return;
+      if (lightboxStoryProgress) {
+        lightboxStoryProgress.style.width = '';
+        lightboxStoryProgress.style.animation = '';
+        lightboxStoryProgress.style.transform = '';
+      }
+      startStoryTimer(storyRemaining);
+    }
+
+    function pulseTapZone(zone) {
+      if (!zone) return;
+      zone.classList.add('is-tapped');
+      setTimeout(() => zone.classList.remove('is-tapped'), 180);
+    }
+
+    function showTapHint() {
+      if (!lightboxHintOverlay) return;
+      lightboxHintOverlay.classList.remove('is-visible');
+      lightboxHintOverlay.offsetHeight;
+      lightboxHintOverlay.classList.add('is-visible');
+      setTimeout(() => lightboxHintOverlay.classList.remove('is-visible'), 3000);
     }
 
     function showPrevImage() {
       currentImageIndex = (currentImageIndex - 1 + loadedGalleryImages.length) % loadedGalleryImages.length;
       updateLightboxImage();
+      startStoryTimer();
     }
 
     function showNextImage() {
       currentImageIndex = (currentImageIndex + 1) % loadedGalleryImages.length;
       updateLightboxImage();
+      startStoryTimer();
     }
 
     lightboxClose.addEventListener('click', closeLightbox);
-    lightboxPrev.addEventListener('click', showPrevImage);
-    lightboxNext.addEventListener('click', showNextImage);
 
-    const lightboxPrevMobile = document.querySelector('.lightbox-prev-mobile');
-    const lightboxNextMobile = document.querySelector('.lightbox-next-mobile');
-    if (lightboxPrevMobile) lightboxPrevMobile.addEventListener('click', showPrevImage);
-    if (lightboxNextMobile) lightboxNextMobile.addEventListener('click', showNextImage);
+    lightboxTapPrev.addEventListener('click', () => {
+      pulseTapZone(lightboxTapPrev);
+      showPrevImage();
+    });
 
-    lightbox.addEventListener('click', (e) => {
-      if (e.target === lightbox) {
-        closeLightbox();
+    lightboxTapNext.addEventListener('click', () => {
+      pulseTapZone(lightboxTapNext);
+      showNextImage();
+    });
+
+    lightboxPauseZone.addEventListener('click', () => {
+      if (storyPaused) {
+        resumeStoryTimer();
+        lightboxPauseZone.classList.remove('is-tapped');
+      } else {
+        pauseStoryTimer();
+        lightboxPauseZone.classList.add('is-tapped');
       }
     });
 
@@ -3358,27 +3424,6 @@
         showNextImage();
       }
     });
-
-    let touchStartX = 0;
-    let touchEndX = 0;
-    const lightboxContent = document.querySelector('.lightbox-content');
-
-    lightboxContent.addEventListener('touchstart', (e) => {
-      touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-
-    lightboxContent.addEventListener('touchend', (e) => {
-      touchEndX = e.changedTouches[0].screenX;
-      const swipeThreshold = 50;
-      const diff = touchStartX - touchEndX;
-      if (Math.abs(diff) > swipeThreshold) {
-        if (diff > 0) {
-          showNextImage();
-        } else {
-          showPrevImage();
-        }
-      }
-    }, { passive: true });
 
 
 
