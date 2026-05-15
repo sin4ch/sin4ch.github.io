@@ -294,7 +294,8 @@
       right: 0;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
+      gap: 12px;
       padding: 24px var(--spacing) var(--spacing);
       background-color: var(--bg-light);
       z-index: 100;
@@ -319,16 +320,13 @@
     .contact-links {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 14px;
       flex-wrap: nowrap;
       white-space: nowrap;
-      margin-left: auto;
+      margin-left: 0;
     }
 
     .contact-bar a {
-      font-size: 11px;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
       color: var(--text-muted);
       text-decoration: none;
       transition: color 0.2s ease;
@@ -344,6 +342,33 @@
       font-size: 11px;
     }
 
+    .contact-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      color: var(--text-muted);
+    }
+
+    .contact-icon svg {
+      width: 100%;
+      height: 100%;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .contact-icon svg.filled-icon {
+      fill: currentColor;
+      stroke: none;
+    }
+
+    .mobile-menu-contact {
+      display: none;
+    }
 
     /* ============================================
        6. SECTIONS & CONTENT ITEMS
@@ -409,6 +434,10 @@
 
     .section-description strong {
       font-weight: 600;
+    }
+
+    .section-description:not(.about-intro) {
+      display: none;
     }
 
     .items {
@@ -1042,18 +1071,37 @@
         overflow: auto;
         height: auto;
         overscroll-behavior: contain;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+      }
+
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar,
+      section::-webkit-scrollbar {
+        display: none;
       }
 
       .mobile-top-bar {
         display: flex;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: space-between;
         gap: 12px;
         padding: var(--spacing) var(--spacing) 0;
         position: fixed;
         top: 0;
+        left: 0;
         right: 0;
         z-index: 10020;
+      }
+
+      .mobile-top-bar-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .mobile-top-bar .profile-photo {
+        display: block;
       }
 
       .mobile-top-bar .theme-toggle {
@@ -1067,8 +1115,8 @@
       .layout {
         grid-template-columns: 1fr;
         grid-template-rows: 1fr;
-        height: calc(100vh - 52px);
-        height: calc(100dvh - 52px);
+        height: 100vh;
+        height: 100dvh;
         padding-top: calc(var(--spacing) + 36px);
       }
 
@@ -1084,41 +1132,73 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        align-items: center;
-        gap: 40px;
-        padding: 60px var(--spacing);
-        opacity: 0;
+        align-items: flex-start;
+        gap: 24px;
+        padding: calc(var(--spacing) + 36px) var(--spacing) 72px;
+        transform: translateX(100%);
         visibility: hidden;
+        transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1), visibility 0.35s;
       }
 
       .sidebar.menu-open {
-        opacity: 1;
+        transform: translateX(0);
         visibility: visible;
-        transition: opacity 0.3s ease, visibility 0.3s ease;
       }
 
       .nav-links {
         flex-direction: column;
-        gap: 24px;
-        align-items: center;
+        gap: 8px;
+        align-items: flex-start;
+        width: 100%;
+        font-family: 'InterVariable';
       }
 
       .nav-item {
-        font-size: 14px;
-        letter-spacing: 0.2em;
-        padding: 6px 12px;
+        font-size: 32px;
+        letter-spacing: 0;
+        line-height: 1.1;
+        padding: 2px 0;
+        text-align: left;
+        text-transform: none;
       }
 
-      .contact-bar .contact-links {
-        gap: 8px;
+      .mobile-menu-contact {
+        display: flex;
+        position: fixed;
+        left: var(--spacing);
+        right: var(--spacing);
+        bottom: calc(var(--spacing) + env(safe-area-inset-bottom, 0px));
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 0;
+        font-family: 'InterVariable';
       }
 
-      .contact-bar .dot {
-        font-size: 11px;
+      .mobile-menu-contact a {
+        color: var(--text-muted);
+        text-decoration: none;
       }
 
-      .contact-bar a {
-        font-size: 11px;
+      .mobile-menu-contact .contact-icon {
+        width: 36px;
+        height: 36px;
+        padding: 8px;
+      }
+
+      .mobile-menu-contact a:hover {
+        color: var(--text-dark);
+        text-decoration: none;
+      }
+
+      .mobile-menu-contact {
+        justify-content: center;
+      }
+
+      .contact-bar {
+        display: none;
       }
 
       .content {
@@ -1144,6 +1224,10 @@
 
       .item-content {
         grid-column: 1;
+      }
+
+      .item-meta {
+        border-top: none;
       }
 
       .item-meta:empty {
@@ -1260,7 +1344,7 @@
        ============================================ */
     @media (hover: none) and (pointer: coarse) {
       section {
-        scrollbar-color: var(--line-color) transparent;
+        scrollbar-width: none;
       }
     }
   </style>
@@ -1301,11 +1385,16 @@
   <!-- Main Content -->
   <div class="main-wrapper" id="main-wrapper">
     <div class="mobile-top-bar" id="mobile-top-bar">
-      <button class="theme-toggle" id="themeToggleMobile" aria-label="Toggle dark mode"></button>
-      <button class="hamburger" id="hamburger" aria-label="Open menu">
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-      </button>
+      <div class="profile-photo mobile-profile-photo">
+        <img src="profile-picture.webp" alt="Osinachi Okpara">
+      </div>
+      <div class="mobile-top-bar-actions">
+        <button class="theme-toggle" id="themeToggleMobile" aria-label="Toggle dark mode"></button>
+        <button class="hamburger" id="hamburger" aria-label="Open menu">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
+      </div>
     </div>
     <div class="layout">
       <nav class="sidebar" id="sidebar">
@@ -1318,17 +1407,36 @@
           <button class="nav-item" data-target="gallery">Gallery</button>
           <button class="nav-item" data-target="experience">Experience</button>
           <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode"></button>
+          <div class="mobile-menu-contact" aria-label="Contact links">
+            <a class="contact-icon" href="mailto:okparaosi17@gmail.com" aria-label="Email">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M4 7l8 6 8-6"></path></svg>
+            </a>
+            <a class="contact-icon" href="https://linkedin.com/in/osinachiokpara" target="_blank" rel="noopener" aria-label="LinkedIn">
+              <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.3 8.9h3.1v10H5.3v-10Zm1.6-4.7a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6Zm3.4 4.7h3v1.4h.1c.4-.8 1.5-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.9v5.4h-3.1v-4.8c0-1.2 0-2.7-1.6-2.7s-1.9 1.3-1.9 2.6v4.9h-3.1v-10Z"></path></svg>
+            </a>
+            <a class="contact-icon" href="https://github.com/sin4ch" target="_blank" rel="noopener" aria-label="GitHub">
+              <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.16c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18A10.99 10.99 0 0 1 12 6.04c.98 0 1.96.13 2.88.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.42-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.18c0 .3.21.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"></path></svg>
+            </a>
+            <a class="contact-icon" href="https://x.com/sin4ch" target="_blank" rel="noopener" aria-label="X">
+              <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.9 10.6 20.9 3h-1.7l-6 6.5L8.3 3H2.7l7.4 9.8L2.7 21h1.7l6.5-7.1 5.2 7.1h5.6l-7.8-10.4Zm-2.3 2.5-.8-1L4.9 4.2h2.6l4.8 6.4.8 1 6.3 8.3h-2.6l-5.2-6.8Z"></path></svg>
+            </a>
+            <a class="contact-icon" href="https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view" target="_blank" rel="noopener" aria-label="Resume">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"></path><path d="M14 3v5h5"></path><path d="M9.5 12h5"></path><path d="M9.5 15h5"></path><path d="M9.5 18h3"></path></svg>
+            </a>
+          </div>
         </div>
       </nav>
       <main class="content">
         <button class="scroll-indicator-btn scroll-indicator-down" id="scroll-indicator-down" aria-label="Scroll to bottom">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
+            <path d="M12 5v14"></path>
+            <path d="M19 12l-7 7-7-7"></path>
           </svg>
         </button>
         <button class="scroll-indicator-btn scroll-indicator-up" id="scroll-indicator-up" aria-label="Scroll to top">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 15 12 9 18 15"></polyline>
+            <path d="M12 19V5"></path>
+            <path d="M5 12l7-7 7 7"></path>
           </svg>
         </button>
 
@@ -1871,15 +1979,21 @@
         <img src="profile-picture.webp" alt="Osinachi Okpara">
       </div>
       <div class="contact-links">
-        <a href="mailto:okparaosi17@gmail.com">Email</a>
-        <span class="dot">&middot;</span>
-        <a href="https://linkedin.com/in/osinachiokpara" target="_blank" rel="noopener">LinkedIn</a>
-        <span class="dot">&middot;</span>
-        <a href="https://github.com/sin4ch" target="_blank" rel="noopener">GitHub</a>
-        <span class="dot">&middot;</span>
-        <a href="https://x.com/sin4ch" target="_blank" rel="noopener">X</a>
-        <span class="dot">&middot;</span>
-        <a href="https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view" target="_blank" rel="noopener">Resume</a>
+        <a class="contact-icon" href="mailto:okparaosi17@gmail.com" aria-label="Email">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M4 7l8 6 8-6"></path></svg>
+        </a>
+        <a class="contact-icon" href="https://linkedin.com/in/osinachiokpara" target="_blank" rel="noopener" aria-label="LinkedIn">
+          <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.3 8.9h3.1v10H5.3v-10Zm1.6-4.7a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6Zm3.4 4.7h3v1.4h.1c.4-.8 1.5-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.9v5.4h-3.1v-4.8c0-1.2 0-2.7-1.6-2.7s-1.9 1.3-1.9 2.6v4.9h-3.1v-10Z"></path></svg>
+        </a>
+        <a class="contact-icon" href="https://github.com/sin4ch" target="_blank" rel="noopener" aria-label="GitHub">
+          <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.16c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18A10.99 10.99 0 0 1 12 6.04c.98 0 1.96.13 2.88.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.42-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.18c0 .3.21.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"></path></svg>
+        </a>
+        <a class="contact-icon" href="https://x.com/sin4ch" target="_blank" rel="noopener" aria-label="X">
+          <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.9 10.6 20.9 3h-1.7l-6 6.5L8.3 3H2.7l7.4 9.8L2.7 21h1.7l6.5-7.1 5.2 7.1h5.6l-7.8-10.4Zm-2.3 2.5-.8-1L4.9 4.2h2.6l4.8 6.4.8 1 6.3 8.3h-2.6l-5.2-6.8Z"></path></svg>
+        </a>
+        <a class="contact-icon" href="https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view" target="_blank" rel="noopener" aria-label="Resume">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"></path><path d="M14 3v5h5"></path><path d="M9.5 12h5"></path><path d="M9.5 15h5"></path><path d="M9.5 18h3"></path></svg>
+        </a>
       </div>
     </div>
   </div>
@@ -2305,10 +2419,9 @@
 
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
-    const carouselWrapperEl = document.getElementById('carousel-wrapper');
 
     function getFocusableMenuElements() {
-      return sidebar.querySelectorAll('button.nav-item, button.theme-toggle');
+      return sidebar.querySelectorAll('button.nav-item, button.theme-toggle, .mobile-menu-contact a');
     }
 
     function handleMenuFocusTrap(e) {
@@ -2316,8 +2429,6 @@
         sidebar.classList.remove('menu-open');
         hamburger.classList.remove('open');
         hamburger.setAttribute('aria-label', 'Open menu');
-        document.body.style.overflow = '';
-        if (carouselWrapperEl) carouselWrapperEl.style.display = '';
         document.removeEventListener('keydown', handleMenuFocusTrap);
         hamburger.focus();
         return;
@@ -2341,15 +2452,11 @@
       const isOpen = sidebar.classList.toggle('menu-open');
       hamburger.classList.toggle('open');
       if (isOpen) {
-        document.body.style.overflow = 'hidden';
-        if (carouselWrapperEl) carouselWrapperEl.style.display = 'none';
         hamburger.setAttribute('aria-label', 'Close menu');
         const firstNav = sidebar.querySelector('button.nav-item');
         if (firstNav) firstNav.focus();
         document.addEventListener('keydown', handleMenuFocusTrap);
       } else {
-        document.body.style.overflow = '';
-        if (carouselWrapperEl) carouselWrapperEl.style.display = '';
         hamburger.setAttribute('aria-label', 'Open menu');
         document.removeEventListener('keydown', handleMenuFocusTrap);
       }
@@ -2366,8 +2473,6 @@
           sidebar.classList.remove('menu-open');
           hamburger.classList.remove('open');
           hamburger.setAttribute('aria-label', 'Open menu');
-          document.body.style.overflow = '';
-          if (carouselWrapperEl) carouselWrapperEl.style.display = '';
           document.removeEventListener('keydown', handleMenuFocusTrap);
         } else {
           showSection(targetId);
@@ -2713,10 +2818,6 @@
       const contactBar = document.getElementById('contact-bar');
       if (!wrapper || !themeToggle || !contactBar) return;
       if (isMobileLayout()) {
-        if (sidebar.classList.contains('menu-open')) {
-          wrapper.style.display = 'none';
-          return;
-        }
         const aboutSection = document.getElementById('about');
         const isAboutActive = aboutSection && aboutSection.classList.contains('active');
         if (!isAboutActive) { wrapper.style.display = 'none'; return; }
@@ -2873,8 +2974,6 @@
         sidebar.classList.remove('menu-open');
         hamburger.classList.remove('open');
         hamburger.setAttribute('aria-label', 'Open menu');
-        document.body.style.overflow = '';
-        if (carouselWrapperEl) carouselWrapperEl.style.display = '';
         document.removeEventListener('keydown', handleMenuFocusTrap);
       }
       updateScrollIndicator();
