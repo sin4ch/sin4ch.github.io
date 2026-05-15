@@ -147,10 +147,30 @@
       color: var(--bg-light);
     }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
+    html {
+      min-height: 100%;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+      touch-action: pan-y;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
       background-color: var(--bg-light);
+    }
+
+    body {
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      background-color: var(--bg-light);
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      display: none;
     }
 
     body {
@@ -175,27 +195,31 @@
     .main-wrapper {
       min-height: 100vh;
       min-height: 100dvh;
+      touch-action: pan-y;
       transform: translateY(100vh);
       transform: translateY(100dvh);
       transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
     }
 
     .main-wrapper.visible {
-      transform: translateY(0);
+      transform: none;
     }
 
     .layout {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr 1fr;
-      height: calc(100vh - 52px);
-      height: calc(100dvh - 52px);
       padding: var(--spacing);
-      padding-bottom: 0;
       gap: var(--spacing);
+      touch-action: pan-y;
     }
 
     .sidebar {
       grid-column: 1 / 2;
+      position: fixed;
+      top: var(--spacing);
+      left: var(--spacing);
+      width: calc((100vw - (var(--spacing) * 5)) / 4);
+      z-index: 90;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -205,7 +229,7 @@
     .content {
       grid-column: 2 / 5;
       overflow: visible;
-      position: relative;
+      touch-action: pan-y;
       transition: grid-column 0.3s ease-in-out;
     }
 
@@ -220,8 +244,9 @@
     }
 
     .nav-item {
-      font-size: 11px;
-      letter-spacing: 0.15em;
+      font-family: inherit;
+      font-size: 13.2px;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--text-muted);
       cursor: pointer;
@@ -229,7 +254,6 @@
       background: none;
       border: none;
       text-align: left;
-      font-family: inherit;
       padding: 0;
       width: fit-content;
       white-space: nowrap;
@@ -291,7 +315,7 @@
       position: fixed;
       bottom: 0;
       left: 0;
-      right: 0;
+      width: calc((100vw - (var(--spacing) * 5)) / 4 + (var(--spacing) * 2));
       display: flex;
       align-items: center;
       justify-content: flex-start;
@@ -346,9 +370,59 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      position: relative;
       width: 18px;
       height: 18px;
       color: var(--text-muted);
+    }
+
+    .contact-tooltip {
+      position: absolute;
+      left: 50%;
+      bottom: calc(100% + 13px);
+      z-index: 20;
+      display: block;
+      padding: 7px 10px;
+      background-color: var(--bg-light);
+      border: 1px solid var(--line-color);
+      color: var(--text-dark);
+      font-family: 'Geist Mono';
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      line-height: 1.2;
+      text-transform: uppercase;
+      transform: translate(-50%, 4px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.16s ease, transform 0.16s ease, border-color 0.16s ease;
+      white-space: nowrap;
+    }
+
+    .contact-tooltip::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: calc(100% - 7px);
+      width: 14px;
+      height: 14px;
+      background-color: var(--bg-light);
+      border-right: 1px solid var(--line-color);
+      border-bottom: 1px solid var(--line-color);
+      transform: translateX(-50%) rotate(45deg);
+      transition: border-color 0.16s ease;
+    }
+
+    .contact-icon:hover .contact-tooltip,
+    .contact-icon:focus-visible .contact-tooltip {
+      opacity: 1;
+      transform: translate(-50%, 0);
+      border-color: var(--text-muted);
+    }
+
+    .contact-icon:hover .contact-tooltip::after,
+    .contact-icon:focus-visible .contact-tooltip::after {
+      border-color: var(--text-muted);
     }
 
     .contact-icon svg {
@@ -374,54 +448,24 @@
        6. SECTIONS & CONTENT ITEMS
        ============================================ */
     section {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 100%;
-      display: flex;
+      position: relative;
+      display: none;
       flex-direction: column;
+      min-height: calc(100vh - (var(--spacing) * 2));
+      min-height: calc(100dvh - (var(--spacing) * 2));
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
       will-change: opacity;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
-      padding-bottom: 52px;
-      scrollbar-width: thin;
-      scrollbar-color: transparent transparent;
+      overflow: visible;
+      padding-bottom: var(--spacing);
+      touch-action: pan-y;
     }
 
     section.active {
+      display: flex;
       opacity: 1;
       visibility: visible;
-    }
-
-    section:hover {
-      scrollbar-color: var(--line-color) transparent;
-    }
-
-    section::-webkit-scrollbar {
-      width: 6px;
-    }
-
-    section::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    section::-webkit-scrollbar-thumb {
-      background: transparent;
-      border-radius: 3px;
-      transition: background 0.3s ease;
-    }
-
-    section:hover::-webkit-scrollbar-thumb {
-      background: var(--line-color);
-    }
-
-    section::-webkit-scrollbar-thumb:hover {
-      background: var(--text-muted);
     }
 
     .section-description {
@@ -456,7 +500,7 @@
 
     .item-meta {
       font-family: 'Geist Mono';
-      font-size: 11px;
+      font-size: 13.2px;
       letter-spacing: 0.1em;
       color: var(--text-muted);
       text-transform: uppercase;
@@ -491,7 +535,7 @@
     }
 
     .item-tags {
-      font-size: 10px;
+      font-size: 12px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--text-muted-70);
@@ -510,6 +554,7 @@
     }
 
     .item-content a {
+      color: inherit;
       text-decoration: none;
     }
 
@@ -531,6 +576,7 @@
     }
 
     .source-name,
+    #experience .item-subtitle,
     .experience-location {
       font-family: 'Geist Mono';
     }
@@ -553,12 +599,12 @@
     }
 
     .item-description ul li a {
-      color: var(--text-dark-90);
+      color: inherit;
     }
 
     .item-tools {
       font-family: 'Geist Mono';
-      font-size: 11px;
+      font-size: 13.2px;
       letter-spacing: 0.05em;
       color: var(--text-muted);
       margin-top: 4px;
@@ -600,9 +646,16 @@
       border: 1px solid var(--text-dark);
       padding: 2px 6px;
       border-radius: 2px;
-      font-size: 10px;
+      font-size: 12px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
+    }
+
+    #talks .item-meta,
+    #talks .item-subtitle,
+    #talks .item-tags,
+    #talks .role-badge {
+      font-family: 'Geist Mono';
     }
 
 
@@ -611,26 +664,74 @@
        7. ABOUT SECTION
        ============================================ */
     .about-intro {
-      font-size: clamp(18px, 3.5vw, 54px);
+      --about-name-size: clamp(32px, 4.8vw, 52px);
+      --about-role-size: clamp(17px, 1.85vw, 23px);
+      --about-meta-size: 11px;
+      font-size: var(--about-name-size);
+      line-height: 1.08;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: clamp(32px, 7vh, 72px);
+      max-width: min(760px, 100%);
     }
 
     .about-intro a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .about-intro a:hover {
+      text-decoration: underline;
+    }
+
+    .about-intro a[target="_blank"]::after {
+      content: "↗";
+      display: inline-block;
+      margin-left: 0.2em;
+      font-size: 0.7em;
+      line-height: 1;
+      vertical-align: 0.12em;
+    }
+
+    .about-name {
       color: var(--text-dark);
+      font-size: inherit;
+      line-height: inherit;
+    }
+
+    .about-roles {
+      color: var(--item-secondary);
+      font-size: var(--about-role-size);
+      line-height: 1.35;
+    }
+
+    .about-interest {
+      color: var(--text-muted);
+      font-family: 'Geist Mono';
+      font-size: var(--about-meta-size);
+      letter-spacing: 0.05em;
+      line-height: 1.6;
+      margin-top: 4px;
+      text-transform: uppercase;
     }
 
 
     .typewriter-text {
       font-family: 'InterVariable';
-      font-size: inherit;
+      font-size: var(--about-role-size);
       font-weight: 400;
-      color: var(--text-dark);
+      letter-spacing: 0;
+      text-transform: none;
+      color: var(--item-secondary);
     }
 
     .typewriter-cursor {
       font-family: 'InterVariable';
-      font-size: inherit;
+      font-size: var(--about-role-size);
       font-weight: 400;
-      color: var(--text-dark);
+      letter-spacing: 0;
+      color: var(--item-secondary);
       animation: blink 0.7s infinite;
       margin-left: 2px;
     }
@@ -645,9 +746,7 @@
        8. GALLERY
        ============================================ */
     #gallery {
-      position: absolute;
-      left: 0;
-      right: 0;
+      position: relative;
       overflow-x: hidden;
     }
 
@@ -711,6 +810,7 @@
       z-index: 10;
       opacity: 0;
       visibility: hidden;
+      pointer-events: none;
       transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
       will-change: opacity;
     }
@@ -784,12 +884,14 @@
       justify-content: center;
       opacity: 0;
       visibility: hidden;
+      pointer-events: none;
       transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
     }
 
     .lightbox.active {
       opacity: 1;
       visibility: visible;
+      pointer-events: auto;
     }
 
     .lightbox-content {
@@ -929,6 +1031,8 @@
 
     .loading-screen.hidden {
       transform: translateY(-100%);
+      pointer-events: none;
+      visibility: hidden;
     }
 
     .loading-content {
@@ -948,12 +1052,12 @@
        13. SCROLL INDICATOR
        ============================================ */
     .scroll-indicator-btn {
-      position: absolute;
-      right: 12px;
+      position: fixed;
+      right: var(--spacing);
       opacity: 0;
       visibility: hidden;
       transition: opacity 0.3s ease, visibility 0.3s ease;
-      z-index: 10;
+      z-index: 95;
       background: var(--bg-light);
       border: 1px solid var(--line-color);
       border-radius: 50%;
@@ -978,11 +1082,11 @@
     }
 
     .scroll-indicator-down {
-      bottom: 56px;
+      bottom: var(--spacing);
     }
 
     .scroll-indicator-up {
-      top: 12px;
+      top: var(--spacing);
     }
 
     .scroll-indicator-btn svg {
@@ -1051,6 +1155,7 @@
 
       .sidebar {
         grid-column: 1 / 2;
+        width: calc((100vw - (var(--spacing) * 3)) / 3);
       }
 
       .content {
@@ -1059,6 +1164,26 @@
 
       .cursor-follower {
         display: none !important;
+      }
+
+      .item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+        padding: 0 0 12px;
+      }
+
+      .item-content {
+        grid-column: 1;
+        padding-top: 8px;
+      }
+
+      .item-meta {
+        border-top: none;
+        padding-top: 0;
+      }
+
+      .item-meta:empty {
+        display: none;
       }
     }
 
@@ -1070,7 +1195,8 @@
       html, body {
         overflow: auto;
         height: auto;
-        overscroll-behavior: contain;
+        overscroll-behavior: auto;
+        touch-action: pan-y;
         scrollbar-width: none;
         -ms-overflow-style: none;
       }
@@ -1081,17 +1207,24 @@
         display: none;
       }
 
+      body.about-active {
+        overflow: hidden;
+        height: 100vh;
+        height: 100dvh;
+      }
+
       .mobile-top-bar {
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 12px;
-        padding: var(--spacing) var(--spacing) 0;
+        padding: var(--spacing) var(--spacing) 12px;
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         z-index: 10020;
+        background-color: var(--bg-light);
       }
 
       .mobile-top-bar-actions {
@@ -1104,8 +1237,24 @@
         display: block;
       }
 
+      .mobile-profile-photo {
+        background: transparent;
+        border: 0;
+        cursor: pointer;
+        padding: 0;
+      }
+
       .mobile-top-bar .theme-toggle {
         margin-top: 0;
+      }
+
+      .scroll-indicator-btn.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .scroll-indicator-up {
+        top: calc(var(--spacing) + 36px);
       }
 
       .hamburger {
@@ -1115,8 +1264,8 @@
       .layout {
         grid-template-columns: 1fr;
         grid-template-rows: 1fr;
-        height: 100vh;
-        height: 100dvh;
+        min-height: 100vh;
+        min-height: 100dvh;
         padding-top: calc(var(--spacing) + 36px);
       }
 
@@ -1127,11 +1276,12 @@
       .sidebar {
         position: fixed;
         inset: 0;
+        width: auto;
         z-index: 10010;
         background-color: var(--bg-light);
         display: flex;
         flex-direction: column;
-        justify-content: center;
+        justify-content: flex-start;
         align-items: flex-start;
         gap: 24px;
         padding: calc(var(--spacing) + 36px) var(--spacing) 72px;
@@ -1208,8 +1358,10 @@
       }
 
       .about-intro {
-        font-size: 10vw !important;
-        line-height: 1.2 !important;
+        --about-name-size: clamp(28px, 8vw, 42px);
+        --about-role-size: clamp(16px, 4.4vw, 20px);
+        margin-top: 0;
+        line-height: 1.12 !important;
       }
 
       .section-description {
@@ -1304,10 +1456,11 @@
       }
 
       .scroll-indicator-up {
-        top: 8px;
+        top: calc(var(--spacing) + 32px);
       }
 
       .contact-bar {
+        width: auto;
         flex-wrap: wrap;
         justify-content: center;
         margin-top: 0;
@@ -1325,8 +1478,10 @@
       }
 
       .about-intro {
-        font-size: 9.5vw !important;
-        line-height: 1.2 !important;
+        --about-name-size: clamp(27px, 8.4vw, 38px);
+        --about-role-size: clamp(15px, 4.6vw, 19px);
+        margin-top: 0;
+        line-height: 1.12 !important;
       }
 
       .profile-photo {
@@ -1385,9 +1540,9 @@
   <!-- Main Content -->
   <div class="main-wrapper" id="main-wrapper">
     <div class="mobile-top-bar" id="mobile-top-bar">
-      <div class="profile-photo mobile-profile-photo">
+      <button class="profile-photo mobile-profile-photo" id="mobileProfilePhoto" type="button" aria-label="Go to About">
         <img src="profile-picture.webp" alt="Osinachi Okpara">
-      </div>
+      </button>
       <div class="mobile-top-bar-actions">
         <button class="theme-toggle" id="themeToggleMobile" aria-label="Toggle dark mode"></button>
         <button class="hamburger" id="hamburger" aria-label="Open menu">
@@ -1408,19 +1563,19 @@
           <button class="nav-item" data-target="experience">Experience</button>
           <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode"></button>
           <div class="mobile-menu-contact" aria-label="Contact links">
-            <a class="contact-icon" href="mailto:okparaosi17@gmail.com" aria-label="Email">
+            <a class="contact-icon" href="mailto:okparaosi17@gmail.com" aria-label="Email" data-tooltip="Email"><span class="contact-tooltip" aria-hidden="true">Email</span>
               <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M4 7l8 6 8-6"></path></svg>
             </a>
-            <a class="contact-icon" href="https://linkedin.com/in/osinachiokpara" target="_blank" rel="noopener" aria-label="LinkedIn">
+            <a class="contact-icon" href="https://linkedin.com/in/osinachiokpara" target="_blank" rel="noopener" aria-label="LinkedIn" data-tooltip="LinkedIn"><span class="contact-tooltip" aria-hidden="true">LinkedIn</span>
               <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.3 8.9h3.1v10H5.3v-10Zm1.6-4.7a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6Zm3.4 4.7h3v1.4h.1c.4-.8 1.5-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.9v5.4h-3.1v-4.8c0-1.2 0-2.7-1.6-2.7s-1.9 1.3-1.9 2.6v4.9h-3.1v-10Z"></path></svg>
             </a>
-            <a class="contact-icon" href="https://github.com/sin4ch" target="_blank" rel="noopener" aria-label="GitHub">
+            <a class="contact-icon" href="https://github.com/sin4ch" target="_blank" rel="noopener" aria-label="GitHub" data-tooltip="GitHub"><span class="contact-tooltip" aria-hidden="true">GitHub</span>
               <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.16c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18A10.99 10.99 0 0 1 12 6.04c.98 0 1.96.13 2.88.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.42-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.18c0 .3.21.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"></path></svg>
             </a>
-            <a class="contact-icon" href="https://x.com/sin4ch" target="_blank" rel="noopener" aria-label="X">
+            <a class="contact-icon" href="https://x.com/sin4ch" target="_blank" rel="noopener" aria-label="X" data-tooltip="X"><span class="contact-tooltip" aria-hidden="true">X</span>
               <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.9 10.6 20.9 3h-1.7l-6 6.5L8.3 3H2.7l7.4 9.8L2.7 21h1.7l6.5-7.1 5.2 7.1h5.6l-7.8-10.4Zm-2.3 2.5-.8-1L4.9 4.2h2.6l4.8 6.4.8 1 6.3 8.3h-2.6l-5.2-6.8Z"></path></svg>
             </a>
-            <a class="contact-icon" href="https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view" target="_blank" rel="noopener" aria-label="Resume">
+            <a class="contact-icon" href="https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view" target="_blank" rel="noopener" aria-label="Resume" data-tooltip="Resume"><span class="contact-tooltip" aria-hidden="true">Resume</span>
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"></path><path d="M14 3v5h5"></path><path d="M9.5 12h5"></path><path d="M9.5 15h5"></path><path d="M9.5 18h3"></path></svg>
             </a>
           </div>
@@ -1442,7 +1597,10 @@
 
         <!-- About -->
         <section id="about" class="active">
-          <div class="section-description about-intro">Hi, I'm Osinachi Okpara, a software engineer, developer advocate, and <a href="https://builder.aws.com/community/community-builders" target="_blank" rel="noopener">AWS Community Builder</a> passionate about <span class="typewriter-text" id="typewriter-text"></span><span class="typewriter-cursor">|</span></div>
+          <div class="section-description about-intro" id="about-intro">
+            <div class="about-name">Osinachi Okpara</div>
+            <div class="about-roles">Software Engineer <span aria-hidden="true">&middot;</span> Developer Advocate <span aria-hidden="true">&middot;</span> <a href="https://builder.aws.com/community/community-builders" target="_blank" rel="noopener">AWS Community Builder</a></div>
+          </div>
         </section>
 
         <!-- Projects -->
@@ -1979,19 +2137,19 @@
         <img src="profile-picture.webp" alt="Osinachi Okpara">
       </div>
       <div class="contact-links">
-        <a class="contact-icon" href="mailto:okparaosi17@gmail.com" aria-label="Email">
+        <a class="contact-icon" href="mailto:okparaosi17@gmail.com" aria-label="Email" data-tooltip="Email"><span class="contact-tooltip" aria-hidden="true">Email</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M4 7l8 6 8-6"></path></svg>
         </a>
-        <a class="contact-icon" href="https://linkedin.com/in/osinachiokpara" target="_blank" rel="noopener" aria-label="LinkedIn">
+        <a class="contact-icon" href="https://linkedin.com/in/osinachiokpara" target="_blank" rel="noopener" aria-label="LinkedIn" data-tooltip="LinkedIn"><span class="contact-tooltip" aria-hidden="true">LinkedIn</span>
           <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5.3 8.9h3.1v10H5.3v-10Zm1.6-4.7a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6Zm3.4 4.7h3v1.4h.1c.4-.8 1.5-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.9v5.4h-3.1v-4.8c0-1.2 0-2.7-1.6-2.7s-1.9 1.3-1.9 2.6v4.9h-3.1v-10Z"></path></svg>
         </a>
-        <a class="contact-icon" href="https://github.com/sin4ch" target="_blank" rel="noopener" aria-label="GitHub">
+        <a class="contact-icon" href="https://github.com/sin4ch" target="_blank" rel="noopener" aria-label="GitHub" data-tooltip="GitHub"><span class="contact-tooltip" aria-hidden="true">GitHub</span>
           <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.16c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18A10.99 10.99 0 0 1 12 6.04c.98 0 1.96.13 2.88.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.42-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.18c0 .3.21.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"></path></svg>
         </a>
-        <a class="contact-icon" href="https://x.com/sin4ch" target="_blank" rel="noopener" aria-label="X">
+        <a class="contact-icon" href="https://x.com/sin4ch" target="_blank" rel="noopener" aria-label="X" data-tooltip="X"><span class="contact-tooltip" aria-hidden="true">X</span>
           <svg class="filled-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.9 10.6 20.9 3h-1.7l-6 6.5L8.3 3H2.7l7.4 9.8L2.7 21h1.7l6.5-7.1 5.2 7.1h5.6l-7.8-10.4Zm-2.3 2.5-.8-1L4.9 4.2h2.6l4.8 6.4.8 1 6.3 8.3h-2.6l-5.2-6.8Z"></path></svg>
         </a>
-        <a class="contact-icon" href="https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view" target="_blank" rel="noopener" aria-label="Resume">
+        <a class="contact-icon" href="https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view" target="_blank" rel="noopener" aria-label="Resume" data-tooltip="Resume"><span class="contact-tooltip" aria-hidden="true">Resume</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l4 4v14H7z"></path><path d="M14 3v5h5"></path><path d="M9.5 12h5"></path><path d="M9.5 15h5"></path><path d="M9.5 18h3"></path></svg>
         </a>
       </div>
@@ -2032,7 +2190,7 @@
       'email': 'mailto:okparaosi17@gmail.com',
       'resume': 'https://drive.google.com/file/d/16Zw9Vj8JVRSGUOkDNtXtd3UBYu-TIaz1/view'
     };
-    const TYPEWRITER_WORDS = ['Writing', 'MCP', 'Agents', 'LLMs', 'AI', 'Open Source', 'Python', 'AWS', 'Cloud'];
+    const TYPEWRITER_WORDS = ['writing', 'MCP', 'agents', 'LLMs', 'AI', 'open source', 'python', 'AWS', 'cloud'];
     const TYPING_SPEED = 150;
     const DELETING_SPEED = 100;
     const PAUSE_AFTER_WORD = 2500;
@@ -2236,7 +2394,6 @@
         setTimeout(updateScrollIndicator, 100);
         setTimeout(() => {
           positionCarousel();
-          fitAboutText();
           loadPhotoCarousel();
         }, 850);
         setTimeout(() => {
@@ -2377,12 +2534,7 @@
       if (targetSection) {
         targetSection.classList.add('active');
         if (typeof badgeRectsDirty !== 'undefined') badgeRectsDirty = true;
-        // Reset smooth scroller to current scroll position of newly active section
-        const scroller = smoothScrollInstances.get(targetSection);
-        if (scroller) {
-          scroller.targetScroll = targetSection.scrollTop;
-          scroller.currentScroll = targetSection.scrollTop;
-        }
+        window.scrollTo({ top: 0, behavior: 'auto' });
       }
       navItems.forEach(nav => {
         nav.classList.remove('active');
@@ -2399,8 +2551,8 @@
         carouselWrapper.classList.toggle('visible', targetId === 'about');
         carouselWrapper.classList.toggle('hidden', targetId !== 'about');
       }
+      document.body.classList.toggle('about-active', targetId === 'about');
       positionCarousel();
-      fitAboutText();
       updateScrollIndicator();
     }
 
@@ -2419,6 +2571,13 @@
 
     const hamburger = document.getElementById('hamburger');
     const sidebar = document.getElementById('sidebar');
+    const mobileProfilePhoto = document.getElementById('mobileProfilePhoto');
+
+    if (mobileProfilePhoto) {
+      mobileProfilePhoto.addEventListener('click', () => {
+        showSection('about');
+      });
+    }
 
     function getFocusableMenuElements() {
       return sidebar.querySelectorAll('button.nav-item, button.theme-toggle, .mobile-menu-contact a');
@@ -2498,253 +2657,7 @@
 
 
     /* ============================================
-       7. SMOOTH SCROLL ENGINE (iPhone-style damped)
-       ============================================ */
-    const smoothScrollInstances = new Map();
-
-    class SmoothScroller {
-      constructor(el) {
-        this.el = el;
-        this.targetScroll = el.scrollTop;
-        this.currentScroll = el.scrollTop;
-        this.running = false;
-        this.lerpFactor = 0.1;        // deceleration: lower = smoother/slower stop
-        this.maxWheelDelta = 120;      // cap per wheel event (prevents overshooting)
-        this.touchMultiplier = 1.0;    // touch swipe sensitivity
-        this.maxTouchVelocity = 6;     // cap touch fling speed
-        this.velocityDecay = 0.92;     // touch momentum decay per frame
-
-        // Touch state
-        this._touchStartY = 0;
-        this._touchLastY = 0;
-        this._touchVelocity = 0;
-        this._touchTimestamp = 0;
-        this._isTouching = false;
-        this._touchMomentum = false;
-
-        // Bind handlers
-        this._onWheel = this._onWheel.bind(this);
-        this._onTouchStart = this._onTouchStart.bind(this);
-        this._onTouchMove = this._onTouchMove.bind(this);
-        this._onTouchEnd = this._onTouchEnd.bind(this);
-        this._onKeyDown = this._onKeyDown.bind(this);
-        this._tick = this._tick.bind(this);
-
-        this._attach();
-      }
-
-      _attach() {
-        this.el.addEventListener('wheel', this._onWheel, { passive: false });
-        this.el.addEventListener('touchstart', this._onTouchStart, { passive: true });
-        this.el.addEventListener('touchmove', this._onTouchMove, { passive: false });
-        this.el.addEventListener('touchend', this._onTouchEnd, { passive: true });
-      }
-
-      destroy() {
-        this.el.removeEventListener('wheel', this._onWheel);
-        this.el.removeEventListener('touchstart', this._onTouchStart);
-        this.el.removeEventListener('touchmove', this._onTouchMove);
-        this.el.removeEventListener('touchend', this._onTouchEnd);
-        this.running = false;
-      }
-
-      get maxScroll() {
-        return Math.max(0, this.el.scrollHeight - this.el.clientHeight);
-      }
-
-      get isScrollable() {
-        return this.el.scrollHeight > this.el.clientHeight;
-      }
-
-      _clamp(val) {
-        return Math.max(0, Math.min(val, this.maxScroll));
-      }
-
-      scrollTo(target, immediate) {
-        this.targetScroll = this._clamp(target);
-        if (immediate) {
-          this.currentScroll = this.targetScroll;
-          this.el.scrollTop = this.currentScroll;
-        }
-        this._touchMomentum = false;
-        this._startLoop();
-      }
-
-      _onWheel(e) {
-        if (!this.isScrollable) return;
-        // Don't hijack horizontal scrolling
-        if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
-        e.preventDefault();
-
-        // Clamp the delta to prevent overshooting from fast flicks
-        let delta = e.deltaY;
-        if (e.deltaMode === 1) delta *= 40;  // line mode
-        if (e.deltaMode === 2) delta *= this.el.clientHeight; // page mode
-        delta = Math.max(-this.maxWheelDelta, Math.min(this.maxWheelDelta, delta));
-
-        this.targetScroll = this._clamp(this.targetScroll + delta);
-        this._touchMomentum = false;
-        this._startLoop();
-      }
-
-      _onTouchStart(e) {
-        if (!this.isScrollable) return;
-        const touch = e.touches[0];
-        this._touchStartY = touch.clientY;
-        this._touchLastY = touch.clientY;
-        this._touchVelocity = 0;
-        this._touchTimestamp = performance.now();
-        this._isTouching = true;
-        this._touchMomentum = false;
-        // Sync target to current actual position to stop any ongoing animation
-        this.targetScroll = this.el.scrollTop;
-        this.currentScroll = this.el.scrollTop;
-      }
-
-      _onTouchMove(e) {
-        if (!this._isTouching || !this.isScrollable) return;
-        const touch = e.touches[0];
-        const now = performance.now();
-        const dt = now - this._touchTimestamp;
-        const dy = this._touchLastY - touch.clientY;
-
-        // Only prevent default if we're actually scrolling vertically
-        if (Math.abs(dy) > 0) {
-          e.preventDefault();
-        }
-
-        // Calculate velocity (px/ms)
-        if (dt > 0) {
-          this._touchVelocity = (dy / dt) * this.touchMultiplier;
-        }
-
-        this._touchLastY = touch.clientY;
-        this._touchTimestamp = now;
-
-        // Apply touch movement directly (1:1 tracking while finger is down)
-        this.targetScroll = this._clamp(this.targetScroll + dy);
-        this.currentScroll = this.targetScroll;
-        this.el.scrollTop = this.currentScroll;
-        updateScrollIndicator();
-      }
-
-      _onTouchEnd() {
-        if (!this._isTouching) return;
-        this._isTouching = false;
-
-        // Cap the velocity for damped momentum
-        this._touchVelocity = Math.max(
-          -this.maxTouchVelocity,
-          Math.min(this.maxTouchVelocity, this._touchVelocity)
-        );
-
-        // If there's meaningful velocity, start momentum
-        if (Math.abs(this._touchVelocity) > 0.05) {
-          this._touchMomentum = true;
-          this._startLoop();
-        }
-      }
-
-      _onKeyDown(e) {
-        if (!this.isScrollable) return;
-
-        let delta = 0;
-        const pageStep = this.el.clientHeight * 0.85;
-
-        switch (e.key) {
-          case 'ArrowDown': delta = 60; break;
-          case 'ArrowUp': delta = -60; break;
-          case 'PageDown': delta = pageStep; break;
-          case 'PageUp': delta = -pageStep; break;
-          case ' ':
-            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-            delta = e.shiftKey ? -pageStep : pageStep;
-            break;
-          case 'Home':
-            this.targetScroll = 0;
-            this._touchMomentum = false;
-            this._startLoop();
-            e.preventDefault();
-            return;
-          case 'End':
-            this.targetScroll = this.maxScroll;
-            this._touchMomentum = false;
-            this._startLoop();
-            e.preventDefault();
-            return;
-          default: return;
-        }
-
-        e.preventDefault();
-        this.targetScroll = this._clamp(this.targetScroll + delta);
-        this._touchMomentum = false;
-        this._startLoop();
-      }
-
-      _startLoop() {
-        if (!this.running) {
-          this.running = true;
-          requestAnimationFrame(this._tick);
-        }
-      }
-
-      _tick() {
-        if (!this.running) return;
-
-        if (this._touchMomentum) {
-          // Damped momentum from touch fling
-          this._touchVelocity *= this.velocityDecay;
-          this.targetScroll = this._clamp(this.targetScroll + this._touchVelocity * 16);
-
-          // Stop when velocity is negligible
-          if (Math.abs(this._touchVelocity) < 0.01) {
-            this._touchMomentum = false;
-          }
-        }
-
-        // Lerp toward target
-        const diff = this.targetScroll - this.currentScroll;
-
-        if (Math.abs(diff) < 0.5) {
-          // Close enough, snap and stop
-          this.currentScroll = this.targetScroll;
-          this.el.scrollTop = this.currentScroll;
-          this.running = false;
-          updateScrollIndicator();
-          return;
-        }
-
-        this.currentScroll += diff * this.lerpFactor;
-        this.el.scrollTop = this.currentScroll;
-        updateScrollIndicator();
-
-        requestAnimationFrame(this._tick);
-      }
-    }
-
-    // Initialize smooth scrollers for all sections
-    function initSmoothScrollers() {
-      sections.forEach(section => {
-        if (!smoothScrollInstances.has(section)) {
-          const scroller = new SmoothScroller(section);
-          smoothScrollInstances.set(section, scroller);
-        }
-      });
-    }
-
-    initSmoothScrollers();
-
-    // Global keyboard scroll handler (sections don't receive focus natively)
-    document.addEventListener('keydown', function(e) {
-      const activeSection = document.querySelector('section.active');
-      if (!activeSection) return;
-      const scroller = smoothScrollInstances.get(activeSection);
-      if (scroller) scroller._onKeyDown(e);
-    });
-
-
-    /* ============================================
-       7b. SCROLL INDICATOR
+       7. SCROLL INDICATOR
        ============================================ */
     const scrollIndicatorDown = document.getElementById('scroll-indicator-down');
     const scrollIndicatorUp = document.getElementById('scroll-indicator-up');
@@ -2752,12 +2665,12 @@
     let scrollDirection = 'down';
 
     function updateScrollIndicator() {
-      const activeSection = document.querySelector('section.active');
-      if (!activeSection) return;
-      const scroller = smoothScrollInstances.get(activeSection);
-      const isScrollable = activeSection.scrollHeight > activeSection.clientHeight;
-      const currentScrollTop = scroller ? scroller.currentScroll : activeSection.scrollTop;
-      const isAtBottom = currentScrollTop + activeSection.clientHeight >= activeSection.scrollHeight - 20;
+      const root = document.documentElement;
+      const currentScrollTop = window.scrollY || root.scrollTop;
+      const viewportHeight = window.innerHeight;
+      const scrollHeight = root.scrollHeight;
+      const isScrollable = scrollHeight > viewportHeight + 1;
+      const isAtBottom = currentScrollTop + viewportHeight >= scrollHeight - 20;
       const isAtTop = currentScrollTop <= 20;
 
       if (currentScrollTop < lastScrollTop) {
@@ -2779,29 +2692,17 @@
 
     if (scrollIndicatorDown) {
       scrollIndicatorDown.addEventListener('click', () => {
-        const activeSection = document.querySelector('section.active');
-        if (!activeSection) return;
-        const scroller = smoothScrollInstances.get(activeSection);
-        if (scroller) {
-          scroller.scrollTo(scroller.maxScroll);
-        } else {
-          activeSection.scrollTo({ top: activeSection.scrollHeight, behavior: 'smooth' });
-        }
+        window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
       });
     }
 
     if (scrollIndicatorUp) {
       scrollIndicatorUp.addEventListener('click', () => {
-        const activeSection = document.querySelector('section.active');
-        if (!activeSection) return;
-        const scroller = smoothScrollInstances.get(activeSection);
-        if (scroller) {
-          scroller.scrollTo(0);
-        } else {
-          activeSection.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
     }
+
+    window.addEventListener('scroll', updateScrollIndicator, { passive: true });
 
 
 
@@ -2823,27 +2724,23 @@
         if (!isAboutActive) { wrapper.style.display = 'none'; return; }
         const aboutIntro = document.querySelector('.about-intro');
         if (!aboutIntro) return;
-        const typewriterText = document.getElementById('typewriter-text');
-        // Save and clear typewriter content so we measure static text only
-        const savedText = typewriterText ? typewriterText.textContent : '';
-        if (typewriterText) typewriterText.textContent = '';
         const introRect = aboutIntro.getBoundingClientRect();
-        // Restore typewriter content
-        if (typewriterText) typewriterText.textContent = savedText;
-        const contactRect = contactBar.getBoundingClientRect();
         const fontSize = parseFloat(getComputedStyle(aboutIntro).fontSize);
         const oneLineHeight = fontSize * 1.6;
         const maxIntroBottom = introRect.top + Math.min(introRect.height, window.innerHeight * 0.5 + oneLineHeight);
-        const topPos = maxIntroBottom + oneLineHeight;
-        const availableHeight = contactRect.top - topPos;
+        const topPos = maxIntroBottom + (oneLineHeight * 0.55);
+        const bottomInset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--spacing')) || 24;
+        const availableHeight = window.innerHeight - topPos - bottomInset;
         if (availableHeight < 60) { wrapper.style.display = 'none'; return; }
         wrapper.style.display = '';
         wrapper.style.bottom = 'auto';
         wrapper.style.top = topPos + 'px';
         wrapper.style.height = availableHeight + 'px';
+        wrapper.style.maxHeight = availableHeight + 'px';
       } else {
         wrapper.style.display = '';
         wrapper.style.bottom = 'auto';
+        wrapper.style.maxHeight = '';
         const toggleRect = themeToggle.getBoundingClientRect();
         const contactRect = contactBar.getBoundingClientRect();
         const margin = 24;
@@ -2853,51 +2750,6 @@
         wrapper.style.top = top + 'px';
         wrapper.style.height = Math.max(height, 100) + 'px';
       }
-    }
-
-    function fitAboutText() {
-      if (isMobileLayout()) return;
-      const aboutIntro = document.querySelector('.about-intro');
-      const themeToggle = document.getElementById('themeToggle');
-      const aboutSection = document.getElementById('about');
-      const typewriterText = document.getElementById('typewriter-text');
-      if (!aboutIntro || !themeToggle || !aboutSection) return;
-      if (!aboutSection.classList.contains('active')) return;
-
-      const toggleRect = themeToggle.getBoundingClientRect();
-      const sectionRect = aboutSection.getBoundingClientRect();
-      const carouselTop = toggleRect.bottom + 24;
-      const availableHeight = carouselTop - sectionRect.top;
-
-      // Save and clear typewriter content so we measure static text only
-      const savedText = typewriterText ? typewriterText.textContent : '';
-      if (typewriterText) typewriterText.textContent = '';
-
-      // Find the longest typewriter word to check if it wraps
-      const longestWord = TYPEWRITER_WORDS.reduce((a, b) => a.length > b.length ? a : b, '');
-
-      let lo = 18, hi = 80;
-      for (let i = 0; i < 10; i++) {
-        const mid = (lo + hi) / 2;
-        aboutIntro.style.fontSize = mid + 'px';
-
-        // Check if the longest typewriter word would wrap to a new line
-        const staticHeight = aboutIntro.scrollHeight;
-        typewriterText.textContent = longestWord;
-        const withWordHeight = aboutIntro.scrollHeight;
-        typewriterText.textContent = '';
-
-        const lineGap = (withWordHeight > staticHeight) ? mid * 1.6 : mid * 0.6;
-        if (aboutIntro.scrollHeight + lineGap <= availableHeight) {
-          lo = mid;
-        } else {
-          hi = mid;
-        }
-      }
-      aboutIntro.style.fontSize = lo + 'px';
-
-      // Restore typewriter content
-      if (typewriterText) typewriterText.textContent = savedText;
     }
 
     function loadPhotoCarousel() {
@@ -2978,7 +2830,6 @@
       }
       updateScrollIndicator();
       positionCarousel();
-      fitAboutText();
       const newColCount = getColumnCount();
       if (newColCount !== lastColCount) {
         lastColCount = newColCount;
@@ -2989,7 +2840,6 @@
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) {
         positionCarousel();
-        fitAboutText();
       }
     });
 
@@ -3192,6 +3042,7 @@
       sections.forEach(function(s) {
         s.addEventListener('scroll', function() { badgeRectsDirty = true; }, { passive: true });
       });
+      window.addEventListener('scroll', function() { badgeRectsDirty = true; }, { passive: true });
       window.addEventListener('resize', function() { badgeRectsDirty = true; }, { passive: true });
     }
 
@@ -3296,6 +3147,7 @@
     const typewriterText = document.getElementById('typewriter-text');
 
     function typeWriter() {
+      if (!typewriterText) return;
       const currentWord = TYPEWRITER_WORDS[wordIndex];
       if (isPaused) {
         return;
@@ -3388,7 +3240,6 @@
        ============================================ */
     createRoundedFavicon();
     initLoadingSequence();
-    typeWriter();
   </script>
 </body>
 </html>
