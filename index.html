@@ -226,6 +226,10 @@
       transition: grid-column 0.3s ease-in-out, opacity 0.3s ease-in-out;
     }
 
+    body.is-resizing .sidebar {
+      transition: none;
+    }
+
     .content {
       grid-column: 2 / 5;
       overflow: visible;
@@ -2906,8 +2910,15 @@
        9. WINDOW RESIZE HANDLER
        ============================================ */
     let lastColCount = getColumnCount();
+    let resizeTimer = null;
 
     window.addEventListener('resize', () => {
+      document.body.classList.add('is-resizing');
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        document.body.classList.remove('is-resizing');
+      }, 150);
+
       if (window.innerWidth > 768 && sidebar.classList.contains('menu-open')) {
         sidebar.classList.remove('menu-open');
         hamburger.classList.remove('open');
