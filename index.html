@@ -2846,6 +2846,7 @@
       if (!carousel) return;
       let lastTimestamp = 0;
       let isPaused = false;
+      let scrollPosition = carousel.scrollLeft;
       let resumeTimer = null;
       const speed = 20;
 
@@ -2853,6 +2854,7 @@
         isPaused = true;
         window.clearTimeout(resumeTimer);
         resumeTimer = window.setTimeout(() => {
+          scrollPosition = carousel.scrollLeft;
           isPaused = false;
           lastTimestamp = 0;
         }, duration);
@@ -2863,13 +2865,15 @@
         const deltaMs = Math.min(timestamp - lastTimestamp, 100);
         lastTimestamp = timestamp;
         if (!isPaused && speed > 0) {
-          carousel.scrollLeft += speed * (deltaMs / 1000);
+          scrollPosition += speed * (deltaMs / 1000);
+          carousel.scrollLeft = scrollPosition;
           const first = track.firstElementChild;
           if (first) {
             const firstWidth = first.offsetWidth + 8;
-            if (firstWidth > 0 && carousel.scrollLeft >= firstWidth) {
+            if (firstWidth > 0 && scrollPosition >= firstWidth) {
               track.appendChild(first);
-              carousel.scrollLeft -= firstWidth;
+              scrollPosition -= firstWidth;
+              carousel.scrollLeft = scrollPosition;
             }
           }
         }
@@ -2877,15 +2881,9 @@
       }
 
       requestAnimationFrame(tick);
-      carousel.addEventListener('mouseenter', () => {
-        isPaused = true;
-      });
-      carousel.addEventListener('mouseleave', () => {
-        isPaused = false;
-        lastTimestamp = 0;
-      });
       carousel.addEventListener('pointerdown', () => {
         carousel.classList.add('is-dragging');
+        scrollPosition = carousel.scrollLeft;
         pauseTemporarily(2500);
       });
       carousel.addEventListener('pointerup', () => {
@@ -2896,7 +2894,10 @@
         carousel.classList.remove('is-dragging');
         pauseTemporarily();
       });
-      carousel.addEventListener('wheel', () => pauseTemporarily(), { passive: true });
+      carousel.addEventListener('wheel', () => {
+        scrollPosition = carousel.scrollLeft;
+        pauseTemporarily();
+      }, { passive: true });
     }
 
 
