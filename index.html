@@ -524,6 +524,10 @@
       margin-top: 24px;
     }
 
+    #experience .item:has(.item-meta:empty) + .item:has(.item-meta:not(:empty)) {
+      margin-top: 0;
+    }
+
     .item-content {
       grid-column: 2;
       display: flex;
@@ -896,7 +900,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(0, 0, 0, 0.9);
+      background-color: rgba(0, 0, 0, 0.95);
       z-index: 10050;
       display: flex;
       align-items: center;
@@ -917,7 +921,7 @@
       position: absolute;
       top: calc(var(--spacing) + 18px);
       left: var(--spacing);
-      right: calc(var(--spacing) + 46px);
+      right: 46px;
       z-index: 3;
       height: 2px;
       overflow: hidden;
@@ -1073,7 +1077,7 @@
 
     .lightbox-close {
       top: var(--spacing);
-      right: var(--spacing);
+      right: 0;
       z-index: 4;
       background: none;
       border: none;
@@ -1539,14 +1543,14 @@
 
       .lightbox-story-bar {
         top: 33px;
-        left: 12px;
-        right: 56px;
+        left: var(--spacing);
+        right: 44px;
       }
 
       .lightbox-close {
         position: absolute;
         top: 12px;
-        right: 12px;
+        right: 0;
         width: 44px;
         height: 44px;
         font-size: 18px;
