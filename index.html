@@ -81,7 +81,7 @@
        4.  Navigation
        5.  Contact Bar
        6.  Sections & Content Items
-       7.  About Section
+       7.  Home Section
        8.  Gallery
        9.  Photo Carousel
        10. Lightbox / Image Viewer
@@ -484,7 +484,7 @@
       font-weight: 600;
     }
 
-    .section-description:not(.about-intro) {
+    .section-description:not(.home-intro) {
       display: none;
     }
 
@@ -665,13 +665,13 @@
 
 
     /* ============================================
-       7. ABOUT SECTION
+       7. HOME SECTION
        ============================================ */
-    .about-intro {
-      --about-name-size: clamp(32px, 4.8vw, 52px);
-      --about-role-size: clamp(17px, 1.85vw, 23px);
-      --about-meta-size: 11px;
-      font-size: var(--about-name-size);
+    .home-intro {
+      --home-name-size: clamp(32px, 4.8vw, 52px);
+      --home-role-size: clamp(17px, 1.85vw, 23px);
+      --home-meta-size: 11px;
+      font-size: var(--home-name-size);
       line-height: 1.08;
       display: flex;
       flex-direction: column;
@@ -680,16 +680,16 @@
       max-width: min(760px, 100%);
     }
 
-    .about-intro a {
+    .home-intro a {
       color: inherit;
       text-decoration: none;
     }
 
-    .about-intro a:hover {
+    .home-intro a:hover {
       text-decoration: underline;
     }
 
-    .about-intro a[target="_blank"]::after {
+    .home-intro a[target="_blank"]::after {
       content: "↗";
       display: inline-block;
       margin-left: 0.2em;
@@ -698,22 +698,22 @@
       vertical-align: 0.12em;
     }
 
-    .about-name {
+    .home-name {
       color: var(--text-dark);
-      font-size: calc(var(--about-role-size) + 4px);
+      font-size: calc(var(--home-role-size) + 4px);
       line-height: 1.35;
     }
 
-    .about-roles {
+    .home-roles {
       color: var(--item-secondary);
-      font-size: var(--about-role-size);
+      font-size: var(--home-role-size);
       line-height: 1.35;
     }
 
-    .about-interest {
+    .home-interest {
       color: var(--text-muted);
       font-family: 'Geist Mono';
-      font-size: var(--about-meta-size);
+      font-size: var(--home-meta-size);
       letter-spacing: 0.05em;
       line-height: 1.6;
       margin-top: 4px;
@@ -723,7 +723,7 @@
 
     .typewriter-text {
       font-family: 'InterVariable';
-      font-size: var(--about-role-size);
+      font-size: var(--home-role-size);
       font-weight: 400;
       letter-spacing: 0;
       text-transform: none;
@@ -732,7 +732,7 @@
 
     .typewriter-cursor {
       font-family: 'InterVariable';
-      font-size: var(--about-role-size);
+      font-size: var(--home-role-size);
       font-weight: 400;
       letter-spacing: 0;
       color: var(--item-secondary);
@@ -1226,7 +1226,7 @@
         display: none;
       }
 
-      body.about-active {
+      body.home-active {
         overflow: hidden;
         height: 100vh;
         height: 100dvh;
@@ -1331,6 +1331,10 @@
         text-transform: none;
       }
 
+      .sidebar .nav-item[data-target="home"] {
+        display: none;
+      }
+
       .mobile-menu-contact {
         display: flex;
         position: fixed;
@@ -1376,9 +1380,9 @@
         min-height: 0;
       }
 
-      .about-intro {
-        --about-name-size: clamp(28px, 8vw, 42px);
-        --about-role-size: clamp(16px, 4.4vw, 20px);
+      .home-intro {
+        --home-name-size: clamp(28px, 8vw, 42px);
+        --home-role-size: clamp(16px, 4.4vw, 20px);
         margin-top: 0;
         line-height: 1.12 !important;
       }
@@ -1519,9 +1523,9 @@
         padding-right: 0;
       }
 
-      .about-intro {
-        --about-name-size: clamp(27px, 8.4vw, 38px);
-        --about-role-size: clamp(15px, 4.6vw, 19px);
+      .home-intro {
+        --home-name-size: clamp(27px, 8.4vw, 38px);
+        --home-role-size: clamp(15px, 4.6vw, 19px);
         margin-top: 0;
         line-height: 1.12 !important;
       }
@@ -1582,7 +1586,7 @@
   <!-- Main Content -->
   <div class="main-wrapper" id="main-wrapper">
     <div class="mobile-top-bar" id="mobile-top-bar">
-      <button class="profile-photo mobile-profile-photo" id="mobileProfilePhoto" type="button" aria-label="Go to About">
+      <button class="profile-photo mobile-profile-photo" id="mobileProfilePhoto" type="button" aria-label="Go to Home">
         <img src="profile-picture.webp" alt="Osinachi Okpara">
       </button>
       <div class="mobile-top-bar-actions">
@@ -1596,7 +1600,7 @@
     <div class="layout">
       <nav class="sidebar" id="sidebar">
         <div class="nav-links">
-          <button class="nav-item active" data-target="about">About</button>
+          <button class="nav-item active" data-target="home">Home</button>
           <button class="nav-item" data-target="projects">Projects</button>
           <button class="nav-item" data-target="opensource">Open Source</button>
           <button class="nav-item" data-target="writing">Writing</button>
@@ -1637,11 +1641,11 @@
           </svg>
         </button>
 
-        <!-- About -->
-        <section id="about" class="active">
-          <div class="section-description about-intro" id="about-intro">
-            <div class="about-name">Osinachi Okpara</div>
-            <div class="about-roles">Software Engineer <span aria-hidden="true">&middot;</span> Developer Advocate <span aria-hidden="true">&middot;</span> <a href="https://builder.aws.com/community/community-builders" target="_blank" rel="noopener">AWS Community Builder</a></div>
+        <!-- Home -->
+        <section id="home" class="active">
+          <div class="section-description home-intro" id="home-intro">
+            <div class="home-name">Osinachi Okpara</div>
+            <div class="home-roles">Software Engineer <span aria-hidden="true">&middot;</span> Developer Advocate <span aria-hidden="true">&middot;</span> <a href="https://builder.aws.com/community/community-builders" target="_blank" rel="noopener">AWS Community Builder</a></div>
           </div>
         </section>
 
@@ -2223,7 +2227,7 @@
        1. CONSTANTS & CONFIGURATION
        ============================================ */
     const INITIAL_COUNT = 4;
-    const VALID_SECTIONS = ['about', 'projects', 'opensource', 'writing', 'talks', 'gallery', 'experience'];
+    const VALID_SECTIONS = ['home', 'projects', 'opensource', 'writing', 'talks', 'gallery', 'experience'];
     const EXTERNAL_REDIRECTS = {
       'linkedin': 'https://linkedin.com/in/osinachiokpara',
       'github': 'https://github.com/sin4ch',
@@ -2239,7 +2243,7 @@
     const PAUSE_BEFORE_DELETE = 800;
 
     function getSectionPath(sectionId) {
-      return sectionId === 'about' ? '/' : `/${sectionId}`;
+      return sectionId === 'home' ? '/' : `/${sectionId}`;
     }
 
     function getPathRoute() {
@@ -2252,6 +2256,10 @@
 
     function getQueryRoute() {
       return new URLSearchParams(window.location.search).get('section')?.toLowerCase() || '';
+    }
+
+    function normalizeSectionRoute(route) {
+      return route === 'about' ? 'home' : route;
     }
 
 
@@ -2611,10 +2619,10 @@
       }
       const carouselWrapper = document.getElementById('carousel-wrapper');
       if (carouselWrapper) {
-        carouselWrapper.classList.toggle('visible', targetId === 'about');
-        carouselWrapper.classList.toggle('hidden', targetId !== 'about');
+        carouselWrapper.classList.toggle('visible', targetId === 'home');
+        carouselWrapper.classList.toggle('hidden', targetId !== 'home');
       }
-      document.body.classList.toggle('about-active', targetId === 'about');
+      document.body.classList.toggle('home-active', targetId === 'home');
       positionCarousel();
       updateScrollIndicator();
     }
@@ -2627,8 +2635,8 @@
       }
       const query = getQueryRoute();
       const hash = getHashRoute();
-      const route = query || path || hash || 'about';
-      const targetSection = VALID_SECTIONS.includes(route) ? route : 'about';
+      const route = normalizeSectionRoute(query || path || hash || 'home');
+      const targetSection = VALID_SECTIONS.includes(route)  ? route : 'home';
       history.replaceState({ section: targetSection }, '', getSectionPath(targetSection));
       showSection(targetSection, false);
     }
@@ -2639,12 +2647,12 @@
 
     if (mobileProfilePhoto) {
       mobileProfilePhoto.addEventListener('click', () => {
-        showSection('about');
+        showSection('home');
       });
     }
 
     function getFocusableMenuElements() {
-      return sidebar.querySelectorAll('button.nav-item, button.theme-toggle, .mobile-menu-contact a');
+      return sidebar.querySelectorAll('button.nav-item:not([data-target="home"]), button.theme-toggle, .mobile-menu-contact a');
     }
 
     function handleMenuFocusTrap(e) {
@@ -2676,7 +2684,7 @@
       hamburger.classList.toggle('open');
       if (isOpen) {
         hamburger.setAttribute('aria-label', 'Close menu');
-        const firstNav = sidebar.querySelector('button.nav-item');
+        const firstNav = sidebar.querySelector('button.nav-item:not([data-target="home"])');
         if (firstNav) firstNav.focus();
         document.addEventListener('keydown', handleMenuFocusTrap);
       } else {
@@ -2707,15 +2715,15 @@
       if (event.state && event.state.section) {
         showSection(event.state.section, false);
       } else {
-        const route = getPathRoute() || getHashRoute() || 'about';
-        const targetSection = VALID_SECTIONS.includes(route) ? route : 'about';
+        const route = normalizeSectionRoute(getPathRoute() || getHashRoute() || 'home');
+        const targetSection = VALID_SECTIONS.includes(route)  ? route : 'home';
         showSection(targetSection, false);
       }
     });
 
     window.addEventListener('hashchange', () => {
-      const hash = getHashRoute() || 'about';
-      const targetSection = VALID_SECTIONS.includes(hash) ? hash : 'about';
+      const hash = normalizeSectionRoute(getHashRoute() || 'home');
+      const targetSection = VALID_SECTIONS.includes(hash)  ? hash : 'home';
       showSection(targetSection, false);
       history.replaceState({ section: targetSection }, '', getSectionPath(targetSection));
     });
@@ -2785,13 +2793,13 @@
       const contactBar = document.getElementById('contact-bar');
       if (!wrapper || !themeToggle || !contactBar) return;
       if (isMobileLayout()) {
-        const aboutSection = document.getElementById('about');
-        const isAboutActive = aboutSection && aboutSection.classList.contains('active');
-        if (!isAboutActive) { wrapper.style.display = 'none'; return; }
-        const aboutIntro = document.querySelector('.about-intro');
-        if (!aboutIntro) return;
-        const introRect = aboutIntro.getBoundingClientRect();
-        const fontSize = parseFloat(getComputedStyle(aboutIntro).fontSize);
+        const homeSection = document.getElementById('home');
+        const isHomeActive = homeSection && homeSection.classList.contains('active');
+        if (!isHomeActive) { wrapper.style.display = 'none'; return; }
+        const homeIntro = document.querySelector('.home-intro');
+        if (!homeIntro) return;
+        const introRect = homeIntro.getBoundingClientRect();
+        const fontSize = parseFloat(getComputedStyle(homeIntro).fontSize);
         const oneLineHeight = fontSize * 1.6;
         const maxIntroBottom = introRect.top + Math.min(introRect.height, window.innerHeight * 0.5 + oneLineHeight);
         const topPos = maxIntroBottom + (oneLineHeight * 0.55);
