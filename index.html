@@ -62,9 +62,10 @@
   <link rel="manifest" href="/site.webmanifest">
 
   <title>Osinachi Okpara - AI Developer Advocate and Software Engineer</title>
+  <link rel="preconnect" href="https://rsms.me">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <script>
     if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.classList.add('dark-mode');
@@ -110,9 +111,26 @@
       --text-muted: #8b7355;
       --text-dark-80: #3f3c36;
       --text-dark-90: #282520;
+      --item-secondary: #7f6b50;
       --text-muted-70: #b09a7e;
       --spacing: clamp(16px, 3vw, 40px);
       --line-color: #c9b99a;
+    }
+
+    @font-face {
+      font-family: 'InterVariable';
+      font-style: normal;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('https://rsms.me/inter/font-files/InterVariable.woff2?v=4.1') format('woff2');
+    }
+
+    @font-face {
+      font-family: 'InterVariable';
+      font-style: italic;
+      font-weight: 100 900;
+      font-display: swap;
+      src: url('https://rsms.me/inter/font-files/InterVariable-Italic.woff2?v=4.1') format('woff2');
     }
 
 
@@ -136,7 +154,7 @@
     }
 
     body {
-      font-family: 'Geist Mono';
+      font-family: 'InterVariable';
       color: var(--text-dark);
       line-height: 1.6;
     }
@@ -217,6 +235,12 @@
       white-space: nowrap;
     }
 
+    .sidebar,
+    .mobile-top-bar,
+    .hamburger {
+      font-family: 'Geist Mono';
+    }
+
     .nav-item:hover {
       color: var(--text-dark);
     }
@@ -274,6 +298,7 @@
       padding: 24px var(--spacing) var(--spacing);
       background-color: var(--bg-light);
       z-index: 100;
+      font-family: 'Geist Mono';
     }
 
     .profile-photo {
@@ -375,7 +400,7 @@
     }
 
     .section-description {
-      font-family: 'Instrument Serif';
+      font-family: 'InterVariable';
       font-size: clamp(24px, 4vw, 35px);
       line-height: 1.3;
       color: var(--text-dark);
@@ -397,15 +422,16 @@
       grid-template-columns: 1fr 2fr;
       gap: clamp(12px, 2vw, 24px);
       align-items: start;
-      padding-top: 16px;
+      padding-top: 8px;
     }
 
     .item-meta {
+      font-family: 'Geist Mono';
       font-size: 11px;
       letter-spacing: 0.1em;
       color: var(--text-muted);
       text-transform: uppercase;
-      padding-top: 4px;
+      padding-top: 8px;
       border-top: 1px solid var(--line-color);
     }
 
@@ -427,7 +453,7 @@
       flex-wrap: wrap;
       align-items: baseline;
       gap: 4px;
-      padding-top: 4px;
+      padding-top: 8px;
       border-top: 1px solid var(--line-color);
     }
 
@@ -443,18 +469,47 @@
     }
 
     .item-title {
-      font-size: 14px;
+      font-size: 18.72px;
       font-weight: 400;
+      line-height: 1.25;
     }
 
     .item-subtitle {
-      font-size: 13px;
-      color: var(--text-muted);
+      font-size: 16.72px;
+      line-height: 1.35;
+      color: var(--item-secondary);
+    }
+
+    .item-content a {
+      text-decoration: none;
+    }
+
+    .item-content a:hover {
+      text-decoration: underline;
+    }
+
+    .item-content a[target="_blank"]::after {
+      content: "↗";
+      display: inline-block;
+      margin-left: 0.2em;
+      font-size: 0.7em;
+      line-height: 1;
+      vertical-align: 0.12em;
+    }
+
+    .date-text {
+      font-family: 'Geist Mono';
+    }
+
+    .source-name,
+    .experience-location {
+      font-family: 'Geist Mono';
     }
 
     .item-description {
-      font-size: 13px;
-      color: var(--text-dark-80);
+      font-size: 16.72px;
+      line-height: 1.35;
+      color: var(--item-secondary);
       margin-top: 2px;
     }
 
@@ -473,6 +528,7 @@
     }
 
     .item-tools {
+      font-family: 'Geist Mono';
       font-size: 11px;
       letter-spacing: 0.05em;
       color: var(--text-muted);
@@ -480,6 +536,7 @@
     }
 
     .item-stats {
+      font-family: 'Geist Mono';
       font-size: 10px;
       letter-spacing: 0.1em;
       text-transform: uppercase;
@@ -487,16 +544,11 @@
       display: flex;
       gap: 6px;
       flex-wrap: wrap;
-      flex-basis: auto;
-      margin-top: 0;
-      margin-left: 4px;
-    }
-
-    .item-title:has(+ .item-stats) {
-      flex-basis: auto;
+      margin-top: 4px;
     }
 
     .stat-badge {
+      font-family: 'Geist Mono';
       background: var(--bg-light);
       color: var(--text-dark);
       border: 1px solid var(--text-dark);
@@ -539,14 +591,14 @@
 
 
     .typewriter-text {
-      font-family: 'Instrument Serif';
+      font-family: 'InterVariable';
       font-size: inherit;
       font-weight: 400;
       color: var(--text-dark);
     }
 
     .typewriter-cursor {
-      font-family: 'Instrument Serif';
+      font-family: 'InterVariable';
       font-size: inherit;
       font-weight: 400;
       color: var(--text-dark);
@@ -740,7 +792,7 @@
       justify-content: center;
       cursor: pointer;
       transition: background-color 0.2s ease, color 0.2s ease, border-color 0s, color 0s;
-      font-family: 'Geist Mono';
+      font-family: 'InterVariable';
     }
 
     .lightbox-close:hover, .lightbox-prev:hover, .lightbox-next:hover {
@@ -812,6 +864,7 @@
       --text-muted: #a89880;
       --text-dark-80: #d4c1ad;
       --text-dark-90: #e9d6c0;
+      --item-secondary: #b8a58e;
       --text-muted-70: #7d7260;
       --line-color: #3d3d3d;
     }
@@ -852,7 +905,7 @@
     .loading-content {
       text-align: center;
       color: var(--text-dark);
-      font-family: 'Geist Mono';
+      font-family: 'InterVariable';
     }
 
     .loading-percentage {
@@ -1134,7 +1187,7 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-family: 'Geist Mono';
+        font-family: 'InterVariable';
         transition: background-color 0.2s ease, color 0.2s ease;
       }
 
@@ -1190,14 +1243,6 @@
       .about-intro {
         font-size: 9.5vw !important;
         line-height: 1.2 !important;
-      }
-
-      .item-title {
-        font-size: 13px;
-      }
-
-      .item-subtitle, .item-description {
-        font-size: 12px;
       }
 
       .profile-photo {
@@ -1300,72 +1345,72 @@
               <div class="item-meta">2026</div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/sin4ch/flappy-bird-mcp" target="_blank" rel="noopener">Flappy Bird MCP</a></div>
-                <div class="item-stats" data-repo="sin4ch/flappy-bird-mcp"></div>
                 <div class="item-description">Play Flappy Bird directly in your AI assistant via Model Context Protocol</div>
                 <div class="item-tools">TypeScript, MCP</div>
+                <div class="item-stats" data-repo="sin4ch/flappy-bird-mcp"></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/sin4ch/nigerian-fintech-llms-txt" target="_blank" rel="noopener">Nigerian Fintech LLMs.txt</a></div>
-                <div class="item-stats" data-repo="sin4ch/nigerian-fintech-llms-txt"></div>
                 <div class="item-description">Curated llms.txt files for Nigerian fintech API documentation</div>
                 <div class="item-tools">LLMs, Fintech APIs</div>
+                <div class="item-stats" data-repo="sin4ch/nigerian-fintech-llms-txt"></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/sin4ch/resume-to-latex" target="_blank" rel="noopener">Resume to LaTeX</a></div>
-                <div class="item-stats" data-repo="sin4ch/resume-to-latex"></div>
                 <div class="item-description">Convert resumes to clean LaTeX format using AI</div>
                 <div class="item-tools">Python, FastAPI, React, Tailwind CSS, Gemini</div>
+                <div class="item-stats" data-repo="sin4ch/resume-to-latex"></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta">2025</div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/sin4ch/mono-mcp" target="_blank" rel="noopener">Mono Banking MCP Server</a></div>
-                <div class="item-stats" data-repo="sin4ch/mono-mcp"></div>
                 <div class="item-description">MCP server for Nigerian banking operations via Mono Open Banking API</div>
                 <div class="item-tools">Python, FastMCP, PostgreSQL, Claude</div>
+                <div class="item-stats" data-repo="sin4ch/mono-mcp"></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/sin4ch/qgjob" target="_blank" rel="noopener">QualGent Job Orchestrator</a></div>
-                <div class="item-stats" data-repo="sin4ch/qgjob"></div>
                 <div class="item-description">Production-ready job orchestration system for AppWright automated tests on BrowserStack and GitHub Actions runners</div>
                 <div class="item-tools">Python, Click, FastAPI, Redis, PostgreSQL, Docker, GitHub Actions</div>
+                <div class="item-stats" data-repo="sin4ch/qgjob"></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/sin4ch/aws-innovation-sb-api" target="_blank" rel="noopener">AWS Innovation Sandbox API</a></div>
-                <div class="item-stats" data-repo="sin4ch/aws-innovation-sb-api"></div>
                 <div class="item-description">FastAPI application for managing AWS Innovation Sandbox accounts and resources</div>
                 <div class="item-tools">Python, FastAPI, Boto3, AWS STS, httpx</div>
+                <div class="item-stats" data-repo="sin4ch/aws-innovation-sb-api"></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/sin4ch/quick-face-sort" target="_blank" rel="noopener">Quick Face Sort</a></div>
-                <div class="item-stats" data-repo="sin4ch/quick-face-sort"></div>
                 <div class="item-description">Scan a folder with media and sort out images & videos based on reference images</div>
                 <div class="item-tools">Python, Terraform, AWS Rekognition, AWS Lambda, S3</div>
+                <div class="item-stats" data-repo="sin4ch/quick-face-sort"></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/sin4ch/exchange-rate-mcp" target="_blank" rel="noopener">Exchange Rate MCP Server</a></div>
-                <div class="item-stats" data-repo="sin4ch/exchange-rate-mcp"></div>
                 <div class="item-description">MCP server for real-time currency exchange rate lookups</div>
                 <div class="item-tools">Python, FastMCP, ExchangeRate API</div>
+                <div class="item-stats" data-repo="sin4ch/exchange-rate-mcp"></div>
               </div>
             </div>
           </div>
@@ -1379,70 +1424,70 @@
               <div class="item-meta">2026</div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/anomalyco/opencode/issues/6712" target="_blank" rel="noopener">Improve MCP documentation clarity about config file location</a></div>
-                <div class="item-subtitle">Anomaly Co · OpenCode</div>
+                <div class="item-subtitle source-name">Anomaly Co · OpenCode</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/ChromeDevTools/chrome-devtools-mcp/issues/721" target="_blank" rel="noopener">Add OpenCode MCP configuration to README</a></div>
-                <div class="item-subtitle">Google · Chrome DevTools MCP</div>
+                <div class="item-subtitle source-name">Google · Chrome DevTools MCP</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta">2025</div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/anomalyco/opencode/pull/2707" target="_blank" rel="noopener">Enhance theme documentation with links to original sources</a></div>
-                <div class="item-subtitle">Anomaly Co · OpenCode</div>
+                <div class="item-subtitle source-name">Anomaly Co · OpenCode</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/anomalyco/opencode/issues/2625" target="_blank" rel="noopener">Fix incomplete statement in config documentation</a></div>
-                <div class="item-subtitle">Anomaly Co · OpenCode</div>
+                <div class="item-subtitle source-name">Anomaly Co · OpenCode</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/browser-use/browser-use/pull/2998" target="_blank" rel="noopener">Add comprehensive MCP Server documentation</a></div>
-                <div class="item-subtitle">Browser Use (YC W25) · Browser Use</div>
+                <div class="item-subtitle source-name">Browser Use (YC W25) · Browser Use</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/truffle-ai/dexto/issues/309" target="_blank" rel="noopener">Create llms.txt and add View as Markdown functionality</a></div>
-                <div class="item-subtitle">Truffle AI (YC W25) · Dexto</div>
+                <div class="item-subtitle source-name">Truffle AI (YC W25) · Dexto</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/aws-solutions/innovation-sandbox-on-aws/issues/19" target="_blank" rel="noopener">Enable automatic programmatic authentication for third-party APIs</a></div>
-                <div class="item-subtitle">AWS · Innovation Sandbox</div>
+                <div class="item-subtitle source-name">AWS · Innovation Sandbox</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/slackapi/bolt-python/issues/1357" target="_blank" rel="noopener">Implement Copy Page as Markdown and View as Markdown in docs</a></div>
-                <div class="item-subtitle">Slack · Bolt Python</div>
+                <div class="item-subtitle source-name">Slack · Bolt Python</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/slackapi/bolt-python/issues/1353" target="_blank" rel="noopener">Propose using uv instead of pip for Python guides</a></div>
-                <div class="item-subtitle">Slack · Bolt Python</div>
+                <div class="item-subtitle source-name">Slack · Bolt Python</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://github.com/SINTEF/ci-cd/pull/357" target="_blank" rel="noopener">Fix GitHub environment variables issue across workflow files</a></div>
-                <div class="item-subtitle">SINTEF · CI/CD</div>
+                <div class="item-subtitle source-name">SINTEF · CI/CD</div>
               </div>
             </div>
           </div>
@@ -1456,77 +1501,77 @@
               <div class="item-meta">2025</div>
               <div class="item-content">
                 <div class="item-title"><a href="https://sin4ch1.substack.com/p/llms-might-not-be-human-level-intelligent" target="_blank" rel="noopener">LLMs might not be human-level intelligent, but they sure are human</a></div>
-                <div class="item-subtitle">Oct 1</div>
+                <div class="item-subtitle date-text">Oct 1</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/building-a-simple-exchange-rate-mcp-server-using-fastmcp-c87d7a454545" target="_blank" rel="noopener">Building a Simple Exchange Rate MCP Server using FastMCP</a></div>
-                <div class="item-subtitle">Sep 29</div>
+                <div class="item-subtitle date-text">Sep 29</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://sin4ch1.substack.com/p/the-need-for-compromise-in-innovation" target="_blank" rel="noopener">The need for compromise in innovation communication in the age of AI</a></div>
-                <div class="item-subtitle">Sep 11</div>
+                <div class="item-subtitle date-text">Sep 11</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://sin4ch1.substack.com/p/were-the-ones-holding-our-tech-back" target="_blank" rel="noopener">We might just be the ones holding our tech back</a></div>
-                <div class="item-subtitle">Aug 27</div>
+                <div class="item-subtitle date-text">Aug 27</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/understanding-model-context-protocol-mcp-2f8f0e7e9240" target="_blank" rel="noopener">Understanding Model Context Protocol (MCP)</a></div>
-                <div class="item-subtitle">Aug 6</div>
+                <div class="item-subtitle date-text">Aug 6</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/deploying-a-fastapi-number-classification-api-with-docker-nginx-and-aws-ec2-fe2358ef7835" target="_blank" rel="noopener">Deploying a FastAPI Number Classification API with Docker, Nginx, and AWS EC2</a></div>
-                <div class="item-subtitle">May 3</div>
+                <div class="item-subtitle date-text">May 3</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/why-tech-innovation-seems-slower-these-days-fe79b14d0f99" target="_blank" rel="noopener">Why Tech Innovation Seems Slower These Days</a></div>
-                <div class="item-subtitle">Apr 18</div>
+                <div class="item-subtitle date-text">Apr 18</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://www.everythingdevops.dev/blog/understanding-ssh-and-ssh-keys" target="_blank" rel="noopener">Understanding SSH and SSH Keys</a></div>
-                <div class="item-subtitle">Feb 25</div>
+                <div class="item-subtitle date-text">Feb 25</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/hng-stage-0-serving-a-simple-webpage-through-nginx-on-an-amazon-ec2-instance-c885225c3bd7" target="_blank" rel="noopener">Serving A Simple Webpage Through NGINX On An Amazon EC2 Instance</a></div>
-                <div class="item-subtitle">Jan 31</div>
+                <div class="item-subtitle date-text">Jan 31</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta">2024</div>
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/infrastructure-is-the-future-of-ai-72fd31dd7c03" target="_blank" rel="noopener">Infrastructure is the Future of AI</a></div>
-                <div class="item-subtitle">Dec 7</div>
+                <div class="item-subtitle date-text">Dec 7</div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta"></div>
               <div class="item-content">
                 <div class="item-title"><a href="https://medium.com/@sin4ch/road-to-my-aws-community-builder-application-in-january-2025-f4626330076d" target="_blank" rel="noopener">Road to My AWS Community Builder Application</a></div>
-                <div class="item-subtitle">Oct 20</div>
+                <div class="item-subtitle date-text">Oct 20</div>
               </div>
             </div>
           </div>
@@ -1777,42 +1822,42 @@
               <div class="item-meta">Feb 2026 - Present</div>
               <div class="item-content">
                 <div class="item-title">Software Engineer</div>
-                <div class="item-subtitle"><a href="https://textcortex.com" target="_blank" rel="noopener">TextCortex</a> · Berlin, Germany</div>
+                <div class="item-subtitle"><a href="https://textcortex.com" target="_blank" rel="noopener">TextCortex</a> · <span class="experience-location">Berlin, Germany</span></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta">Oct 2025 - Present</div>
               <div class="item-content">
                 <div class="item-title">Developer Advocate</div>
-                <div class="item-subtitle"><a href="https://hackmamba.io" target="_blank" rel="noopener">Hackmamba</a> · San Francisco, CA, US</div>
+                <div class="item-subtitle"><a href="https://hackmamba.io" target="_blank" rel="noopener">Hackmamba</a> · <span class="experience-location">San Francisco, CA, US</span></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta">Jan 2024 - Present</div>
               <div class="item-content">
                 <div class="item-title">Developer Advocate & Technical Programs Lead</div>
-                <div class="item-subtitle"><a href="https://nexascale.org" target="_blank" rel="noopener">NexaScale</a> · Washington, DC, US</div>
+                <div class="item-subtitle"><a href="https://nexascale.org" target="_blank" rel="noopener">NexaScale</a> · <span class="experience-location">Washington, DC, US</span></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta">Jan 2025 - Feb 2025</div>
               <div class="item-content">
                 <div class="item-title">Developer Advocate</div>
-                <div class="item-subtitle"><a href="https://learntocloud.guide" target="_blank" rel="noopener">Learn To Cloud</a> · New York, US</div>
+                <div class="item-subtitle"><a href="https://learntocloud.guide" target="_blank" rel="noopener">Learn To Cloud</a> · <span class="experience-location">New York, US</span></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta">2024 - Present</div>
               <div class="item-content">
                 <div class="item-title">Founder & Community Architect</div>
-                <div class="item-subtitle">The Cloud Crowd & DevOps Conclave · Lagos, NG</div>
+                <div class="item-subtitle">The Cloud Crowd & DevOps Conclave · <span class="experience-location">Lagos, NG</span></div>
               </div>
             </div>
             <div class="item">
               <div class="item-meta">Jun 2024 - Jul 2024</div>
               <div class="item-content">
                 <div class="item-title">DevOps Engineer Intern</div>
-                <div class="item-subtitle"><a href="https://hotels.ng" target="_blank" rel="noopener">Hotels.ng</a> · Lagos, NG</div>
+                <div class="item-subtitle"><a href="https://hotels.ng" target="_blank" rel="noopener">Hotels.ng</a> · <span class="experience-location">Lagos, NG</span></div>
               </div>
             </div>
           </div>
