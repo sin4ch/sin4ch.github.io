@@ -930,34 +930,80 @@
 
     .lightbox-close, .lightbox-prev, .lightbox-next {
       position: absolute;
-      background: none;
-      border: 1px solid #ffead3;
-      color: #ffead3;
+      background: transparent;
+      border: 1px solid rgba(255, 234, 211, 0.35);
+      color: rgba(255, 234, 211, 0.68);
       font-size: 16px;
-      width: 40px;
-      height: 40px;
+      width: 38px;
+      height: 38px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: background-color 0.2s ease, color 0.2s ease, border-color 0s, color 0s;
+      transition: color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
       font-family: 'InterVariable';
     }
 
+    .lightbox-prev svg,
+    .lightbox-next svg,
+    .lightbox-prev-mobile svg,
+    .lightbox-next-mobile svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      will-change: transform;
+    }
+
     .lightbox-close:hover, .lightbox-prev:hover, .lightbox-next:hover {
-      background-color: #ffead3;
-      color: #121212;
+      border-color: #ffead3;
+      color: #ffead3;
     }
 
     .lightbox-close {
       top: var(--spacing);
       right: var(--spacing);
+      background: none;
+      border: none;
+      border-radius: 0;
+      color: #ffead3;
+      font-size: 30px;
+      width: 38px;
+      height: 38px;
+    }
+
+    .lightbox-close:hover {
+      background: none;
+      color: #ffead3;
+    }
+
+    .lightbox-prev:focus,
+    .lightbox-next:focus,
+    .lightbox-prev-mobile:focus,
+    .lightbox-next-mobile:focus {
+      outline: none;
+      background: transparent;
+    }
+
+    .lightbox-prev:active,
+    .lightbox-next:active,
+    .lightbox-prev-mobile:active,
+    .lightbox-next-mobile:active {
+      border-color: #ffead3;
+      color: #ffead3;
     }
 
     .lightbox-prev, .lightbox-next {
       top: 50%;
       transform: translateY(-50%);
+    }
+
+    .lightbox-prev:hover {
+      transform: translateY(-50%) translateX(-2px);
+    }
+
+    .lightbox-next:hover {
+      transform: translateY(-50%) translateX(2px);
     }
 
     .lightbox-prev {
@@ -1204,6 +1250,10 @@
       .item-meta:empty {
         display: none;
       }
+
+      #experience .item:has(.item-meta:empty) + .item:has(.item-meta:not(:empty)) {
+        margin-top: 8px;
+      }
     }
 
 
@@ -1414,6 +1464,10 @@
         display: none;
       }
 
+      #experience .item:has(.item-meta:empty) + .item:has(.item-meta:not(:empty)) {
+        margin-top: 8px;
+      }
+
       .lightbox {
         flex-direction: column;
         justify-content: center;
@@ -1438,18 +1492,19 @@
         width: 44px;
         height: 44px;
         font-size: 18px;
+        border: none;
       }
 
       .lightbox-prev-mobile, .lightbox-next-mobile {
         position: absolute;
         top: 50%;
         z-index: 2;
-        background: none;
-        border: 1px solid #ffead3;
-        color: #ffead3;
-        font-size: 18px;
-        width: 44px;
-        height: 44px;
+        background: transparent;
+        border: 1px solid rgba(255, 234, 211, 0.35);
+        color: rgba(255, 234, 211, 0.68);
+        font-size: 17px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -1457,7 +1512,7 @@
         cursor: pointer;
         font-family: 'InterVariable';
         transform: translateY(-50%);
-        transition: background-color 0.2s ease, color 0.2s ease;
+        transition: color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
       }
 
       .lightbox-prev-mobile {
@@ -1469,8 +1524,41 @@
       }
 
       .lightbox-prev-mobile:hover, .lightbox-next-mobile:hover {
-        background-color: #ffead3;
-        color: #121212;
+        border-color: #ffead3;
+        color: #ffead3;
+      }
+
+      .lightbox-prev-mobile:hover {
+        transform: translateY(-50%) translateX(-2px);
+      }
+
+      .lightbox-next-mobile:hover {
+        transform: translateY(-50%) translateX(2px);
+      }
+
+      @media (hover: none) {
+        .lightbox-prev:hover,
+        .lightbox-next:hover,
+        .lightbox-prev-mobile:hover,
+        .lightbox-next-mobile:hover {
+          border-color: rgba(255, 234, 211, 0.35);
+          color: rgba(255, 234, 211, 0.68);
+        }
+
+        .lightbox-prev:hover,
+        .lightbox-next:hover,
+        .lightbox-prev-mobile:hover,
+        .lightbox-next-mobile:hover {
+          transform: translateY(-50%);
+        }
+
+        .lightbox-prev:active,
+        .lightbox-next:active,
+        .lightbox-prev-mobile:active,
+        .lightbox-next-mobile:active {
+          border-color: #ffead3;
+          color: #ffead3;
+        }
       }
 
       .lightbox-content {
@@ -1562,16 +1650,36 @@
   <!-- Lightbox -->
   <div class="lightbox" id="lightbox">
     <button class="lightbox-close" id="lightbox-close" aria-label="Close">&#x2715;</button>
-    <button class="lightbox-prev lightbox-desktop-nav" id="lightbox-prev" aria-label="Previous">&#x2039;</button>
+    <button class="lightbox-prev lightbox-desktop-nav" id="lightbox-prev" aria-label="Previous">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M19 12H5"></path>
+        <path d="M12 5l-7 7 7 7"></path>
+      </svg>
+    </button>
     <div class="lightbox-nav-row" id="lightbox-nav-row">
-      <button class="lightbox-prev-mobile" aria-label="Previous">&#x2039;</button>
+      <button class="lightbox-prev-mobile" aria-label="Previous">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M19 12H5"></path>
+          <path d="M12 5l-7 7 7 7"></path>
+        </svg>
+      </button>
       <div class="lightbox-counter" id="lightbox-counter"></div>
-      <button class="lightbox-next-mobile" aria-label="Next">&#x203A;</button>
+      <button class="lightbox-next-mobile" aria-label="Next">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M5 12h14"></path>
+          <path d="M12 5l7 7-7 7"></path>
+        </svg>
+      </button>
     </div>
     <div class="lightbox-content">
       <img src="" alt="Gallery image" id="lightbox-img">
     </div>
-    <button class="lightbox-next lightbox-desktop-nav" id="lightbox-next" aria-label="Next">&#x203A;</button>
+    <button class="lightbox-next lightbox-desktop-nav" id="lightbox-next" aria-label="Next">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M5 12h14"></path>
+        <path d="M12 5l7 7-7 7"></path>
+      </svg>
+    </button>
     <div class="lightbox-counter lightbox-desktop-counter" id="lightbox-counter-desktop"></div>
   </div>
 
@@ -1809,6 +1917,27 @@
         <section id="writing">
           <div class="section-description">Articles on cloud infrastructure, DevOps, and AI agents.</div>
           <div class="items">
+            <div class="item">
+              <div class="item-meta">2026</div>
+              <div class="item-content">
+                <div class="item-title"><a href="https://x.com/sin4ch/status/2027780726083449209?s=20" target="_blank" rel="noopener">Here's Why Nigeria Doesn't Have - or Need - an LLM</a></div>
+                <div class="item-subtitle date-text">Feb 28</div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-meta"></div>
+              <div class="item-content">
+                <div class="item-title"><a href="https://sin4ch.substack.com/p/systemsor-the-lack-therofnot-people" target="_blank" rel="noopener">Systems—or the lack thereof—not people, is Nigeria's true problem</a></div>
+                <div class="item-subtitle date-text">Jan 15</div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-meta"></div>
+              <div class="item-content">
+                <div class="item-title"><a href="https://x.com/sin4ch/status/2011831408046571623?s=20" target="_blank" rel="noopener">I can game on Linux... Goodbye (and good riddance), Windows!</a></div>
+                <div class="item-subtitle date-text">Jan 15</div>
+              </div>
+            </div>
             <div class="item">
               <div class="item-meta">2025</div>
               <div class="item-content">
@@ -2142,6 +2271,13 @@
               <div class="item-content">
                 <div class="item-title">Developer Advocate</div>
                 <div class="item-subtitle"><a href="https://hackmamba.io" target="_blank" rel="noopener">Hackmamba</a> · <span class="experience-location">San Francisco, CA, US</span></div>
+              </div>
+            </div>
+            <div class="item">
+              <div class="item-meta"></div>
+              <div class="item-content">
+                <div class="item-title">Technical Writer</div>
+                <div class="item-subtitle">AppSignal · <span class="experience-location">Oslo, Norway · Remote</span></div>
               </div>
             </div>
             <div class="item">
