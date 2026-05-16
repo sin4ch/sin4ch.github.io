@@ -1,16 +1,26 @@
 /* ============================================
    GALLERY MODULE
+   ============================================
+   1.  State & DOM References
+   2.  Gallery Data & Loading
+   3.  Gallery Grid
+   4.  Photo Carousel
+   5.  Lightbox / Story Viewer
+   6.  Public API
    ============================================ */
 (function() {
+  /* ============================================
+     1. STATE & DOM REFERENCES
+     ============================================ */
   const INITIAL_COUNT = 4;
   const CAROUSEL_IMAGE_LIMIT = 28;
   const GALLERY_BATCH_SIZE = 12;
-  let preloadedGalleryData = null;
-  let loadedGalleryImages = [];
+  let galleryData = null;
+  let galleryImages = [];
   let galleryColumns = [];
   let columnHeights = [];
-  let skeletonMap = {};
-  let shuffledOrder = [];
+  let gallerySkeletonsById = {};
+  let shuffledGalleryImages = [];
   let carouselAnimationFrame = null;
 
   const lightbox = document.getElementById('lightbox');
@@ -29,24 +39,27 @@
   let storyRemaining = STORY_DURATION;
   let storyPaused = false;
 
+  /* ============================================
+     2. GALLERY DATA & LOADING
+     ============================================ */
   async function loadGalleryData() {
     try {
       const response = await fetch('gallery/gallery.json');
       const data = await response.json();
-      if (data.images && data.images.length > 0) preloadedGalleryData = data;
+      if (data.images && data.images.length > 0) galleryData = data;
     } catch (e) {}
   }
 
   async function preloadInitialImages(setProgress) {
     await loadGalleryData();
-    if (!preloadedGalleryData || !preloadedGalleryData.images.length) return;
+    if (!galleryData || !galleryData.images.length) return;
 
-    const shuffledImages = [...preloadedGalleryData.images];
+    const shuffledImages = [...galleryData.images];
     for (let i = shuffledImages.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffledImages[i], shuffledImages[j]] = [shuffledImages[j], shuffledImages[i]];
     }
-    shuffledOrder = shuffledImages;
+    shuffledGalleryImages = shuffledImages;
 
     const initialBatch = shuffledImages.slice(0, INITIAL_COUNT);
     let completed = 0;
@@ -86,15 +99,15 @@
     }
     requestAnimationFrame(tickProgress);
 
-    for (const imgData of initialBatch) {
+    for (const imageData of initialBatch) {
       try {
         const img = new Image();
         img.decoding = 'async';
-        img.src = imgData.url;
+        img.src = imageData.url;
         await img.decode();
-        imgData.naturalWidth = img.naturalWidth;
-        imgData.naturalHeight = img.naturalHeight;
-        loadedGalleryImages.push(imgData);
+        imageData.naturalWidth = img.naturalWidth;
+        imageData.naturalHeight = img.naturalHeight;
+        galleryImages.push(imageData);
       } catch (e) {}
       completed++;
       targetPct = checkpoints[completed - 1];
@@ -116,38 +129,41 @@
   }
 
   function loadRemainingImages() {
-    if (!preloadedGalleryData) return;
-    const loadedIds = new Set(loadedGalleryImages.map(img => img.id));
-    const remaining = (shuffledOrder.length > 0 ? shuffledOrder : preloadedGalleryData.images)
+    if (!galleryData) return;
+    const loadedIds = new Set(galleryImages.map(img => img.id));
+    const remaining = (shuffledGalleryImages.length > 0 ? shuffledGalleryImages : galleryData.images)
       .filter(img => !loadedIds.has(img.id));
     if (remaining.length === 0) return;
     let idx = 0;
 
-    function appendBatch() {
+    function appendGalleryBatch() {
       if (idx >= remaining.length) return;
       const end = Math.min(idx + GALLERY_BATCH_SIZE, remaining.length);
       while (idx < end) {
-        const imgData = remaining[idx++];
-        imgData.naturalWidth = imgData.naturalWidth || imgData.width;
-        imgData.naturalHeight = imgData.naturalHeight || imgData.height;
-        loadedGalleryImages.push(imgData);
-        appendToGalleryGrid(imgData);
-        appendToCarousel(imgData);
+        const imageData = remaining[idx++];
+        imageData.naturalWidth = imageData.naturalWidth || imageData.width;
+        imageData.naturalHeight = imageData.naturalHeight || imageData.height;
+        galleryImages.push(imageData);
+        appendToGalleryGrid(imageData);
+        appendToCarousel(imageData);
       }
-      scheduleNextBatch();
+      scheduleNextGalleryBatch();
     }
 
-    function scheduleNextBatch() {
+    function scheduleNextGalleryBatch() {
       if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(appendBatch, { timeout: 700 });
+        window.requestIdleCallback(appendGalleryBatch, { timeout: 700 });
       } else {
-        window.setTimeout(appendBatch, 24);
+        window.setTimeout(appendGalleryBatch, 24);
       }
     }
 
-    scheduleNextBatch();
+    scheduleNextGalleryBatch();
   }
 
+  /* ============================================
+     3. GALLERY GRID
+     ============================================ */
   function getColumnCount() {
     const w = window.innerWidth;
     if (w <= 480) return 1;
@@ -156,9 +172,9 @@
     return 4;
   }
 
-  function getRenderedHeight(imgData) {
-    const imageWidth = imgData.naturalWidth || imgData.width;
-    const imageHeight = imgData.naturalHeight || imgData.height;
+  function getRenderedImageHeight(imageData) {
+    const imageWidth = imageData.naturalWidth || imageData.width;
+    const imageHeight = imageData.naturalHeight || imageData.height;
     if (!imageWidth || !imageHeight) return 200;
     if (galleryColumns.length === 0) return 200;
     const colWidth = galleryColumns[0].offsetWidth || 200;
@@ -179,12 +195,12 @@
       galleryColumns.push(col);
       columnHeights.push(0);
     }
-    loadedGalleryImages.forEach((img) => {
+    galleryImages.forEach((img) => {
       const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
       galleryColumns[shortestIdx].appendChild(createGalleryItem(img));
-      columnHeights[shortestIdx] += getRenderedHeight(img) + 6;
+      columnHeights[shortestIdx] += getRenderedImageHeight(img) + 6;
     });
-    buildSkeletonPlaceholders();
+    buildGallerySkeletons();
   }
 
   function createGalleryItem(img) {
@@ -202,14 +218,14 @@
     imgEl.addEventListener('load', () => itemEl.classList.remove('is-loading'), { once: true });
     imgEl.addEventListener('error', () => itemEl.classList.remove('is-loading'), { once: true });
     itemEl.appendChild(imgEl);
-    itemEl.addEventListener('click', () => openLightbox(loadedGalleryImages.indexOf(img)));
+    itemEl.addEventListener('click', () => openLightbox(galleryImages.indexOf(img)));
     return itemEl;
   }
 
-  function appendToGalleryGrid(imgData) {
+  function appendToGalleryGrid(imageData) {
     if (galleryColumns.length === 0) return;
-    const item = createGalleryItem(imgData);
-    const skeleton = skeletonMap[imgData.id];
+    const item = createGalleryItem(imageData);
+    const skeleton = gallerySkeletonsById[imageData.id];
     if (skeleton && skeleton.parentNode) {
       const colIdx = Array.prototype.indexOf.call(galleryColumns, skeleton.parentNode);
       if (colIdx !== -1) {
@@ -217,44 +233,47 @@
       } else {
         const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
         galleryColumns[shortestIdx].appendChild(item);
-        columnHeights[shortestIdx] += getRenderedHeight(imgData) + 6;
+        columnHeights[shortestIdx] += getRenderedImageHeight(imageData) + 6;
       }
-      delete skeletonMap[imgData.id];
+      delete gallerySkeletonsById[imageData.id];
     } else {
       const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
       galleryColumns[shortestIdx].appendChild(item);
-      columnHeights[shortestIdx] += getRenderedHeight(imgData) + 6;
+      columnHeights[shortestIdx] += getRenderedImageHeight(imageData) + 6;
     }
   }
 
-  function buildSkeletonPlaceholders() {
-    skeletonMap = {};
-    if (!preloadedGalleryData || galleryColumns.length === 0) return;
+  function buildGallerySkeletons() {
+    gallerySkeletonsById = {};
+    if (!galleryData || galleryColumns.length === 0) return;
     const colWidth = galleryColumns[0].offsetWidth || 200;
-    const loadedIds = new Set(loadedGalleryImages.map(img => img.id));
-    const remaining = (shuffledOrder.length > 0 ? shuffledOrder : preloadedGalleryData.images)
+    const loadedIds = new Set(galleryImages.map(img => img.id));
+    const remaining = (shuffledGalleryImages.length > 0 ? shuffledGalleryImages : galleryData.images)
       .filter(img => !loadedIds.has(img.id));
 
-    remaining.forEach(imgData => {
+    remaining.forEach(imageData => {
       const skeleton = document.createElement('div');
       skeleton.className = 'gallery-skeleton';
-      const height = (imgData.width && imgData.height)
-        ? (imgData.height / imgData.width) * colWidth
+      const height = (imageData.width && imageData.height)
+        ? (imageData.height / imageData.width) * colWidth
         : colWidth * 1.25;
       skeleton.style.height = height + 'px';
       const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
       galleryColumns[shortestIdx].appendChild(skeleton);
       columnHeights[shortestIdx] += height + 6;
-      skeletonMap[imgData.id] = skeleton;
+      gallerySkeletonsById[imageData.id] = skeleton;
     });
   }
 
+  /* ============================================
+     4. PHOTO CAROUSEL
+     ============================================ */
   function loadPhotoCarousel() {
     const carousel = document.getElementById('photo-carousel');
-    if (!carousel || loadedGalleryImages.length === 0) return;
+    if (!carousel || galleryImages.length === 0) return;
     const track = document.createElement('div');
     track.className = 'photo-carousel-track';
-    loadedGalleryImages.slice(0, CAROUSEL_IMAGE_LIMIT).forEach(img => appendToCarousel(img, track));
+    galleryImages.slice(0, CAROUSEL_IMAGE_LIMIT).forEach(img => appendToCarousel(img, track));
     carousel.innerHTML = '';
     carousel.appendChild(track);
     requestAnimationFrame(() => initCarouselScroll(track));
@@ -341,8 +360,11 @@
     }, { passive: true });
   }
 
+  /* ============================================
+     5. LIGHTBOX / STORY VIEWER
+     ============================================ */
   function openLightbox(index) {
-    if (loadedGalleryImages.length === 0) return;
+    if (galleryImages.length === 0) return;
     currentImageIndex = index;
     updateLightboxImage();
     lightbox.classList.add('active');
@@ -359,10 +381,10 @@
   }
 
   function updateLightboxImage() {
-    const img = loadedGalleryImages[currentImageIndex];
+    const img = galleryImages[currentImageIndex];
     lightboxImg.src = img.blobUrl || img.url;
     lightboxImg.alt = img.title || 'Gallery photo';
-    const counterText = (currentImageIndex + 1) + ' / ' + loadedGalleryImages.length;
+    const counterText = (currentImageIndex + 1) + ' / ' + galleryImages.length;
     lightboxCounter.textContent = counterText;
   }
 
@@ -429,13 +451,13 @@
   }
 
   function showPrevImage() {
-    currentImageIndex = (currentImageIndex - 1 + loadedGalleryImages.length) % loadedGalleryImages.length;
+    currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
     updateLightboxImage();
     startStoryTimer();
   }
 
   function showNextImage() {
-    currentImageIndex = (currentImageIndex + 1) % loadedGalleryImages.length;
+    currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
     updateLightboxImage();
     startStoryTimer();
   }
@@ -474,6 +496,9 @@
 
   bindLightboxEvents();
 
+  /* ============================================
+     6. PUBLIC API
+     ============================================ */
   window.PortfolioGallery = {
     preloadInitialImages,
     loadRemainingImages,

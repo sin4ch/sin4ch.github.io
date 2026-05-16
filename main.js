@@ -8,7 +8,7 @@
    5.  Navigation & Routing
    6.  Scroll Indicator
    7.  Photo Carousel Positioning
-   8.  Window Resize Handler
+   8.  Window Resize & Visibility
    9.  Theme Toggle
    10. Cursor Follower
    11. GitHub Stats
@@ -120,7 +120,7 @@ function completeLoading() {
 
 
 /* ============================================
-   5. FAVICON
+   4. FAVICON
    ============================================ */
 function createRoundedFavicon() {
   const img = new Image();
@@ -145,7 +145,7 @@ function createRoundedFavicon() {
 
 
 /* ============================================
-   6. NAVIGATION & ROUTING
+   5. NAVIGATION & ROUTING
    ============================================ */
 function showSection(targetId, updateUrl = true) {
   if (window.PortfolioGallery.isLightboxOpen()) {
@@ -199,7 +199,11 @@ const mobileProfilePhoto = document.getElementById('mobileProfilePhoto');
 
 if (mobileProfilePhoto) {
   mobileProfilePhoto.addEventListener('click', () => {
-    showSection('home');
+    if (sidebar.classList.contains('menu-open')) {
+      showMenuSection('home');
+    } else {
+      showSection('home');
+    }
   });
 }
 
@@ -286,7 +290,7 @@ window.addEventListener('popstate', (event) => {
 
 
 /* ============================================
-   7. SCROLL INDICATOR
+   6. SCROLL INDICATOR
    ============================================ */
 const scrollIndicatorDown = document.getElementById('scroll-indicator-down');
 const scrollIndicatorUp = document.getElementById('scroll-indicator-up');
@@ -382,7 +386,7 @@ function positionCarousel() {
 }
 
 /* ============================================
-   8. WINDOW RESIZE HANDLER
+   8. WINDOW RESIZE & VISIBILITY
    ============================================ */
 let lastColCount = window.PortfolioGallery.getColumnCount();
 let resizeTimer = null;
@@ -424,11 +428,7 @@ function applyThemeToggle() {
 }
 
 function toggleTheme() {
-  if (document.startViewTransition) {
-    document.startViewTransition(applyThemeToggle);
-  } else {
-    applyThemeToggle();
-  }
+  applyThemeToggle();
 }
 
 if (localStorage.getItem('theme') === 'dark') {
