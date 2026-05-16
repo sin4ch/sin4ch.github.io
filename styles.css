@@ -114,6 +114,20 @@ a:hover {
   text-decoration: underline;
 }
 
+a,
+button,
+[role="button"],
+.gallery-item {
+  -webkit-tap-highlight-color: transparent;
+}
+
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+[role="button"]:focus:not(:focus-visible),
+.gallery-item:focus:not(:focus-visible) {
+  outline: none;
+}
+
 
 /* ============================================
    3. LAYOUT
