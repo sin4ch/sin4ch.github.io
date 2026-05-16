@@ -808,6 +808,12 @@ section.active {
   left: 0;
   width: 100%;
   height: 100%;
+  --lightbox-control-gap: 68px;
+  --lightbox-counter-size: clamp(13px, 1.1vw, 18px);
+  padding:
+    calc(var(--spacing) + var(--lightbox-control-gap) + 38px)
+    var(--spacing)
+    calc(var(--spacing) + var(--lightbox-control-gap) + var(--lightbox-counter-size));
   background-color: rgba(0, 0, 0, 0.95);
   z-index: 10050;
   display: flex;
@@ -827,9 +833,9 @@ section.active {
 
 .lightbox-story-bar {
   position: absolute;
-  top: calc(var(--spacing) + 18px);
+  top: var(--spacing);
   left: var(--spacing);
-  right: 46px;
+  right: var(--spacing);
   z-index: 3;
   height: 2px;
   overflow: hidden;
@@ -947,8 +953,8 @@ section.active {
 
 .lightbox-content {
   position: relative;
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: calc(100vw - (var(--spacing) * 2));
+  max-height: calc(100vh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -956,7 +962,7 @@ section.active {
 
 .lightbox-content img {
   max-width: 100%;
-  max-height: 85vh;
+  max-height: calc(100vh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px);
   object-fit: contain;
 }
 
@@ -983,8 +989,8 @@ section.active {
 }
 
 .lightbox-close {
-  top: var(--spacing);
-  right: 0;
+  top: calc(var(--spacing) + 14px);
+  right: var(--spacing);
   z-index: 4;
   background: none;
   border: none;
@@ -1006,7 +1012,7 @@ section.active {
   left: 50%;
   transform: translateX(-50%);
   color: #ffead3;
-  font-size: 11px;
+  font-size: var(--lightbox-counter-size);
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
@@ -1471,19 +1477,22 @@ section.active {
     flex-direction: column;
     justify-content: center;
     gap: 0;
-    padding: 56px 12px 44px;
+    padding:
+      calc(var(--spacing) + var(--lightbox-control-gap) + 38px)
+      var(--spacing)
+      calc(var(--spacing) + var(--lightbox-control-gap) + var(--lightbox-counter-size));
   }
 
   .lightbox-story-bar {
-    top: 33px;
+    top: var(--spacing);
     left: var(--spacing);
-    right: 44px;
+    right: var(--spacing);
   }
 
   .lightbox-close {
     position: absolute;
-    top: 12px;
-    right: 0;
+    top: calc(var(--spacing) + 14px);
+    right: var(--spacing);
     width: 44px;
     height: 44px;
     font-size: 18px;
@@ -1492,14 +1501,14 @@ section.active {
 
   .lightbox-content {
     order: initial;
-    max-width: calc(100vw - 24px);
-    max-height: calc(100vh - 100px);
-    max-height: calc(100dvh - 100px);
+    max-width: calc(100vw - (var(--spacing) * 2));
+    max-height: calc(100vh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px);
+    max-height: calc(100dvh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px);
   }
 
   .lightbox-content img {
-    max-height: 80vh;
-    max-height: 80dvh;
+    max-height: calc(100vh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px);
+    max-height: calc(100dvh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px);
   }
 
   .lightbox-counter {
