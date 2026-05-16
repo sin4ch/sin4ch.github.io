@@ -733,11 +733,13 @@ section.active {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
+  transition: opacity 0.3s ease-in-out, visibility 0s;
 }
 
 .photo-carousel-wrapper.hidden {
   opacity: 0;
   visibility: hidden;
+  transition: opacity 0s, visibility 0s;
 }
 
 .photo-carousel {
