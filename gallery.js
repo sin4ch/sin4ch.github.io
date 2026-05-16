@@ -50,6 +50,16 @@
     } catch (e) {}
   }
 
+  function getGallerySequence() {
+    if (!galleryData) return [];
+    return shuffledGalleryImages.length > 0 ? shuffledGalleryImages : galleryData.images;
+  }
+
+  function getUnloadedImages() {
+    const loadedIds = new Set(galleryImages.map(img => img.id));
+    return getGallerySequence().filter(img => !loadedIds.has(img.id));
+  }
+
   async function preloadInitialImages(setProgress) {
     await loadGalleryData();
     if (!galleryData || !galleryData.images.length) return;
@@ -130,9 +140,7 @@
 
   function loadRemainingImages() {
     if (!galleryData) return;
-    const loadedIds = new Set(galleryImages.map(img => img.id));
-    const remaining = (shuffledGalleryImages.length > 0 ? shuffledGalleryImages : galleryData.images)
-      .filter(img => !loadedIds.has(img.id));
+    const remaining = getUnloadedImages();
     if (remaining.length === 0) return;
     let idx = 0;
 
@@ -181,6 +189,23 @@
     return (imageHeight / imageWidth) * colWidth;
   }
 
+  function getShortestColumnIndex() {
+    return columnHeights.indexOf(Math.min(...columnHeights));
+  }
+
+  function placeInShortestColumn(element, height) {
+    const shortestIdx = getShortestColumnIndex();
+    galleryColumns[shortestIdx].appendChild(element);
+    columnHeights[shortestIdx] += height + 6;
+  }
+
+  function setImageDimensions(imgEl, imageData) {
+    if (imageData.width && imageData.height) {
+      imgEl.width = imageData.width;
+      imgEl.height = imageData.height;
+    }
+  }
+
   function buildGalleryGrid() {
     const galleryGrid = document.getElementById('gallery-grid');
     if (!galleryGrid) return;
@@ -196,9 +221,7 @@
       columnHeights.push(0);
     }
     galleryImages.forEach((img) => {
-      const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
-      galleryColumns[shortestIdx].appendChild(createGalleryItem(img));
-      columnHeights[shortestIdx] += getRenderedImageHeight(img) + 6;
+      placeInShortestColumn(createGalleryItem(img), getRenderedImageHeight(img));
     });
     buildGallerySkeletons();
   }
@@ -211,10 +234,7 @@
     imgEl.alt = img.title || 'Gallery photo';
     imgEl.loading = 'lazy';
     imgEl.decoding = 'async';
-    if (img.width && img.height) {
-      imgEl.width = img.width;
-      imgEl.height = img.height;
-    }
+    setImageDimensions(imgEl, img);
     imgEl.addEventListener('load', () => itemEl.classList.remove('is-loading'), { once: true });
     imgEl.addEventListener('error', () => itemEl.classList.remove('is-loading'), { once: true });
     itemEl.appendChild(imgEl);
@@ -227,19 +247,10 @@
     const item = createGalleryItem(imageData);
     const skeleton = gallerySkeletonsById[imageData.id];
     if (skeleton && skeleton.parentNode) {
-      const colIdx = Array.prototype.indexOf.call(galleryColumns, skeleton.parentNode);
-      if (colIdx !== -1) {
-        skeleton.parentNode.replaceChild(item, skeleton);
-      } else {
-        const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
-        galleryColumns[shortestIdx].appendChild(item);
-        columnHeights[shortestIdx] += getRenderedImageHeight(imageData) + 6;
-      }
+      skeleton.parentNode.replaceChild(item, skeleton);
       delete gallerySkeletonsById[imageData.id];
     } else {
-      const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
-      galleryColumns[shortestIdx].appendChild(item);
-      columnHeights[shortestIdx] += getRenderedImageHeight(imageData) + 6;
+      placeInShortestColumn(item, getRenderedImageHeight(imageData));
     }
   }
 
@@ -247,9 +258,7 @@
     gallerySkeletonsById = {};
     if (!galleryData || galleryColumns.length === 0) return;
     const colWidth = galleryColumns[0].offsetWidth || 200;
-    const loadedIds = new Set(galleryImages.map(img => img.id));
-    const remaining = (shuffledGalleryImages.length > 0 ? shuffledGalleryImages : galleryData.images)
-      .filter(img => !loadedIds.has(img.id));
+    const remaining = getUnloadedImages();
 
     remaining.forEach(imageData => {
       const skeleton = document.createElement('div');
@@ -258,9 +267,7 @@
         ? (imageData.height / imageData.width) * colWidth
         : colWidth * 1.25;
       skeleton.style.height = height + 'px';
-      const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
-      galleryColumns[shortestIdx].appendChild(skeleton);
-      columnHeights[shortestIdx] += height + 6;
+      placeInShortestColumn(skeleton, height);
       gallerySkeletonsById[imageData.id] = skeleton;
     });
   }
@@ -288,10 +295,7 @@
     imgEl.className = 'carousel-img-loaded';
     imgEl.decoding = 'async';
     imgEl.loading = 'lazy';
-    if (img.width && img.height) {
-      imgEl.width = img.width;
-      imgEl.height = img.height;
-    }
+    setImageDimensions(imgEl, img);
     track.appendChild(imgEl);
   }
 
