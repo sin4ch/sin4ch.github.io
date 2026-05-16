@@ -62,10 +62,8 @@
   <link rel="manifest" href="/site.webmanifest">
 
   <title>Open Source - Osinachi Okpara</title>
-  <link rel="preconnect" href="https://rsms.me">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="preload" href="/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/GeistMono-Regular.ttf" as="font" type="font/ttf" crossorigin>
   <script>
     if (localStorage.getItem('theme') === 'dark') {
       document.documentElement.classList.add('dark-mode');
@@ -123,7 +121,7 @@
   <div class="main-wrapper" id="main-wrapper">
     <div class="mobile-top-bar" id="mobile-top-bar">
       <button class="profile-photo mobile-profile-photo" id="mobileProfilePhoto" type="button" aria-label="Go to Home">
-        <img src="profile-picture.webp" alt="Osinachi Okpara" decoding="async">
+        <img src="/profile-picture.webp" alt="Osinachi Okpara" decoding="async">
       </button>
       <div class="mobile-top-bar-actions">
         <button class="theme-toggle" id="themeToggleMobile" aria-label="Toggle dark mode"></button>
@@ -760,7 +758,7 @@
     <!-- Contact Bar -->
     <div class="contact-bar" id="contact-bar">
       <div class="profile-photo">
-        <img src="profile-picture.webp" alt="Osinachi Okpara" decoding="async">
+        <img src="/profile-picture.webp" alt="Osinachi Okpara" decoding="async">
       </div>
       <div class="contact-links">
         <a class="contact-icon" href="mailto:okparaosi17@gmail.com" aria-label="Email" data-tooltip="Email"><span class="contact-tooltip" aria-hidden="true">Email</span>

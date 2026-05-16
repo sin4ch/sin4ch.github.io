@@ -14,6 +14,7 @@
      ============================================ */
   const INITIAL_COUNT = 4;
   const CAROUSEL_IMAGE_LIMIT = 28;
+  const MOBILE_CAROUSEL_INITIAL_LIMIT = 8;
   const GALLERY_BATCH_SIZE = 12;
   let galleryData = null;
   let galleryImages = [];
@@ -22,6 +23,8 @@
   let gallerySkeletonsById = {};
   let shuffledGalleryImages = [];
   let carouselAnimationFrame = null;
+  let carouselImageLimit = CAROUSEL_IMAGE_LIMIT;
+  let carouselExpansionScheduled = false;
 
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightbox-img');
@@ -44,7 +47,7 @@
      ============================================ */
   async function loadGalleryData() {
     try {
-      const response = await fetch('gallery/gallery.json');
+      const response = await fetch('/gallery/gallery.json');
       const data = await response.json();
       if (data.images && data.images.length > 0) galleryData = data;
     } catch (e) {}
@@ -275,28 +278,67 @@
   /* ============================================
      4. PHOTO CAROUSEL
      ============================================ */
+  function isMobileCarousel() {
+    return window.innerWidth <= 768;
+  }
+
+  function scheduleIdleWork(callback, timeout = 1200) {
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(callback, { timeout });
+    } else {
+      window.setTimeout(callback, Math.min(timeout, 600));
+    }
+  }
+
   function loadPhotoCarousel() {
     const carousel = document.getElementById('photo-carousel');
     if (!carousel || galleryImages.length === 0) return;
+    carouselImageLimit = isMobileCarousel() ? MOBILE_CAROUSEL_INITIAL_LIMIT : CAROUSEL_IMAGE_LIMIT;
+    carouselExpansionScheduled = false;
     const track = document.createElement('div');
     track.className = 'photo-carousel-track';
-    galleryImages.slice(0, CAROUSEL_IMAGE_LIMIT).forEach(img => appendToCarousel(img, track));
+    galleryImages.slice(0, carouselImageLimit).forEach((img, index) => {
+      appendToCarousel(img, track, { highPriority: index === 0 });
+    });
     carousel.innerHTML = '';
     carousel.appendChild(track);
+    scheduleCarouselExpansion();
     requestAnimationFrame(() => initCarouselScroll(track));
   }
 
-  function appendToCarousel(img, targetTrack) {
+  function appendToCarousel(img, targetTrack, options = {}) {
     const track = targetTrack || document.querySelector('.photo-carousel-track');
-    if (!track || track.children.length >= CAROUSEL_IMAGE_LIMIT) return;
+    if (!track || track.children.length >= carouselImageLimit) return;
     const imgEl = document.createElement('img');
     imgEl.src = img.blobUrl || img.url;
     imgEl.alt = img.title || 'Gallery photo';
     imgEl.className = 'carousel-img-loaded';
     imgEl.decoding = 'async';
-    imgEl.loading = 'lazy';
+    imgEl.loading = options.highPriority ? 'eager' : 'lazy';
+    if (options.highPriority) {
+      imgEl.fetchPriority = 'high';
+    }
     setImageDimensions(imgEl, img);
     track.appendChild(imgEl);
+  }
+
+  function fillCarouselTrack() {
+    const track = document.querySelector('.photo-carousel-track');
+    if (!track) return;
+    for (let i = track.children.length; i < galleryImages.length && i < carouselImageLimit; i++) {
+      appendToCarousel(galleryImages[i], track);
+    }
+  }
+
+  function scheduleCarouselExpansion() {
+    if (!isMobileCarousel() || carouselExpansionScheduled) return;
+    carouselExpansionScheduled = true;
+    window.setTimeout(() => {
+      scheduleIdleWork(() => {
+        carouselImageLimit = CAROUSEL_IMAGE_LIMIT;
+        fillCarouselTrack();
+      }, 2000);
+    }, 2500);
   }
 
   function initCarouselScroll(track) {
