@@ -459,6 +459,7 @@ if (!isTouchDevice) {
   var badgeElements = [];
   var badgeRects = [];
   var activeBadge = null;
+  var isOverInteractive = false;
 
   var MAGNETIC_RADIUS = 20;
   var EASE_DEFAULT = 0.15;
@@ -491,18 +492,11 @@ if (!isTouchDevice) {
     badgeRectsDirty = false;
   }
 
-  document.addEventListener('mousemove', function(e) {
-    mouseX = e.clientX;
-    mouseY = e.clientY;
-  });
-
-  function animateFollower() {
-    if (badgeRectsDirty) cacheBadgeElements();
-
-    // Find closest badge (fresh rects every frame — no stale positions)
+  function findClosestBadge() {
     var closestDist = MAGNETIC_RADIUS;
     var closestRect = null;
     var closestEl = null;
+
     for (var i = 0; i < badgeElements.length; i++) {
       var rect = badgeRects[i];
       if (rect.width === 0 || rect.height === 0) continue;
@@ -514,106 +508,151 @@ if (!isTouchDevice) {
       }
     }
 
-    // Compute magnetic pull
-    var targetX = mouseX;
-    var targetY = mouseY;
-    var strength = 0;
-    var targetScaleX = 1;
-    var targetScaleY = 1;
-    var targetRadius = 6; // px (6 = circle)
+    return {
+      distance: closestDist,
+      rect: closestRect,
+      element: closestEl
+    };
+  }
 
-    if (closestRect) {
-      strength = 1 - closestDist / MAGNETIC_RADIUS;
+  function getFollowerTarget(closestBadge) {
+    var strength = 0;
+    var target = {
+      x: mouseX,
+      y: mouseY,
+      scaleX: 1,
+      scaleY: 1,
+      radius: 6,
+      rect: closestBadge.rect,
+      element: closestBadge.element
+    };
+
+    if (closestBadge.rect) {
+      strength = 1 - closestBadge.distance / MAGNETIC_RADIUS;
       strength = strength * strength; // quadratic ease-in
-      var cx = closestRect.left + closestRect.width / 2;
-      var cy = closestRect.top + closestRect.height / 2;
-      targetX = mouseX + (cx - mouseX) * strength;
-      targetY = mouseY + (cy - mouseY) * strength;
+      var cx = closestBadge.rect.left + closestBadge.rect.width / 2;
+      var cy = closestBadge.rect.top + closestBadge.rect.height / 2;
+      target.x = mouseX + (cx - mouseX) * strength;
+      target.y = mouseY + (cy - mouseY) * strength;
 
       // Target: fill inside the badge
-      targetScaleX = 1 + (closestRect.width / BASE_SIZE - 1) * strength;
-      targetScaleY = 1 + (closestRect.height / BASE_SIZE - 1) * strength;
+      target.scaleX = 1 + (closestBadge.rect.width / BASE_SIZE - 1) * strength;
+      target.scaleY = 1 + (closestBadge.rect.height / BASE_SIZE - 1) * strength;
       // Lerp toward 2px border-radius (matches badge border-radius)
-      targetRadius = 6 + (2 - 6) * strength;
+      target.radius = 6 + (2 - 6) * strength;
     }
 
-    // Lerp position
-    var ease = closestRect ? EASE_ATTRACT : EASE_DEFAULT;
-    followerX += (targetX - followerX) * ease;
-    followerY += (targetY - followerY) * ease;
+    return target;
+  }
+
+  function updateFollowerState(target) {
+    var ease = target.rect ? EASE_ATTRACT : EASE_DEFAULT;
+    followerX += (target.x - followerX) * ease;
+    followerY += (target.y - followerY) * ease;
 
     // Lerp shape — slow approach, fast retreat
-    var shapeEase = closestRect ? SHAPE_EASE_IN : SHAPE_EASE_OUT;
-    currentScaleX += (targetScaleX - currentScaleX) * shapeEase;
-    currentScaleY += (targetScaleY - currentScaleY) * shapeEase;
-    currentBorderRadius += (targetRadius - currentBorderRadius) * shapeEase;
+    var shapeEase = target.rect ? SHAPE_EASE_IN : SHAPE_EASE_OUT;
+    currentScaleX += (target.scaleX - currentScaleX) * shapeEase;
+    currentScaleY += (target.scaleY - currentScaleY) * shapeEase;
+    currentBorderRadius += (target.radius - currentBorderRadius) * shapeEase;
 
     // Track proximity separately from visual morph
     var wasBadge = !!activeBadge;
-    activeBadge = closestEl || null;
+    activeBadge = target.element || null;
 
     // Re-apply hover when leaving badge but still over a link
     if (wasBadge && !activeBadge && isOverInteractive) {
       cursorFollower.classList.add('hovering');
     }
+  }
 
+  function getDefaultFollowerTransform() {
+    return 'translate3d(' + followerX.toFixed(1) + 'px,' + followerY.toFixed(1) + 'px,0) translate(-50%, -50%)';
+  }
+
+  function getMorphedFollowerTransform() {
+    return getDefaultFollowerTransform() + ' scale(' + currentScaleX.toFixed(3) + ',' + currentScaleY.toFixed(3) + ')';
+  }
+
+  function resetFollowerShape() {
+    currentScaleX = 1;
+    currentScaleY = 1;
+    currentBorderRadius = 6;
+    cursorFollower.style.borderRadius = '';
+  }
+
+  function applyFollowerStyle(target) {
     // Shape: only apply transform/borderRadius when morphing
     var isBlob = Math.abs(currentScaleX - 1) > 0.01 || Math.abs(currentScaleY - 1) > 0.01;
 
-    if (isBlob && closestRect) {
+    if (isBlob && target.rect) {
       // Near a badge: morph and suppress link hover
       cursorFollower.classList.remove('hovering');
-      cursorFollower.style.transform =
-        'translate3d(' + followerX.toFixed(1) + 'px,' + followerY.toFixed(1) + 'px,0) translate(-50%, -50%) scale(' + currentScaleX.toFixed(3) + ',' + currentScaleY.toFixed(3) + ')';
+      cursorFollower.style.transform = getMorphedFollowerTransform();
       cursorFollower.style.borderRadius = currentBorderRadius.toFixed(1) + 'px';
     } else if (isBlob && cursorFollower.classList.contains('hovering')) {
       // Left badge, on a link: snap morph to default so CSS hover works
-      currentScaleX = 1;
-      currentScaleY = 1;
-      currentBorderRadius = 6;
-      cursorFollower.style.transform =
-        'translate3d(' + followerX.toFixed(1) + 'px,' + followerY.toFixed(1) + 'px,0) translate(-50%, -50%)';
-      cursorFollower.style.borderRadius = '';
+      resetFollowerShape();
+      cursorFollower.style.transform = getDefaultFollowerTransform();
     } else if (isBlob) {
       // Left badge, empty space: smooth retreat animation
-      cursorFollower.style.transform =
-        'translate3d(' + followerX.toFixed(1) + 'px,' + followerY.toFixed(1) + 'px,0) translate(-50%, -50%) scale(' + currentScaleX.toFixed(3) + ',' + currentScaleY.toFixed(3) + ')';
+      cursorFollower.style.transform = getMorphedFollowerTransform();
       cursorFollower.style.borderRadius = currentBorderRadius.toFixed(1) + 'px';
     } else {
       // Not morphing: clean default
-      currentScaleX = 1;
-      currentScaleY = 1;
-      currentBorderRadius = 6;
-      cursorFollower.style.transform =
-        'translate3d(' + followerX.toFixed(1) + 'px,' + followerY.toFixed(1) + 'px,0) translate(-50%, -50%)';
-      cursorFollower.style.borderRadius = '';
+      resetFollowerShape();
+      cursorFollower.style.transform = getDefaultFollowerTransform();
     }
+  }
+
+  function animateFollower() {
+    if (badgeRectsDirty) cacheBadgeElements();
+    var target = getFollowerTarget(findClosestBadge());
+    updateFollowerState(target);
+    applyFollowerStyle(target);
 
     requestAnimationFrame(animateFollower);
   }
 
+  function bindCursorTracking() {
+    document.addEventListener('mousemove', function(e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      badgeRectsDirty = true;
+    });
+  }
+
+  function bindInteractiveHover() {
+    var interactiveElements = document.querySelectorAll('a, button, .theme-toggle');
+    interactiveElements.forEach(function(el) {
+      el.addEventListener('mouseenter', function() {
+        isOverInteractive = true;
+        if (!activeBadge) cursorFollower.classList.add('hovering');
+      });
+      el.addEventListener('mouseleave', function() {
+        isOverInteractive = false;
+        cursorFollower.classList.remove('hovering');
+      });
+    });
+  }
+
+  function invalidateBadgeCache() {
+    badgeRectsDirty = true;
+  }
+
+  function bindBadgeCacheInvalidation() {
+    sections.forEach(function(s) {
+      s.addEventListener('scroll', invalidateBadgeCache, { passive: true });
+    });
+    document.addEventListener('scroll', invalidateBadgeCache, { passive: true, capture: true });
+    window.addEventListener('scroll', invalidateBadgeCache, { passive: true });
+    window.addEventListener('resize', invalidateBadgeCache, { passive: true });
+  }
+
+  bindCursorTracking();
+  bindInteractiveHover();
+  bindBadgeCacheInvalidation();
   animateFollower();
-
-  // Link hover — original behaviour (CSS width/height transition)
-  var isOverInteractive = false;
-  var interactiveElements = document.querySelectorAll('a, button, .theme-toggle');
-  interactiveElements.forEach(function(el) {
-    el.addEventListener('mouseenter', function() {
-      isOverInteractive = true;
-      if (!activeBadge) cursorFollower.classList.add('hovering');
-    });
-    el.addEventListener('mouseleave', function() {
-      isOverInteractive = false;
-      cursorFollower.classList.remove('hovering');
-    });
-  });
-
-  // Invalidate badge element cache on scroll and resize
-  sections.forEach(function(s) {
-    s.addEventListener('scroll', function() { badgeRectsDirty = true; }, { passive: true });
-  });
-  window.addEventListener('scroll', function() { badgeRectsDirty = true; }, { passive: true });
-  window.addEventListener('resize', function() { badgeRectsDirty = true; }, { passive: true });
 }
 
 
