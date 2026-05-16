@@ -4,24 +4,21 @@
    1.  Constants & Configuration
    2.  Shared State
    3.  Loading Screen
-   4.  Gallery Grid
-   5.  Favicon
-   6.  Navigation & Routing
-   7.  Scroll Indicator
-   8.  Photo Carousel
-   9.  Window Resize Handler
-   10. Theme Toggle
-   11. Cursor Follower
-   12. Lightbox / Image Viewer
-   13. GitHub Stats
-   14. Boot
+   4.  Favicon
+   5.  Navigation & Routing
+   6.  Scroll Indicator
+   7.  Photo Carousel Positioning
+   8.  Window Resize Handler
+   9.  Theme Toggle
+   10. Cursor Follower
+   11. GitHub Stats
+   12. Boot
    ============================================ */
 
 
 /* ============================================
    1. CONSTANTS & CONFIGURATION
    ============================================ */
-const INITIAL_COUNT = 4;
 const VALID_SECTIONS = ['home', 'projects', 'opensource', 'writing', 'talks', 'gallery', 'experience'];
 const EXTERNAL_REDIRECTS = {
   'linkedin': 'https://linkedin.com/in/osinachiokpara',
@@ -52,16 +49,9 @@ function normalizeSectionRoute(route) {
 /* ============================================
    2. SHARED STATE
    ============================================ */
-let preloadedGalleryData = null;
-let loadedGalleryImages = [];
 let actualPct = 0;
 let displayedPct = 0;
 let animating = false;
-let galleryColumns = [];
-let columnHeights = [];
-let skeletonMap = {};
-let shuffledOrder = [];
-let carouselSkeletonQueue = [];
 const loadingScreen = document.getElementById('loading-screen');
 const loadingPercentage = document.getElementById('loading-percentage');
 const mainWrapper = document.getElementById('main-wrapper');
@@ -97,140 +87,20 @@ function animateCounter() {
 }
 
 async function initLoadingSequence() {
-  const jsonPromise = fetch('gallery/gallery.json')
-    .then(r => r.json())
-    .then(data => {
-      if (data.images && data.images.length > 0) preloadedGalleryData = data;
-    })
-    .catch(() => {});
   const profileImg = document.querySelector('.profile-photo img');
   const profilePromise = profileImg && !profileImg.complete
     ? new Promise(r => { profileImg.onload = r; profileImg.onerror = r; })
     : Promise.resolve();
-  await Promise.all([document.fonts.ready, jsonPromise, profilePromise]);
+  await Promise.all([document.fonts.ready, profilePromise]);
   loadingScreen.classList.add('ready');
-  await preloadGalleryImages();
-}
-
-async function preloadGalleryImages() {
-  if (!preloadedGalleryData || !preloadedGalleryData.images.length) {
-    completeLoading();
-    return;
-  }
-  // Fisher-Yates shuffle for random order on every refresh
-  const shuffledImages = [...preloadedGalleryData.images];
-  for (let i = shuffledImages.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledImages[i], shuffledImages[j]] = [shuffledImages[j], shuffledImages[i]];
-  }
-  shuffledOrder = shuffledImages;
-
-  const initialBatch = shuffledImages.slice(0, INITIAL_COUNT);
-  let completed = 0;
-  let targetPct = 0;
-  let simulatedPct = 0;
-  const speedJitter = 0.5 + Math.random() * 0.5;
-  const decelBase = 0.01 + Math.random() * 0.06;
-  const weights = Array.from({length: INITIAL_COUNT}, () => 0.5 + Math.random());
-  const totalWeight = weights.reduce((a, b) => a + b, 0);
-  const checkpoints = [];
-  let cumulative = 0;
-  weights.forEach(w => {
-    cumulative += (w / totalWeight) * 100;
-    checkpoints.push(cumulative);
-  });
-  checkpoints[checkpoints.length - 1] = 100;
-  const bufferOffsets = Array.from({length: INITIAL_COUNT}, () => Math.floor(Math.random() * 21) - 10);
-  let simRunning = true;
-
-  // Organic progress simulation
-  function tickProgress() {
-    if (!simRunning) return;
-    const gap = targetPct - simulatedPct;
-    const noise = 0.8 + Math.random() * 0.4;
-    let speed;
-    if (gap > 5) {
-      speed = (1.0 + gap * 0.15) * speedJitter * noise;
-    } else if (gap > 0) {
-      speed = (0.2 + gap * 0.08) * speedJitter * noise;
-    } else {
-      const currentOffset = bufferOffsets[completed] || 0;
-      const buffer = targetPct < 100 ? Math.max(0, targetPct + currentOffset) : 100;
-      speed = simulatedPct < buffer ? decelBase * noise : 0;
-    }
-    simulatedPct = Math.min(simulatedPct + speed, 100);
-    setActualProgress(simulatedPct);
-    requestAnimationFrame(tickProgress);
-  }
-  requestAnimationFrame(tickProgress);
-
-  for (const imgData of initialBatch) {
-    try {
-      const img = new Image();
-      img.src = imgData.url;
-      await img.decode();
-      imgData.naturalWidth = img.naturalWidth;
-      imgData.naturalHeight = img.naturalHeight;
-      loadedGalleryImages.push(imgData);
-    } catch (e) {
-      // image failed to load, skip it
-    }
-    completed++;
-    targetPct = checkpoints[completed - 1];
-  }
-  await new Promise(r => {
-    function waitForAnimation() {
-      if (displayedPct >= 99.5) {
-        simRunning = false;
-        r();
-        return;
-      }
-      requestAnimationFrame(waitForAnimation);
-    }
-    waitForAnimation();
-  });
+  await window.PortfolioGallery.preloadInitialImages(setActualProgress);
   completeLoading();
-  const loadedIds = new Set(loadedGalleryImages.map(img => img.id));
-  const remainingInOrder = shuffledImages.filter(img => !loadedIds.has(img.id));
-  loadRemainingImages(remainingInOrder);
-}
-
-function loadRemainingImages(remaining) {
-  if (remaining.length === 0) return;
-  let idx = 0;
-
-  function loadNext() {
-    if (idx >= remaining.length) return;
-    const imgData = remaining[idx++];
-    const img = new Image();
-    img.onload = () => {
-      imgData.naturalWidth = img.naturalWidth;
-      imgData.naturalHeight = img.naturalHeight;
-      loadedGalleryImages.push(imgData);
-      appendToGalleryGrid(imgData);
-      const imgEl = document.createElement('img');
-      imgEl.src = imgData.url;
-      imgEl.alt = imgData.title || 'Gallery photo';
-      imgEl.className = 'carousel-img-loaded';
-      const carouselSkeleton = carouselSkeletonQueue.length > 0 ? carouselSkeletonQueue.shift() : null;
-      if (carouselSkeleton && carouselSkeleton.parentNode) {
-        carouselSkeleton.parentNode.replaceChild(imgEl, carouselSkeleton);
-      } else {
-        const track = document.querySelector('.photo-carousel-track');
-        if (track) track.appendChild(imgEl);
-      }
-      loadNext();
-    };
-    img.onerror = () => loadNext();
-    img.src = imgData.url;
-  }
-
-  loadNext();
+  window.PortfolioGallery.loadRemainingImages();
 }
 
 function completeLoading() {
   loadingPercentage.textContent = '100%';
-  buildGalleryGrid();
+  window.PortfolioGallery.buildGalleryGrid();
   fetchGitHubStats();
   setTimeout(() => {
     loadingScreen.classList.add('hidden');
@@ -239,106 +109,12 @@ function completeLoading() {
     setTimeout(updateScrollIndicator, 100);
     setTimeout(() => {
       positionCarousel();
-      loadPhotoCarousel();
+      window.PortfolioGallery.loadPhotoCarousel();
     }, 850);
     setTimeout(() => {
       loadingScreen.style.display = 'none';
     }, 800);
   }, 300);
-}
-
-
-
-/* ============================================
-   4. GALLERY GRID
-   ============================================ */
-function getColumnCount() {
-  const w = window.innerWidth;
-  if (w <= 480) return 1;
-  if (w <= 768) return 2;
-  if (w <= 1024) return 3;
-  return 4;
-}
-
-function getRenderedHeight(imgData) {
-  if (!imgData.naturalWidth || !imgData.naturalHeight) return 200;
-  if (galleryColumns.length === 0) return 200;
-  const colWidth = galleryColumns[0].offsetWidth || 200;
-  return (imgData.naturalHeight / imgData.naturalWidth) * colWidth;
-}
-
-function buildGalleryGrid() {
-  const galleryGrid = document.getElementById('gallery-grid');
-  if (!galleryGrid) return;
-  const colCount = getColumnCount();
-  galleryGrid.innerHTML = '';
-  galleryColumns = [];
-  columnHeights = [];
-  for (let i = 0; i < colCount; i++) {
-    const col = document.createElement('div');
-    col.className = 'gallery-column';
-    galleryGrid.appendChild(col);
-    galleryColumns.push(col);
-    columnHeights.push(0);
-  }
-  loadedGalleryImages.forEach((img, index) => {
-    const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
-    galleryColumns[shortestIdx].appendChild(createGalleryItem(img, index));
-    columnHeights[shortestIdx] += getRenderedHeight(img) + 6;
-  });
-  buildSkeletonPlaceholders();
-}
-
-function createGalleryItem(img, index) {
-  const itemEl = document.createElement('div');
-  itemEl.className = 'gallery-item';
-  itemEl.innerHTML = `<img src="${img.blobUrl || img.url}" alt="${img.title || 'Gallery photo'}">`;
-  itemEl.addEventListener('click', () => openLightbox(loadedGalleryImages.indexOf(img)));
-  return itemEl;
-}
-
-function appendToGalleryGrid(imgData) {
-  if (galleryColumns.length === 0) return;
-  const index = loadedGalleryImages.indexOf(imgData);
-  const item = createGalleryItem(imgData, index);
-  const skeleton = skeletonMap[imgData.id];
-  if (skeleton && skeleton.parentNode) {
-    const colIdx = Array.prototype.indexOf.call(galleryColumns, skeleton.parentNode);
-    if (colIdx !== -1) {
-      skeleton.parentNode.replaceChild(item, skeleton);
-    } else {
-      const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
-      galleryColumns[shortestIdx].appendChild(item);
-      columnHeights[shortestIdx] += getRenderedHeight(imgData) + 6;
-    }
-    delete skeletonMap[imgData.id];
-  } else {
-    const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
-    galleryColumns[shortestIdx].appendChild(item);
-    columnHeights[shortestIdx] += getRenderedHeight(imgData) + 6;
-  }
-}
-
-function buildSkeletonPlaceholders() {
-  skeletonMap = {};
-  if (!preloadedGalleryData || galleryColumns.length === 0) return;
-  const colWidth = galleryColumns[0].offsetWidth || 200;
-  const loadedIds = new Set(loadedGalleryImages.map(img => img.id));
-  const remaining = (shuffledOrder.length > 0 ? shuffledOrder : preloadedGalleryData.images)
-    .filter(img => !loadedIds.has(img.id));
-
-  remaining.forEach(imgData => {
-    const skeleton = document.createElement('div');
-    skeleton.className = 'gallery-skeleton';
-    const height = (imgData.width && imgData.height)
-      ? (imgData.height / imgData.width) * colWidth
-      : colWidth * 1.25;
-    skeleton.style.height = height + 'px';
-    const shortestIdx = columnHeights.indexOf(Math.min(...columnHeights));
-    galleryColumns[shortestIdx].appendChild(skeleton);
-    columnHeights[shortestIdx] += height + 6;
-    skeletonMap[imgData.id] = skeleton;
-  });
 }
 
 
@@ -372,10 +148,8 @@ function createRoundedFavicon() {
    6. NAVIGATION & ROUTING
    ============================================ */
 function showSection(targetId, updateUrl = true) {
-  const activeLightbox = document.getElementById('lightbox');
-  if (activeLightbox && activeLightbox.classList.contains('active')) {
-    activeLightbox.classList.remove('active');
-    document.body.style.overflow = '';
+  if (window.PortfolioGallery.isLightboxOpen()) {
+    window.PortfolioGallery.closeLightbox();
   }
 
   sections.forEach(section => {
@@ -552,7 +326,7 @@ window.addEventListener('scroll', updateScrollIndicator, { passive: true });
 
 
 /* ============================================
-   8. PHOTO CAROUSEL
+   7. PHOTO CAROUSEL POSITIONING
    ============================================ */
 function isMobileLayout() {
   return window.innerWidth <= 768;
@@ -597,98 +371,10 @@ function positionCarousel() {
   }
 }
 
-function loadPhotoCarousel() {
-  const carousel = document.getElementById('photo-carousel');
-  if (!carousel || loadedGalleryImages.length === 0) return;
-  const track = document.createElement('div');
-  track.className = 'photo-carousel-track';
-  loadedGalleryImages.forEach(img => {
-    const imgEl = document.createElement('img');
-    imgEl.src = img.blobUrl || img.url;
-    imgEl.alt = img.title || 'Gallery photo';
-    imgEl.className = 'carousel-img-loaded';
-    track.appendChild(imgEl);
-  });
-  carouselSkeletonQueue = [];
-  if (preloadedGalleryData) {
-    const remainingCount = preloadedGalleryData.images.length - loadedGalleryImages.length;
-    for (let i = 0; i < remainingCount; i++) {
-      const skeleton = document.createElement('div');
-      skeleton.className = 'carousel-skeleton';
-      track.appendChild(skeleton);
-      carouselSkeletonQueue.push(skeleton);
-    }
-  }
-  carousel.innerHTML = '';
-  carousel.appendChild(track);
-  requestAnimationFrame(() => initCarouselScroll(track));
-}
-
-function initCarouselScroll(track) {
-  const carousel = track.parentElement;
-  if (!carousel) return;
-  let lastTimestamp = 0;
-  let isPaused = false;
-  let scrollPosition = carousel.scrollLeft;
-  let resumeTimer = null;
-  const speed = 20;
-
-  function pauseTemporarily(duration = 1400) {
-    isPaused = true;
-    window.clearTimeout(resumeTimer);
-    resumeTimer = window.setTimeout(() => {
-      scrollPosition = carousel.scrollLeft;
-      isPaused = false;
-      lastTimestamp = 0;
-    }, duration);
-  }
-
-  function tick(timestamp) {
-    if (!lastTimestamp) lastTimestamp = timestamp;
-    const deltaMs = Math.min(timestamp - lastTimestamp, 100);
-    lastTimestamp = timestamp;
-    if (!isPaused && speed > 0) {
-      scrollPosition += speed * (deltaMs / 1000);
-      carousel.scrollLeft = scrollPosition;
-      const first = track.firstElementChild;
-      if (first) {
-        const firstWidth = first.offsetWidth + 8;
-        if (firstWidth > 0 && scrollPosition >= firstWidth) {
-          track.appendChild(first);
-          scrollPosition -= firstWidth;
-          carousel.scrollLeft = scrollPosition;
-        }
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-
-  requestAnimationFrame(tick);
-  carousel.addEventListener('pointerdown', () => {
-    carousel.classList.add('is-dragging');
-    scrollPosition = carousel.scrollLeft;
-    pauseTemporarily(2500);
-  });
-  carousel.addEventListener('pointerup', () => {
-    carousel.classList.remove('is-dragging');
-    pauseTemporarily();
-  });
-  carousel.addEventListener('pointercancel', () => {
-    carousel.classList.remove('is-dragging');
-    pauseTemporarily();
-  });
-  carousel.addEventListener('wheel', () => {
-    scrollPosition = carousel.scrollLeft;
-    pauseTemporarily();
-  }, { passive: true });
-}
-
-
-
 /* ============================================
-   9. WINDOW RESIZE HANDLER
+   8. WINDOW RESIZE HANDLER
    ============================================ */
-let lastColCount = getColumnCount();
+let lastColCount = window.PortfolioGallery.getColumnCount();
 let resizeTimer = null;
 
 window.addEventListener('resize', () => {
@@ -706,10 +392,10 @@ window.addEventListener('resize', () => {
   }
   updateScrollIndicator();
   positionCarousel();
-  const newColCount = getColumnCount();
+  const newColCount = window.PortfolioGallery.getColumnCount();
   if (newColCount !== lastColCount) {
     lastColCount = newColCount;
-    buildGalleryGrid();
+    window.PortfolioGallery.buildGalleryGrid();
   }
 });
 
@@ -722,7 +408,7 @@ document.addEventListener('visibilitychange', () => {
 
 
 /* ============================================
-   10. THEME TOGGLE
+   9. THEME TOGGLE
    ============================================ */
 function applyThemeToggle() {
   const isDark = document.body.classList.toggle('dark-mode');
@@ -751,7 +437,7 @@ if (themeToggleMobile) themeToggleMobile.addEventListener('click', toggleTheme);
 
 
 /* ============================================
-   11. CURSOR FOLLOWER
+   10. CURSOR FOLLOWER
    ============================================ */
 const cursorFollower = document.getElementById('cursorFollower');
 const isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0) && window.matchMedia('(hover: none)').matches;
@@ -925,158 +611,7 @@ if (!isTouchDevice) {
 
 
 /* ============================================
-   12. LIGHTBOX / IMAGE VIEWER
-   ============================================ */
-const lightbox = document.getElementById('lightbox');
-const lightboxImg = document.getElementById('lightbox-img');
-const lightboxClose = document.getElementById('lightbox-close');
-const lightboxTapPrev = document.getElementById('lightbox-tap-prev');
-const lightboxTapNext = document.getElementById('lightbox-tap-next');
-const lightboxPauseZone = document.getElementById('lightbox-pause-zone');
-const lightboxHintOverlay = document.getElementById('lightbox-hint-overlay');
-const lightboxCounter = document.getElementById('lightbox-counter');
-const lightboxStoryProgress = document.getElementById('lightbox-story-progress');
-const STORY_DURATION = 5000;
-let currentImageIndex = 0;
-let storyTimer = null;
-let storyStartedAt = 0;
-let storyRemaining = STORY_DURATION;
-let storyPaused = false;
-
-function openLightbox(index) {
-  if (loadedGalleryImages.length === 0) return;
-  currentImageIndex = index;
-  updateLightboxImage();
-  lightbox.classList.add('active');
-  document.body.style.overflow = 'hidden';
-  startStoryTimer();
-  showTapHint();
-}
-
-function closeLightbox() {
-  lightbox.classList.remove('active');
-  document.body.style.overflow = '';
-  stopStoryTimer();
-  storyPaused = false;
-}
-
-function updateLightboxImage() {
-  const img = loadedGalleryImages[currentImageIndex];
-  lightboxImg.src = img.blobUrl || img.url;
-  lightboxImg.alt = img.title || 'Gallery photo';
-  const counterText = `${currentImageIndex + 1} / ${loadedGalleryImages.length}`;
-  lightboxCounter.textContent = counterText;
-}
-
-function stopStoryTimer() {
-  if (storyTimer) {
-    clearTimeout(storyTimer);
-    storyTimer = null;
-  }
-  if (lightboxStoryProgress) {
-    lightboxStoryProgress.classList.remove('is-running');
-  }
-}
-
-function startStoryTimer(duration = STORY_DURATION) {
-  stopStoryTimer();
-  if (!lightboxStoryProgress || !lightbox.classList.contains('active')) return;
-  storyRemaining = duration;
-  storyStartedAt = performance.now();
-  storyPaused = false;
-  lightboxStoryProgress.style.animation = 'none';
-  lightboxStoryProgress.offsetHeight;
-  lightboxStoryProgress.style.animation = `story-progress ${duration}ms linear forwards`;
-  lightboxStoryProgress.classList.add('is-running');
-  storyTimer = setTimeout(showNextImage, duration);
-}
-
-function pauseStoryTimer() {
-  if (storyPaused || !lightboxStoryProgress || !lightbox.classList.contains('active')) return;
-  if (storyTimer) {
-    clearTimeout(storyTimer);
-    storyTimer = null;
-  }
-  storyRemaining = Math.max(250, storyRemaining - (performance.now() - storyStartedAt));
-  const computedWidth = getComputedStyle(lightboxStoryProgress).width;
-  lightboxStoryProgress.classList.remove('is-running');
-  lightboxStoryProgress.style.animation = 'none';
-  lightboxStoryProgress.style.width = computedWidth;
-  lightboxStoryProgress.style.transform = 'none';
-  storyPaused = true;
-}
-
-function resumeStoryTimer() {
-  if (!storyPaused) return;
-  if (lightboxStoryProgress) {
-    lightboxStoryProgress.style.width = '';
-    lightboxStoryProgress.style.animation = '';
-    lightboxStoryProgress.style.transform = '';
-  }
-  startStoryTimer(storyRemaining);
-}
-
-function pulseTapZone(zone) {
-  if (!zone) return;
-  zone.classList.add('is-tapped');
-  setTimeout(() => zone.classList.remove('is-tapped'), 180);
-}
-
-function showTapHint() {
-  if (!lightboxHintOverlay) return;
-  lightboxHintOverlay.classList.remove('is-visible');
-  lightboxHintOverlay.offsetHeight;
-  lightboxHintOverlay.classList.add('is-visible');
-  setTimeout(() => lightboxHintOverlay.classList.remove('is-visible'), 3000);
-}
-
-function showPrevImage() {
-  currentImageIndex = (currentImageIndex - 1 + loadedGalleryImages.length) % loadedGalleryImages.length;
-  updateLightboxImage();
-  startStoryTimer();
-}
-
-function showNextImage() {
-  currentImageIndex = (currentImageIndex + 1) % loadedGalleryImages.length;
-  updateLightboxImage();
-  startStoryTimer();
-}
-
-lightboxClose.addEventListener('click', closeLightbox);
-
-lightboxTapPrev.addEventListener('click', () => {
-  pulseTapZone(lightboxTapPrev);
-  showPrevImage();
-});
-
-lightboxTapNext.addEventListener('click', () => {
-  pulseTapZone(lightboxTapNext);
-  showNextImage();
-});
-
-lightboxPauseZone.addEventListener('click', () => {
-  if (storyPaused) {
-    resumeStoryTimer();
-    lightboxPauseZone.classList.remove('is-tapped');
-  } else {
-    pauseStoryTimer();
-    lightboxPauseZone.classList.add('is-tapped');
-  }
-});
-
-document.addEventListener('keydown', (e) => {
-  if (!lightbox.classList.contains('active')) return;
-  if (e.key === 'Escape') {
-    closeLightbox();
-  } else if (e.key === 'ArrowLeft') {
-    showPrevImage();
-  } else if (e.key === 'ArrowRight') {
-    showNextImage();
-  }
-});
-
-/* ============================================
-   13. GITHUB STATS
+   11. GITHUB STATS
    ============================================ */
 function fetchGitHubStats() {
   const els = document.querySelectorAll('[data-repo]');
@@ -1127,7 +662,7 @@ function fetchGitHubStats() {
 
 
 /* ============================================
-   14. BOOT
+   12. BOOT
    ============================================ */
 createRoundedFavicon();
 initLoadingSequence();
