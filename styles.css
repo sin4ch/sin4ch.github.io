@@ -900,8 +900,8 @@ section.active {
   gap: 12px;
   padding: calc(var(--spacing) * 2);
   background:
-    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.38) 32%, transparent 68%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.55), transparent 28%, transparent 72%, rgba(0, 0, 0, 0.55));
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.66) 34%, transparent 72%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.76), rgba(0, 0, 0, 0.34) 28%, rgba(0, 0, 0, 0.34) 72%, rgba(0, 0, 0, 0.76));
   opacity: 0;
   pointer-events: none;
 }
@@ -924,16 +924,73 @@ section.active {
   text-align: center;
 }
 
-.lightbox-hint-dot {
-  width: 48px;
-  height: 48px;
-  border: 1px solid rgba(255, 234, 211, 0.72);
-  border-radius: 50%;
+.lightbox-hint-symbol {
+  width: 44px;
+  height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: #ffead3;
-  background: rgba(0, 0, 0, 0.24);
+}
+
+.lightbox-hint-arrow {
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 300;
+}
+
+.lightbox-hint-arrow-left {
+  animation: hint-arrow-left-bob 1.05s ease-in-out infinite;
+}
+
+.lightbox-hint-arrow-right {
+  animation: hint-arrow-right-bob 1.05s ease-in-out infinite;
+}
+
+.lightbox-hint-click {
+  position: relative;
+}
+
+.lightbox-hint-click::before,
+.lightbox-hint-click::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+}
+
+.lightbox-hint-click::before {
+  width: 16px;
+  height: 16px;
+  background: #ffead3;
+  animation: hint-click-dot 1.25s ease-in-out infinite;
+}
+
+.lightbox-hint-click::after {
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 234, 211, 0.76);
+  animation: hint-click-ring 1.25s ease-in-out infinite;
+}
+
+@keyframes hint-arrow-left-bob {
+  0%, 100% { transform: translateX(5px); }
+  50% { transform: translateX(-7px); }
+}
+
+@keyframes hint-arrow-right-bob {
+  0%, 100% { transform: translateX(-5px); }
+  50% { transform: translateX(7px); }
+}
+
+@keyframes hint-click-dot {
+  0%, 100% { transform: scale(0.92); opacity: 0.92; }
+  45% { transform: scale(0.62); opacity: 1; }
+}
+
+@keyframes hint-click-ring {
+  0% { transform: scale(0.75); opacity: 0; }
+  36% { opacity: 0.78; }
+  100% { transform: scale(1.2); opacity: 0; }
 }
 
 .lightbox-tap-prev {
