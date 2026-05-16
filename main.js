@@ -207,13 +207,36 @@ function getFocusableMenuElements() {
   return sidebar.querySelectorAll('button.nav-item:not([data-target="home"]), button.theme-toggle, .mobile-menu-contact a');
 }
 
+function openMobileMenu() {
+  sidebar.classList.add('menu-open');
+  hamburger.classList.add('open');
+  hamburger.setAttribute('aria-label', 'Close menu');
+  const firstNav = sidebar.querySelector('button.nav-item:not([data-target="home"])');
+  if (firstNav) firstNav.focus();
+  document.addEventListener('keydown', handleMenuFocusTrap);
+}
+
+function closeMobileMenu(options = {}) {
+  sidebar.classList.remove('menu-open');
+  hamburger.classList.remove('open');
+  hamburger.setAttribute('aria-label', 'Open menu');
+  document.removeEventListener('keydown', handleMenuFocusTrap);
+  if (options.focusHamburger) {
+    hamburger.focus();
+  }
+}
+
+function showMenuSection(targetId) {
+  sections.forEach(s => s.style.transition = 'none');
+  showSection(targetId);
+  document.body.offsetHeight;
+  sections.forEach(s => s.style.transition = '');
+  closeMobileMenu();
+}
+
 function handleMenuFocusTrap(e) {
   if (e.key === 'Escape') {
-    sidebar.classList.remove('menu-open');
-    hamburger.classList.remove('open');
-    hamburger.setAttribute('aria-label', 'Open menu');
-    document.removeEventListener('keydown', handleMenuFocusTrap);
-    hamburger.focus();
+    closeMobileMenu({ focusHamburger: true });
     return;
   }
   if (e.key !== 'Tab') return;
@@ -232,16 +255,10 @@ function handleMenuFocusTrap(e) {
 }
 
 hamburger.addEventListener('click', () => {
-  const isOpen = sidebar.classList.toggle('menu-open');
-  hamburger.classList.toggle('open');
-  if (isOpen) {
-    hamburger.setAttribute('aria-label', 'Close menu');
-    const firstNav = sidebar.querySelector('button.nav-item:not([data-target="home"])');
-    if (firstNav) firstNav.focus();
-    document.addEventListener('keydown', handleMenuFocusTrap);
+  if (sidebar.classList.contains('menu-open')) {
+    closeMobileMenu();
   } else {
-    hamburger.setAttribute('aria-label', 'Open menu');
-    document.removeEventListener('keydown', handleMenuFocusTrap);
+    openMobileMenu();
   }
 });
 
@@ -249,14 +266,7 @@ navItems.forEach(item => {
   item.addEventListener('click', () => {
     const targetId = item.dataset.target;
     if (sidebar.classList.contains('menu-open')) {
-      sections.forEach(s => s.style.transition = 'none');
-      showSection(targetId);
-      document.body.offsetHeight;
-      sections.forEach(s => s.style.transition = '');
-      sidebar.classList.remove('menu-open');
-      hamburger.classList.remove('open');
-      hamburger.setAttribute('aria-label', 'Open menu');
-      document.removeEventListener('keydown', handleMenuFocusTrap);
+      showMenuSection(targetId);
     } else {
       showSection(targetId);
     }
@@ -385,10 +395,7 @@ window.addEventListener('resize', () => {
   }, 150);
 
   if (window.innerWidth > 768 && sidebar.classList.contains('menu-open')) {
-    sidebar.classList.remove('menu-open');
-    hamburger.classList.remove('open');
-    hamburger.setAttribute('aria-label', 'Open menu');
-    document.removeEventListener('keydown', handleMenuFocusTrap);
+    closeMobileMenu();
   }
   updateScrollIndicator();
   positionCarousel();
