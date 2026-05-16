@@ -29,7 +29,7 @@ const EXTERNAL_REDIRECTS = {
   'resume': 'https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view'
 };
 function getSectionPath(sectionId) {
-  return sectionId === 'home' ? '/' : `/${sectionId}`;
+  return sectionId === 'home' ? '/' : `/${sectionId}/`;
 }
 
 function getPathRoute() {
