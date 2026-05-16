@@ -457,6 +457,7 @@ if (!isTouchDevice) {
   var followerX = 0;
   var followerY = 0;
   var badgeElements = [];
+  var badgeRects = [];
   var activeBadge = null;
 
   var MAGNETIC_RADIUS = 20;
@@ -480,10 +481,12 @@ if (!isTouchDevice) {
   function cacheBadgeElements() {
     var badges = document.querySelectorAll('.stat-badge, .role-badge');
     badgeElements = [];
+    badgeRects = [];
     badges.forEach(function(badge) {
       var section = badge.closest('section');
       if (section && !section.classList.contains('active')) return;
       badgeElements.push(badge);
+      badgeRects.push(badge.getBoundingClientRect());
     });
     badgeRectsDirty = false;
   }
@@ -501,7 +504,7 @@ if (!isTouchDevice) {
     var closestRect = null;
     var closestEl = null;
     for (var i = 0; i < badgeElements.length; i++) {
-      var rect = badgeElements[i].getBoundingClientRect();
+      var rect = badgeRects[i];
       if (rect.width === 0 || rect.height === 0) continue;
       var d = distToRect(mouseX, mouseY, rect);
       if (d < closestDist) {
@@ -545,10 +548,6 @@ if (!isTouchDevice) {
     currentScaleY += (targetScaleY - currentScaleY) * shapeEase;
     currentBorderRadius += (targetRadius - currentBorderRadius) * shapeEase;
 
-    // Position (same as original — left/top)
-    cursorFollower.style.left = followerX + 'px';
-    cursorFollower.style.top = followerY + 'px';
-
     // Track proximity separately from visual morph
     var wasBadge = !!activeBadge;
     activeBadge = closestEl || null;
@@ -565,26 +564,28 @@ if (!isTouchDevice) {
       // Near a badge: morph and suppress link hover
       cursorFollower.classList.remove('hovering');
       cursorFollower.style.transform =
-        'translate(-50%, -50%) scale(' + currentScaleX.toFixed(3) + ',' + currentScaleY.toFixed(3) + ')';
+        'translate3d(' + followerX.toFixed(1) + 'px,' + followerY.toFixed(1) + 'px,0) translate(-50%, -50%) scale(' + currentScaleX.toFixed(3) + ',' + currentScaleY.toFixed(3) + ')';
       cursorFollower.style.borderRadius = currentBorderRadius.toFixed(1) + 'px';
     } else if (isBlob && cursorFollower.classList.contains('hovering')) {
       // Left badge, on a link: snap morph to default so CSS hover works
       currentScaleX = 1;
       currentScaleY = 1;
       currentBorderRadius = 6;
-      cursorFollower.style.transform = '';
+      cursorFollower.style.transform =
+        'translate3d(' + followerX.toFixed(1) + 'px,' + followerY.toFixed(1) + 'px,0) translate(-50%, -50%)';
       cursorFollower.style.borderRadius = '';
     } else if (isBlob) {
       // Left badge, empty space: smooth retreat animation
       cursorFollower.style.transform =
-        'translate(-50%, -50%) scale(' + currentScaleX.toFixed(3) + ',' + currentScaleY.toFixed(3) + ')';
+        'translate3d(' + followerX.toFixed(1) + 'px,' + followerY.toFixed(1) + 'px,0) translate(-50%, -50%) scale(' + currentScaleX.toFixed(3) + ',' + currentScaleY.toFixed(3) + ')';
       cursorFollower.style.borderRadius = currentBorderRadius.toFixed(1) + 'px';
     } else {
       // Not morphing: clean default
       currentScaleX = 1;
       currentScaleY = 1;
       currentBorderRadius = 6;
-      cursorFollower.style.transform = '';
+      cursorFollower.style.transform =
+        'translate3d(' + followerX.toFixed(1) + 'px,' + followerY.toFixed(1) + 'px,0) translate(-50%, -50%)';
       cursorFollower.style.borderRadius = '';
     }
 

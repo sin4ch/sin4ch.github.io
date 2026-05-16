@@ -3,13 +3,15 @@
    ============================================ */
 (function() {
   const INITIAL_COUNT = 4;
+  const CAROUSEL_IMAGE_LIMIT = 28;
+  const GALLERY_BATCH_SIZE = 12;
   let preloadedGalleryData = null;
   let loadedGalleryImages = [];
   let galleryColumns = [];
   let columnHeights = [];
   let skeletonMap = {};
   let shuffledOrder = [];
-  let carouselSkeletonQueue = [];
+  let carouselAnimationFrame = null;
 
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightbox-img');
@@ -87,6 +89,7 @@
     for (const imgData of initialBatch) {
       try {
         const img = new Image();
+        img.decoding = 'async';
         img.src = imgData.url;
         await img.decode();
         imgData.naturalWidth = img.naturalWidth;
@@ -120,33 +123,29 @@
     if (remaining.length === 0) return;
     let idx = 0;
 
-    function loadNext() {
+    function appendBatch() {
       if (idx >= remaining.length) return;
-      const imgData = remaining[idx++];
-      const img = new Image();
-      img.onload = () => {
-        imgData.naturalWidth = img.naturalWidth;
-        imgData.naturalHeight = img.naturalHeight;
+      const end = Math.min(idx + GALLERY_BATCH_SIZE, remaining.length);
+      while (idx < end) {
+        const imgData = remaining[idx++];
+        imgData.naturalWidth = imgData.naturalWidth || imgData.width;
+        imgData.naturalHeight = imgData.naturalHeight || imgData.height;
         loadedGalleryImages.push(imgData);
         appendToGalleryGrid(imgData);
-        const imgEl = document.createElement('img');
-        imgEl.src = imgData.url;
-        imgEl.alt = imgData.title || 'Gallery photo';
-        imgEl.className = 'carousel-img-loaded';
-        const carouselSkeleton = carouselSkeletonQueue.length > 0 ? carouselSkeletonQueue.shift() : null;
-        if (carouselSkeleton && carouselSkeleton.parentNode) {
-          carouselSkeleton.parentNode.replaceChild(imgEl, carouselSkeleton);
-        } else {
-          const track = document.querySelector('.photo-carousel-track');
-          if (track) track.appendChild(imgEl);
-        }
-        loadNext();
-      };
-      img.onerror = () => loadNext();
-      img.src = imgData.url;
+        appendToCarousel(imgData);
+      }
+      scheduleNextBatch();
     }
 
-    loadNext();
+    function scheduleNextBatch() {
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(appendBatch, { timeout: 700 });
+      } else {
+        window.setTimeout(appendBatch, 24);
+      }
+    }
+
+    scheduleNextBatch();
   }
 
   function getColumnCount() {
@@ -158,10 +157,12 @@
   }
 
   function getRenderedHeight(imgData) {
-    if (!imgData.naturalWidth || !imgData.naturalHeight) return 200;
+    const imageWidth = imgData.naturalWidth || imgData.width;
+    const imageHeight = imgData.naturalHeight || imgData.height;
+    if (!imageWidth || !imageHeight) return 200;
     if (galleryColumns.length === 0) return 200;
     const colWidth = galleryColumns[0].offsetWidth || 200;
-    return (imgData.naturalHeight / imgData.naturalWidth) * colWidth;
+    return (imageHeight / imageWidth) * colWidth;
   }
 
   function buildGalleryGrid() {
@@ -188,8 +189,19 @@
 
   function createGalleryItem(img) {
     const itemEl = document.createElement('div');
-    itemEl.className = 'gallery-item';
-    itemEl.innerHTML = '<img src="' + (img.blobUrl || img.url) + '" alt="' + (img.title || 'Gallery photo') + '">';
+    itemEl.className = 'gallery-item is-loading';
+    const imgEl = document.createElement('img');
+    imgEl.src = img.blobUrl || img.url;
+    imgEl.alt = img.title || 'Gallery photo';
+    imgEl.loading = 'lazy';
+    imgEl.decoding = 'async';
+    if (img.width && img.height) {
+      imgEl.width = img.width;
+      imgEl.height = img.height;
+    }
+    imgEl.addEventListener('load', () => itemEl.classList.remove('is-loading'), { once: true });
+    imgEl.addEventListener('error', () => itemEl.classList.remove('is-loading'), { once: true });
+    itemEl.appendChild(imgEl);
     itemEl.addEventListener('click', () => openLightbox(loadedGalleryImages.indexOf(img)));
     return itemEl;
   }
@@ -242,36 +254,41 @@
     if (!carousel || loadedGalleryImages.length === 0) return;
     const track = document.createElement('div');
     track.className = 'photo-carousel-track';
-    loadedGalleryImages.forEach(img => {
-      const imgEl = document.createElement('img');
-      imgEl.src = img.blobUrl || img.url;
-      imgEl.alt = img.title || 'Gallery photo';
-      imgEl.className = 'carousel-img-loaded';
-      track.appendChild(imgEl);
-    });
-    carouselSkeletonQueue = [];
-    if (preloadedGalleryData) {
-      const remainingCount = preloadedGalleryData.images.length - loadedGalleryImages.length;
-      for (let i = 0; i < remainingCount; i++) {
-        const skeleton = document.createElement('div');
-        skeleton.className = 'carousel-skeleton';
-        track.appendChild(skeleton);
-        carouselSkeletonQueue.push(skeleton);
-      }
-    }
+    loadedGalleryImages.slice(0, CAROUSEL_IMAGE_LIMIT).forEach(img => appendToCarousel(img, track));
     carousel.innerHTML = '';
     carousel.appendChild(track);
     requestAnimationFrame(() => initCarouselScroll(track));
   }
 
+  function appendToCarousel(img, targetTrack) {
+    const track = targetTrack || document.querySelector('.photo-carousel-track');
+    if (!track || track.children.length >= CAROUSEL_IMAGE_LIMIT) return;
+    const imgEl = document.createElement('img');
+    imgEl.src = img.blobUrl || img.url;
+    imgEl.alt = img.title || 'Gallery photo';
+    imgEl.className = 'carousel-img-loaded';
+    imgEl.decoding = 'async';
+    imgEl.loading = 'lazy';
+    if (img.width && img.height) {
+      imgEl.width = img.width;
+      imgEl.height = img.height;
+    }
+    track.appendChild(imgEl);
+  }
+
   function initCarouselScroll(track) {
     const carousel = track.parentElement;
     if (!carousel) return;
+    if (carouselAnimationFrame) {
+      cancelAnimationFrame(carouselAnimationFrame);
+      carouselAnimationFrame = null;
+    }
     let lastTimestamp = 0;
     let isPaused = false;
     let scrollPosition = carousel.scrollLeft;
     let resumeTimer = null;
     const speed = 20;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function pauseTemporarily(duration = 1400) {
       isPaused = true;
@@ -287,7 +304,8 @@
       if (!lastTimestamp) lastTimestamp = timestamp;
       const deltaMs = Math.min(timestamp - lastTimestamp, 100);
       lastTimestamp = timestamp;
-      if (!isPaused && speed > 0) {
+      const wrapperVisible = carousel.closest('.photo-carousel-wrapper')?.classList.contains('visible');
+      if (!document.hidden && wrapperVisible && !reducedMotion && !isPaused && speed > 0) {
         scrollPosition += speed * (deltaMs / 1000);
         carousel.scrollLeft = scrollPosition;
         const first = track.firstElementChild;
@@ -300,10 +318,10 @@
           }
         }
       }
-      requestAnimationFrame(tick);
+      carouselAnimationFrame = requestAnimationFrame(tick);
     }
 
-    requestAnimationFrame(tick);
+    carouselAnimationFrame = requestAnimationFrame(tick);
     carousel.addEventListener('pointerdown', () => {
       carousel.classList.add('is-dragging');
       scrollPosition = carousel.scrollLeft;
@@ -468,4 +486,3 @@
     }
   };
 })();
-

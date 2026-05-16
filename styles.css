@@ -669,18 +669,35 @@ section.active {
   overflow: hidden;
   border-radius: 0;
   cursor: pointer;
-  transition: transform 0.3s ease;
 }
 
-.gallery-item:hover {
-  transform: scale(1.02);
-  z-index: 1;
+@media (hover: hover) and (pointer: fine) {
+  .gallery-item {
+    transition: transform 0.3s ease;
+    will-change: transform;
+  }
+
+  .gallery-item:hover {
+    transform: scale(1.02);
+    z-index: 1;
+  }
 }
 
 .gallery-item img {
   display: block;
   width: 100%;
   height: auto;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.gallery-item.is-loading {
+  background-color: var(--line-color);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.gallery-item.is-loading img {
+  opacity: 0;
 }
 
 .gallery-skeleton {
@@ -863,7 +880,6 @@ section.active {
   background:
     radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.62), rgba(0, 0, 0, 0.38) 32%, transparent 68%),
     linear-gradient(90deg, rgba(0, 0, 0, 0.55), transparent 28%, transparent 72%, rgba(0, 0, 0, 0.55));
-  backdrop-filter: blur(3px);
   opacity: 0;
   pointer-events: none;
 }
@@ -1004,7 +1020,7 @@ section.active {
   border: none;
   background-color: var(--text-dark);
   cursor: pointer;
-  transition: all 0.5s ease-in-out;
+  transition: background-color 0.5s ease-in-out, opacity 0.5s ease-in-out;
   margin-top: 8px;
   flex-shrink: 0;
 }
@@ -1136,6 +1152,31 @@ section.active {
   60% { transform: translateY(-1px); }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  .photo-carousel {
+    scroll-behavior: auto;
+  }
+
+  .scroll-indicator-btn svg,
+  .gallery-skeleton,
+  .carousel-skeleton {
+    animation: none !important;
+  }
+}
+
 
 /* ============================================
    14. CURSOR FOLLOWER
@@ -1148,8 +1189,9 @@ section.active {
   position: fixed;
   pointer-events: none;
   z-index: 99999;
-  transform: translate(-50%, -50%);
+  transform: translate3d(0, 0, 0) translate(-50%, -50%);
   transition: width 0.3s ease-in-out, height 0.3s ease-in-out;
+  will-change: transform, width, height;
   mix-blend-mode: difference;
 }
 
