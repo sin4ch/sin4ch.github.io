@@ -686,14 +686,12 @@ section.active {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .gallery-item {
-    transition: transform 0.3s ease;
+  .gallery-item img {
     will-change: transform;
   }
 
-  .gallery-item:hover {
+  .gallery-item:hover img {
     transform: scale(1.02);
-    z-index: 1;
   }
 }
 
@@ -702,7 +700,7 @@ section.active {
   width: 100%;
   height: auto;
   opacity: 1;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .gallery-item.is-loading {
@@ -1411,6 +1409,10 @@ section.active {
     grid-template-rows: 1fr;
     min-height: 100vh;
     min-height: 100dvh;
+    padding-top: calc(var(--spacing) + 44px + 64px);
+  }
+
+  body.home-active .layout {
     padding-top: calc(var(--spacing) + 44px);
   }
 
@@ -1429,7 +1431,7 @@ section.active {
     justify-content: flex-start;
     align-items: flex-start;
     gap: 24px;
-    padding: calc(var(--spacing) + 44px) var(--spacing) 72px;
+    padding: calc(var(--spacing) + 44px + 64px) var(--spacing) 72px;
     transform: translateX(100%);
     visibility: hidden;
     transition: transform 0.35s cubic-bezier(0.65, 0, 0.35, 1), visibility 0.35s;
