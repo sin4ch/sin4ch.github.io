@@ -61,10 +61,6 @@ const sections = document.querySelectorAll('section');
 /* ============================================
    3. LOADING SCREEN
    ============================================ */
-function setActualProgress(pct) {
-  loadingProgress.set(pct);
-}
-
 function waitForSiteStyles() {
   const stylesheet = document.getElementById('site-stylesheet');
   if (!stylesheet || stylesheet.dataset.loaded === 'true') return Promise.resolve();
@@ -74,12 +70,12 @@ function waitForSiteStyles() {
 }
 
 async function initLoadingSequence() {
-  setActualProgress(24);
+  loadingProgress.report('scripts');
   await Promise.all([
     waitForSiteStyles(),
-    window.PortfolioGallery.preloadInitialImages(setActualProgress)
+    window.PortfolioGallery.preloadInitialImages(loadingProgress)
   ]);
-  setActualProgress(100);
+  loadingProgress.complete();
   await waitForDisplayedProgress(99.5);
   completeLoading();
   window.PortfolioGallery.loadRemainingImages();

@@ -173,13 +173,51 @@
   <script>
     (() => {
       const percentage = document.getElementById('loading-percentage');
-      let actual = 0;
+      const phaseNames = ['styles', 'scripts', 'manifest', 'previews', 'carousel'];
+      const baseWeights = { styles: 12, scripts: 12, manifest: 16, previews: 10, carousel: 44 };
+      const phaseState = Object.fromEntries(phaseNames.map((name) => [name, 0]));
+      const phaseLead = {};
+      const phaseWeights = {};
+      const randomUnit = () => {
+        if (globalThis.crypto?.getRandomValues) {
+          const value = new Uint32Array(1);
+          globalThis.crypto.getRandomValues(value);
+          return value[0] / 4294967296;
+        }
+        return Math.random();
+      };
+      let weightTotal = 0;
+      phaseNames.forEach((name) => {
+        phaseWeights[name] = baseWeights[name] * (.78 + randomUnit() * .44);
+        phaseLead[name] = .68 + randomUnit() * .24;
+        weightTotal += phaseWeights[name];
+      });
+      phaseNames.forEach((name) => {
+        phaseWeights[name] = phaseWeights[name] / weightTotal * 94;
+      });
+
       let displayed = 0;
+      let displayedInteger = 0;
+      let isComplete = false;
       let frame = null;
       let lastTimestamp = 0;
+      let velocity = .9 + randomUnit() * .3;
+      let velocityTarget = velocity;
+      let nextVelocityChange = 0;
       const waiters = [];
-      const rhythm = .82 + Math.random() * .36;
-      const phase = Math.random() * Math.PI * 2;
+
+      function getConfirmedProgress() {
+        return phaseNames.reduce((total, name) => total + phaseWeights[name] * phaseState[name], 0);
+      }
+
+      function getWorkingTarget() {
+        if (isComplete) return 100;
+        const confirmed = getConfirmedProgress();
+        const activeName = phaseNames.find((name) => phaseState[name] < 1);
+        if (!activeName) return 94;
+        const remaining = phaseWeights[activeName] * (1 - phaseState[activeName]);
+        return Math.min(94, confirmed + remaining * phaseLead[activeName]);
+      }
 
       function resolveWaiters() {
         for (let index = waiters.length - 1; index >= 0; index--) {
@@ -193,19 +231,31 @@
         if (!lastTimestamp) lastTimestamp = timestamp;
         const deltaSeconds = Math.min((timestamp - lastTimestamp) / 1000, .1);
         lastTimestamp = timestamp;
-        const pulse = 1 + Math.sin(timestamp * .003 * rhythm + phase) * .14;
-        const workingCeiling = actual < 100 ? Math.min(94, actual + 7) : 100;
-        const target = Math.max(actual, workingCeiling);
+
+        if (timestamp >= nextVelocityChange) {
+          velocityTarget = .68 + randomUnit() * .74;
+          nextVelocityChange = timestamp + 420 + randomUnit() * 980;
+        }
+        velocity += (velocityTarget - velocity) * Math.min(1, deltaSeconds * 2.4);
+
+        const target = getWorkingTarget();
         const gap = target - displayed;
-        const speed = actual >= 100 ? Math.max(32, gap * 5.5) : Math.max(2.6, gap * 2.2) * pulse;
+        const speed = isComplete
+          ? Math.max(30, gap * 5.5)
+          : Math.max(.45, Math.min(8, gap * 1.35)) * velocity;
 
         if (gap > .01) displayed = Math.min(target, displayed + speed * deltaSeconds);
-        percentage.textContent = Math.round(displayed) + '%';
+        const nextInteger = Math.round(displayed);
+        if (nextInteger !== displayedInteger) {
+          displayedInteger = nextInteger;
+          percentage.textContent = displayedInteger + '%';
+        }
         resolveWaiters();
 
-        if (displayed < 99.95) frame = requestAnimationFrame(animate);
+        if (!isComplete || displayed < 99.95) frame = requestAnimationFrame(animate);
         else {
           displayed = 100;
+          displayedInteger = 100;
           percentage.textContent = '100%';
           frame = null;
           resolveWaiters();
@@ -213,8 +263,17 @@
       }
 
       window.LoadingProgress = {
-        set(value) {
-          actual = Math.max(actual, Math.min(value, 100));
+        report(name, value = 1) {
+          if (!(name in phaseState)) return;
+          phaseState[name] = Math.max(phaseState[name], Math.min(Math.max(value, 0), 1));
+          if (frame === null) {
+            lastTimestamp = 0;
+            frame = requestAnimationFrame(animate);
+          }
+        },
+        complete() {
+          phaseNames.forEach((name) => { phaseState[name] = 1; });
+          isComplete = true;
           if (frame === null) {
             lastTimestamp = 0;
             frame = requestAnimationFrame(animate);
@@ -226,10 +285,10 @@
         }
       };
 
-      window.LoadingProgress.set(0);
+      frame = requestAnimationFrame(animate);
       const stylesheet = document.getElementById('site-stylesheet');
-      if (stylesheet?.dataset.loaded === 'true') window.LoadingProgress.set(12);
-      else window.addEventListener('site-styles-ready', () => window.LoadingProgress.set(12), { once: true });
+      if (stylesheet?.dataset.loaded === 'true') window.LoadingProgress.report('styles');
+      else window.addEventListener('site-styles-ready', () => window.LoadingProgress.report('styles'), { once: true });
     })();
   </script>
   <noscript><style>.loading-screen { display: none; }</style></noscript>
@@ -1087,7 +1146,7 @@
       </div>
     </div>
   </div>
-  <script src="/gallery.js?v=6" defer onload="window.LoadingProgress?.set(18)"></script>
-  <script src="/main.js?v=21" defer></script>
+  <script src="/gallery.js?v=7" defer></script>
+  <script src="/main.js?v=22" defer></script>
 </body>
 </html>

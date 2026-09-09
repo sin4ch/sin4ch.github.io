@@ -395,19 +395,20 @@
     return result;
   }
 
-  async function preloadInitialImages(setProgress) {
+  async function preloadInitialImages(progress) {
     const startedAt = performance.now();
-    setProgress(24);
     await loadGalleryData();
-    setProgress(40);
+    progress.report('manifest');
     if (!galleryImages.length) {
+      progress.report('previews');
+      progress.report('carousel');
       await waitUntil(startedAt + MINIMUM_LOADER_MS);
       return;
     }
 
     buildGalleryGrid();
     buildCarouselTrack();
-    setProgress(48);
+    progress.report('previews');
 
     const criticalImages = getInitialCarouselImages();
     const totalBytes = criticalImages.reduce((sum, image) => sum + (image.fileSize || 1), 0);
@@ -453,12 +454,12 @@
           .finally(() => {
             completedBytes += imageData.fileSize || 1;
             const fraction = totalBytes ? completedBytes / totalBytes : 1;
-            setProgress(48 + fraction * 44);
+            progress.report('carousel', fraction);
             checkReadiness();
           });
       });
     });
-    setProgress(96);
+    progress.report('carousel');
   }
 
   function waitUntil(timestamp) {
