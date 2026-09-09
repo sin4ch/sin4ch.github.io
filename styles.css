@@ -278,6 +278,24 @@ body.is-resizing .sidebar {
   font-family: var(--font-mono);
 }
 
+@media (min-width: 769px) {
+  .sidebar {
+    font-family: var(--font-sans);
+  }
+
+  .sidebar .nav-item {
+    font-size: var(--font-size-body);
+    font-weight: 400;
+    letter-spacing: 0;
+    line-height: 1;
+    text-transform: none;
+  }
+
+  .sidebar .nav-item.active {
+    font-weight: 500;
+  }
+}
+
 .nav-item:hover {
   color: var(--text-dark);
 }
@@ -403,49 +421,31 @@ body.is-resizing .sidebar {
 .contact-tooltip {
   position: absolute;
   left: 50%;
-  bottom: calc(100% + 13px);
+  bottom: calc(100% + 8px);
   z-index: 20;
   display: block;
-  padding: 7px 10px;
-  background-color: var(--bg-light);
-  border: 1px solid var(--line-color);
-  color: var(--text-dark);
-  font-family: var(--font-sans);
-  font-size: var(--font-size-small);
+  padding: var(--badge-padding);
+  background: var(--bg-light);
+  border: 1px solid var(--text-muted);
+  border-radius: var(--badge-radius);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-badge);
   font-weight: 400;
   line-height: 1.2;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  transform: translate(-50%, 4px);
+  transform: translate(-50%, 3px);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.16s ease, transform 0.16s ease, border-color 0.16s ease;
+  transition: opacity 0.16s ease, transform 0.16s ease;
   white-space: nowrap;
-}
-
-.contact-tooltip::after {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: calc(100% - 7px);
-  width: 14px;
-  height: 14px;
-  background-color: var(--bg-light);
-  border-right: 1px solid var(--line-color);
-  border-bottom: 1px solid var(--line-color);
-  transform: translateX(-50%) rotate(45deg);
-  transition: border-color 0.16s ease;
 }
 
 .contact-icon:hover .contact-tooltip,
 .contact-icon:focus-visible .contact-tooltip {
   opacity: 1;
   transform: translate(-50%, 0);
-  border-color: var(--text-muted);
-}
-
-.contact-icon:hover .contact-tooltip::after,
-.contact-icon:focus-visible .contact-tooltip::after {
-  border-color: var(--text-muted);
 }
 
 .contact-icon svg {
@@ -1479,7 +1479,7 @@ section.filter-compact {
 
   .contact-tooltip {
     transform: translate(-50%, 0);
-    transition: opacity 0.16s ease, border-color 0.16s ease;
+    transition: opacity 0.16s ease;
   }
 
   .home-work-link:hover span {
