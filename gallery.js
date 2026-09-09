@@ -90,7 +90,7 @@
       const data = await response.json();
       if (data.images && data.images.length > 0) {
         galleryData = data;
-        galleryImages = [...data.images];
+        galleryImages = shuffle(data.images);
         carouselImages = shuffle(data.images);
       }
     } catch (error) {
