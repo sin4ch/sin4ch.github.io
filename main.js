@@ -49,15 +49,9 @@ function getQueryRoute() {
 /* ============================================
    2. SHARED STATE
    ============================================ */
-let actualPct = 0;
-let displayedPct = 0;
-let animating = false;
-let progressFrame = null;
-let progressLastTimestamp = 0;
-const progressRhythm = 0.82 + Math.random() * 0.36;
-const progressPhase = Math.random() * Math.PI * 2;
 const loadingScreen = document.getElementById('loading-screen');
 const loadingPercentage = document.getElementById('loading-percentage');
+const loadingProgress = window.LoadingProgress;
 const mainWrapper = document.getElementById('main-wrapper');
 const navItems = document.querySelectorAll('.nav-item');
 const sections = document.querySelectorAll('section');
@@ -68,42 +62,23 @@ const sections = document.querySelectorAll('section');
    3. LOADING SCREEN
    ============================================ */
 function setActualProgress(pct) {
-  actualPct = Math.max(actualPct, Math.min(pct, 100));
-  if (!animating) {
-    animating = true;
-    progressFrame = requestAnimationFrame(animateCounter);
-  }
+  loadingProgress.set(pct);
 }
 
-function animateCounter(timestamp) {
-  if (!progressLastTimestamp) progressLastTimestamp = timestamp;
-  const deltaSeconds = Math.min((timestamp - progressLastTimestamp) / 1000, 0.1);
-  progressLastTimestamp = timestamp;
-
-  const pulse = 1 + Math.sin(timestamp * 0.003 * progressRhythm + progressPhase) * 0.14;
-  const workingCeiling = actualPct < 100 ? Math.min(94, actualPct + 7) : 100;
-  const target = Math.max(actualPct, workingCeiling);
-  const gap = target - displayedPct;
-  const speed = actualPct >= 100
-    ? Math.max(32, gap * 5.5)
-    : Math.max(2.6, gap * 2.2) * pulse;
-
-  if (gap > 0.01) displayedPct = Math.min(target, displayedPct + speed * deltaSeconds);
-  loadingPercentage.textContent = Math.round(displayedPct) + '%';
-
-  if (displayedPct < 99.95) {
-    progressFrame = requestAnimationFrame(animateCounter);
-  } else {
-    loadingPercentage.textContent = '100%';
-    displayedPct = 100;
-    animating = false;
-    progressFrame = null;
-  }
+function waitForSiteStyles() {
+  const stylesheet = document.getElementById('site-stylesheet');
+  if (!stylesheet || stylesheet.dataset.loaded === 'true') return Promise.resolve();
+  return new Promise((resolve) => {
+    window.addEventListener('site-styles-ready', resolve, { once: true });
+  });
 }
 
 async function initLoadingSequence() {
-  loadingScreen.classList.add('ready');
-  await window.PortfolioGallery.preloadInitialImages(setActualProgress);
+  setActualProgress(24);
+  await Promise.all([
+    waitForSiteStyles(),
+    window.PortfolioGallery.preloadInitialImages(setActualProgress)
+  ]);
   setActualProgress(100);
   await waitForDisplayedProgress(99.5);
   completeLoading();
@@ -111,13 +86,7 @@ async function initLoadingSequence() {
 }
 
 function waitForDisplayedProgress(target) {
-  return new Promise(resolve => {
-    function check() {
-      if (displayedPct >= target) resolve();
-      else requestAnimationFrame(check);
-    }
-    check();
-  });
+  return loadingProgress.waitFor(target);
 }
 
 function completeLoading() {
@@ -690,14 +659,10 @@ function positionCarousel() {
    ============================================ */
 let lastColCount = window.PortfolioGallery.getColumnCount();
 let resizeTimer = null;
+let resizeFrame = null;
 
-window.addEventListener('resize', () => {
-  document.body.classList.add('is-resizing');
-  window.clearTimeout(resizeTimer);
-  resizeTimer = window.setTimeout(() => {
-    document.body.classList.remove('is-resizing');
-  }, 150);
-
+function applyResizeLayout() {
+  resizeFrame = null;
   if (window.innerWidth > 768 && sidebar.classList.contains('menu-open')) {
     closeMobileMenu();
   }
@@ -708,6 +673,16 @@ window.addEventListener('resize', () => {
     lastColCount = newColCount;
     window.PortfolioGallery.buildGalleryGrid();
   }
+}
+
+window.addEventListener('resize', () => {
+  document.body.classList.add('is-resizing');
+  window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => {
+    document.body.classList.remove('is-resizing');
+  }, 150);
+
+  if (resizeFrame === null) resizeFrame = requestAnimationFrame(applyResizeLayout);
 });
 
 document.addEventListener('visibilitychange', () => {

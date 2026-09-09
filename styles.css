@@ -233,7 +233,7 @@ button:focus:not(:focus-visible),
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: grid-column 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  transition: opacity 0.3s ease-in-out;
 }
 
 body.is-resizing .sidebar {
@@ -244,7 +244,6 @@ body.is-resizing .sidebar {
   grid-column: 2 / 5;
   overflow: visible;
   touch-action: pan-y pinch-zoom;
-  transition: grid-column 0.3s ease-in-out;
 }
 
 
@@ -487,7 +486,6 @@ section {
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-  will-change: opacity;
   overflow: visible;
   padding-bottom: var(--spacing);
   touch-action: pan-y pinch-zoom;
@@ -755,6 +753,14 @@ section.filter-compact {
   grid-area: 1 / 1;
 }
 
+.experience-logo-link.logo-loaded::before {
+  content: none;
+}
+
+.experience-logo-link.logo-loaded {
+  background-color: transparent;
+}
+
 .experience-logo {
   position: relative;
   z-index: 1;
@@ -993,7 +999,7 @@ section.filter-compact {
   }
 
   .gallery-item:hover .progressive-image-preview {
-    transform: scale(1.055);
+    transform: scale(1.1);
   }
 }
 
@@ -1009,8 +1015,19 @@ section.filter-compact {
 
 .progressive-image-preview {
   opacity: 1;
-  transform: scale(1.035);
+  filter: blur(12px);
+  transform: scale(1.08);
   transition: opacity 0.36s ease-out, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.progressive-image.is-loading-visible:not(.is-sharp):not(.image-load-failed) .progressive-image-preview,
+.lightbox.active:not(.is-sharp):not(.image-load-failed) .lightbox-preview {
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 0.3; }
 }
 
 .progressive-image-original {
@@ -1020,6 +1037,7 @@ section.filter-compact {
 }
 
 .progressive-image.is-sharp .progressive-image-preview {
+  animation: none;
   opacity: 0;
 }
 
@@ -1042,7 +1060,6 @@ section.filter-compact {
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-  will-change: opacity;
 }
 
 .photo-carousel-wrapper.visible {
@@ -1311,7 +1328,8 @@ section.filter-compact {
   width: 100%;
   height: 100%;
   opacity: 1;
-  transform: scale(1.02);
+  filter: blur(12px);
+  transform: scale(1.08);
   transition: opacity 0.3s ease-out;
 }
 
@@ -1406,10 +1424,6 @@ section.filter-compact {
   align-items: center;
   justify-content: center;
   transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-  opacity: 0;
-}
-
-.loading-screen.ready {
   opacity: 1;
 }
 
@@ -1445,21 +1459,56 @@ section.filter-compact {
     scroll-behavior: auto;
   }
 
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    scroll-behavior: auto !important;
-    transition-duration: 0.001ms !important;
+  .main-wrapper {
+    transform: none;
+    transition: none !important;
+  }
+
+  .loading-screen,
+  .sidebar {
+    transition: none !important;
+  }
+
+  .loading-screen.hidden {
+    transform: none;
+  }
+
+  .hamburger-line {
+    transition: opacity 0.16s ease !important;
+  }
+
+  .contact-tooltip {
+    transform: translate(-50%, 0);
+    transition: opacity 0.16s ease, border-color 0.16s ease;
+  }
+
+  .home-work-link:hover span {
+    transform: none;
+  }
+
+  .gallery-item:hover .progressive-image-original {
+    transform: scale(1);
+  }
+
+  .gallery-item:hover .progressive-image-preview {
+    transform: scale(1.08);
   }
 
   .photo-carousel {
     scroll-behavior: auto;
   }
 
-  .gallery-skeleton {
+  .gallery-skeleton,
+  .progressive-image-preview,
+  .lightbox-preview,
+  .lightbox-hint-arrow,
+  .lightbox-hint-click::after {
     animation: none !important;
+  }
+
+  .lightbox-hint-overlay.is-visible {
+    animation: none;
+    opacity: 1;
   }
 }
 
@@ -1471,19 +1520,27 @@ section.filter-compact {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background-color: var(--color-cream);
+  background-color: transparent;
   position: fixed;
   pointer-events: none;
   z-index: 99999;
   transform: translate3d(0, 0, 0) translate(-50%, -50%);
-  transition: width 0.3s ease-in-out, height 0.3s ease-in-out;
-  will-change: transform, width, height;
+  will-change: transform;
   mix-blend-mode: difference;
 }
 
-.cursor-follower.hovering {
-  width: 30px;
-  height: 30px;
+.cursor-follower::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--color-cream);
+  transform: scale(1);
+  transition: transform 0.3s ease-in-out;
+}
+
+.cursor-follower.hovering::before {
+  transform: scale(2.5);
 }
 
 @media (hover: none) and (pointer: coarse) {

@@ -18,6 +18,7 @@
   let carouselAnimationFrame = null;
   let carouselObserver = null;
   let galleryObserver = null;
+  let loadingAnimationObserver = null;
   let galleryLoadTarget = -1;
   let galleryNextRequest = 0;
   let galleryNextReveal = 0;
@@ -161,6 +162,26 @@
     return { preview, original };
   }
 
+  function observeLoadingAnimation(container) {
+    if (!('IntersectionObserver' in window)) {
+      container.classList.add('is-loading-visible');
+      return;
+    }
+    if (!loadingAnimationObserver) {
+      loadingAnimationObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          entry.target.classList.toggle('is-loading-visible', entry.isIntersecting);
+        });
+      }, { rootMargin: '100px', threshold: 0.01 });
+    }
+    loadingAnimationObserver.observe(container);
+  }
+
+  function stopLoadingAnimation(container) {
+    container.classList.remove('is-loading-visible');
+    loadingAnimationObserver?.unobserve(container);
+  }
+
   async function revealOriginal(container, original, preview, imageData, priority = 'auto') {
     if (container.classList.contains('is-sharp')) return true;
     try {
@@ -171,12 +192,14 @@
         if (original.decode) await original.decode();
       } catch (error) {}
       container.classList.add('is-sharp');
+      stopLoadingAnimation(container);
       window.setTimeout(() => {
         if (container.classList.contains('is-sharp')) preview.removeAttribute('src');
       }, 420);
       return true;
     } catch (error) {
       container.classList.add('image-load-failed');
+      stopLoadingAnimation(container);
       return false;
     }
   }
@@ -216,6 +239,7 @@
 
     const { preview, original } = createImageLayers(imageData, 'gallery');
     item.append(preview, original);
+    observeLoadingAnimation(item);
     item.addEventListener('click', () => openLightbox(index));
     galleryElements[index] = { item, preview, original, imageData };
     return item;
@@ -296,7 +320,10 @@
       const entry = galleryElements[galleryNextReveal];
       if (entry) {
         if (succeeded) revealOriginal(entry.item, entry.original, entry.preview, entry.imageData);
-        else entry.item.classList.add('image-load-failed');
+        else {
+          entry.item.classList.add('image-load-failed');
+          stopLoadingAnimation(entry.item);
+        }
       }
       galleryNextReveal++;
     }
@@ -311,6 +338,7 @@
 
     const { preview, original } = createImageLayers(imageData, 'carousel');
     slide.append(preview, original);
+    observeLoadingAnimation(slide);
     carouselSlides.set(imageData.id, { slide, preview, original, imageData });
     return slide;
   }
@@ -369,9 +397,9 @@
 
   async function preloadInitialImages(setProgress) {
     const startedAt = performance.now();
-    setProgress(5);
+    setProgress(24);
     await loadGalleryData();
-    setProgress(16);
+    setProgress(40);
     if (!galleryImages.length) {
       await waitUntil(startedAt + MINIMUM_LOADER_MS);
       return;
@@ -379,7 +407,7 @@
 
     buildGalleryGrid();
     buildCarouselTrack();
-    setProgress(28);
+    setProgress(48);
 
     const criticalImages = getInitialCarouselImages();
     const totalBytes = criticalImages.reduce((sum, image) => sum + (image.fileSize || 1), 0);
@@ -425,7 +453,7 @@
           .finally(() => {
             completedBytes += imageData.fileSize || 1;
             const fraction = totalBytes ? completedBytes / totalBytes : 1;
-            setProgress(28 + fraction * 62);
+            setProgress(48 + fraction * 44);
             checkReadiness();
           });
       });

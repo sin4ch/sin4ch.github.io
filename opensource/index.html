@@ -124,9 +124,43 @@
   <link rel="manifest" href="/site.webmanifest">
 
   <title>Open Source - Osinachi Okpara</title>
-  <link rel="preload" href="https://rsms.me/inter/font-files/InterVariable.woff2?v=4.1" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="/fonts/GeistMono-Regular.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="/styles.css?v=66">
+  <style>
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #ffead3;
+      color-scheme: light;
+    }
+    html.dark-mode, html.dark-mode body {
+      background: #121212;
+      color-scheme: dark;
+    }
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffead3;
+      color: #121212;
+    }
+    html.dark-mode .loading-screen {
+      background: #121212;
+      color: #ffead3;
+    }
+    .loading-content { text-align: center; }
+    .loading-percentage {
+      display: inline-block;
+      width: 5ch;
+      font: 400 14px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      letter-spacing: .1em;
+      text-align: right;
+    }
+  </style>
+  <link id="site-stylesheet" rel="preload" href="/styles.css?v=68" as="style"
+    onload="this.onload=null;this.rel='stylesheet';this.dataset.loaded='true';window.dispatchEvent(new Event('site-styles-ready'))">
+  <noscript><link rel="stylesheet" href="/styles.css?v=68"></noscript>
 </head>
 <body class="loading-active">
 
@@ -136,6 +170,69 @@
       <div class="loading-percentage" id="loading-percentage">0%</div>
     </div>
   </div>
+  <script>
+    (() => {
+      const percentage = document.getElementById('loading-percentage');
+      let actual = 0;
+      let displayed = 0;
+      let frame = null;
+      let lastTimestamp = 0;
+      const waiters = [];
+      const rhythm = .82 + Math.random() * .36;
+      const phase = Math.random() * Math.PI * 2;
+
+      function resolveWaiters() {
+        for (let index = waiters.length - 1; index >= 0; index--) {
+          if (displayed >= waiters[index].target) {
+            waiters.splice(index, 1)[0].resolve();
+          }
+        }
+      }
+
+      function animate(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const deltaSeconds = Math.min((timestamp - lastTimestamp) / 1000, .1);
+        lastTimestamp = timestamp;
+        const pulse = 1 + Math.sin(timestamp * .003 * rhythm + phase) * .14;
+        const workingCeiling = actual < 100 ? Math.min(94, actual + 7) : 100;
+        const target = Math.max(actual, workingCeiling);
+        const gap = target - displayed;
+        const speed = actual >= 100 ? Math.max(32, gap * 5.5) : Math.max(2.6, gap * 2.2) * pulse;
+
+        if (gap > .01) displayed = Math.min(target, displayed + speed * deltaSeconds);
+        percentage.textContent = Math.round(displayed) + '%';
+        resolveWaiters();
+
+        if (displayed < 99.95) frame = requestAnimationFrame(animate);
+        else {
+          displayed = 100;
+          percentage.textContent = '100%';
+          frame = null;
+          resolveWaiters();
+        }
+      }
+
+      window.LoadingProgress = {
+        set(value) {
+          actual = Math.max(actual, Math.min(value, 100));
+          if (frame === null) {
+            lastTimestamp = 0;
+            frame = requestAnimationFrame(animate);
+          }
+        },
+        waitFor(target) {
+          if (displayed >= target) return Promise.resolve();
+          return new Promise((resolve) => waiters.push({ target, resolve }));
+        }
+      };
+
+      window.LoadingProgress.set(0);
+      const stylesheet = document.getElementById('site-stylesheet');
+      if (stylesheet?.dataset.loaded === 'true') window.LoadingProgress.set(12);
+      else window.addEventListener('site-styles-ready', () => window.LoadingProgress.set(12), { once: true });
+    })();
+  </script>
+  <noscript><style>.loading-screen { display: none; }</style></noscript>
 
   <!-- Lightbox -->
   <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Gallery image viewer" aria-hidden="true">
@@ -990,7 +1087,7 @@
       </div>
     </div>
   </div>
-  <script src="/gallery.js?v=5" defer></script>
-  <script src="/main.js?v=20" defer></script>
+  <script src="/gallery.js?v=6" defer onload="window.LoadingProgress?.set(18)"></script>
+  <script src="/main.js?v=21" defer></script>
 </body>
 </html>

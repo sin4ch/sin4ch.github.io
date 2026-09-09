@@ -12,7 +12,6 @@ function generatePreview(imagePath) {
     imagePath,
     '-auto-orient',
     '-resize', `${PREVIEW_WIDTH}x`,
-    '-gaussian-blur', '0x2.0',
     '-quality', String(PREVIEW_QUALITY),
     'webp:-'
   ]);
