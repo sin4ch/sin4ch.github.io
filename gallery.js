@@ -1,33 +1,39 @@
 /* ============================================
    GALLERY MODULE
-   ============================================
-   1.  State & DOM References
-   2.  Gallery Data & Loading
-   3.  Gallery Grid
-   4.  Photo Carousel
-   5.  Lightbox / Story Viewer
-   6.  Public API
    ============================================ */
 (function() {
-  /* ============================================
-     1. STATE & DOM REFERENCES
-     ============================================ */
-  const INITIAL_COUNT = 4;
-  const CAROUSEL_IMAGE_LIMIT = 28;
-  const MOBILE_CAROUSEL_INITIAL_LIMIT = 8;
-  const GALLERY_BATCH_SIZE = 12;
+  const MINIMUM_LOADER_MS = 700;
+  const SOFT_LOADER_MS = 2500;
+  const HARD_LOADER_MS = 4000;
+  const STORY_DURATION = 5000;
+  const CAROUSEL_SPEED = 48;
+
   let galleryData = null;
   let galleryImages = [];
+  let carouselImages = [];
   let galleryColumns = [];
   let columnHeights = [];
-  let gallerySkeletonsById = {};
-  let shuffledGalleryImages = [];
+  let galleryElements = [];
+  let carouselSlides = new Map();
   let carouselAnimationFrame = null;
-  let carouselImageLimit = CAROUSEL_IMAGE_LIMIT;
-  let carouselExpansionScheduled = false;
+  let carouselObserver = null;
+  let galleryObserver = null;
+  let galleryLoadTarget = -1;
+  let galleryNextRequest = 0;
+  let galleryNextReveal = 0;
+  let galleryActiveLoads = 0;
+  let galleryResults = new Map();
+  let lastCarouselWarmAt = 0;
+  let fastWarmScheduled = false;
+
+  const imageRequests = new Map();
+  const recentImageDurations = [];
+  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
   const lightbox = document.getElementById('lightbox');
   const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxPreview = document.getElementById('lightbox-preview');
   const lightboxClose = document.getElementById('lightbox-close');
   const lightboxTapPrev = document.getElementById('lightbox-tap-prev');
   const lightboxTapNext = document.getElementById('lightbox-tap-next');
@@ -35,9 +41,9 @@
   const lightboxHintOverlay = document.getElementById('lightbox-hint-overlay');
   const lightboxCounter = document.getElementById('lightbox-counter');
   const lightboxStoryProgress = document.getElementById('lightbox-story-progress');
-  const STORY_DURATION = 5000;
-  const reducedMotionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
   let currentImageIndex = 0;
+  let lightboxRequestToken = 0;
   let storyTimer = null;
   let storyStartedAt = 0;
   let storyRemaining = STORY_DURATION;
@@ -46,154 +52,147 @@
   let lightboxTrigger = null;
   let backgroundStates = [];
 
-  /* ============================================
-     2. GALLERY DATA & LOADING
-     ============================================ */
-  async function loadGalleryData() {
-    try {
-      const response = await fetch('/gallery/gallery.json');
-      const data = await response.json();
-      if (data.images && data.images.length > 0) galleryData = data;
-    } catch (e) {}
+  function getConnectionProfile() {
+    const measuredFast = recentImageDurations.length >= 3 && getAverageImageDuration() < 1500;
+    if (!connection) return measuredFast ? 'fast' : 'standard';
+    const measuredDownlink = Number(connection.downlink) || 0;
+    if (connection.saveData || /(^|-)2g$/.test(connection.effectiveType || '') || (measuredDownlink > 0 && measuredDownlink < 1.5)) {
+      return 'slow';
+    }
+    if (measuredFast || (connection.effectiveType === '4g' && (!measuredDownlink || measuredDownlink >= 8))) {
+      return 'fast';
+    }
+    return 'standard';
   }
 
-  function getGallerySequence() {
-    if (!galleryData) return [];
-    return shuffledGalleryImages.length > 0 ? shuffledGalleryImages : galleryData.images;
+  function getGalleryConcurrency() {
+    const profile = getConnectionProfile();
+    if (profile === 'fast') return galleryImages.length;
+    if (profile === 'slow') return 4;
+    return 8;
   }
 
-  function getUnloadedImages() {
-    const loadedIds = new Set(galleryImages.map(img => img.id));
-    return getGallerySequence().filter(img => !loadedIds.has(img.id));
-  }
-
-  async function preloadInitialImages(setProgress) {
-    await loadGalleryData();
-    if (!galleryData || !galleryData.images.length) return;
-
-    const shuffledImages = [...galleryData.images];
-    for (let i = shuffledImages.length - 1; i > 0; i--) {
+  function shuffle(images) {
+    const result = [...images];
+    for (let i = result.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [shuffledImages[i], shuffledImages[j]] = [shuffledImages[j], shuffledImages[i]];
+      [result[i], result[j]] = [result[j], result[i]];
     }
-    shuffledGalleryImages = shuffledImages;
+    return result;
+  }
 
-    const initialBatch = shuffledImages.slice(0, INITIAL_COUNT);
-    let completed = 0;
-    let targetPct = 0;
-    let simulatedPct = 0;
-    const speedJitter = 0.5 + Math.random() * 0.5;
-    const decelBase = 0.01 + Math.random() * 0.06;
-    const weights = Array.from({length: INITIAL_COUNT}, () => 0.5 + Math.random());
-    const totalWeight = weights.reduce((a, b) => a + b, 0);
-    const checkpoints = [];
-    let cumulative = 0;
-    weights.forEach(w => {
-      cumulative += (w / totalWeight) * 100;
-      checkpoints.push(cumulative);
-    });
-    checkpoints[checkpoints.length - 1] = 100;
-    const bufferOffsets = Array.from({length: INITIAL_COUNT}, () => Math.floor(Math.random() * 21) - 10);
-    let simRunning = true;
-
-    function tickProgress() {
-      if (!simRunning) return;
-      const gap = targetPct - simulatedPct;
-      const noise = 0.8 + Math.random() * 0.4;
-      let speed;
-      if (gap > 5) {
-        speed = (1.0 + gap * 0.15) * speedJitter * noise;
-      } else if (gap > 0) {
-        speed = (0.2 + gap * 0.08) * speedJitter * noise;
-      } else {
-        const currentOffset = bufferOffsets[completed] || 0;
-        const buffer = targetPct < 100 ? Math.max(0, targetPct + currentOffset) : 100;
-        speed = simulatedPct < buffer ? decelBase * noise : 0;
+  async function loadGalleryData() {
+    if (galleryData) return galleryData;
+    try {
+      const response = await fetch('/gallery/gallery.json?v=2');
+      if (!response.ok) throw new Error('Gallery manifest request failed');
+      const data = await response.json();
+      if (data.images && data.images.length > 0) {
+        galleryData = data;
+        galleryImages = [...data.images];
+        carouselImages = shuffle(data.images);
       }
-      simulatedPct = Math.min(simulatedPct + speed, 100);
-      setProgress(simulatedPct);
-      requestAnimationFrame(tickProgress);
+    } catch (error) {
+      galleryData = { images: [] };
+      galleryImages = [];
+      carouselImages = [];
     }
-    requestAnimationFrame(tickProgress);
+    return galleryData;
+  }
 
-    for (const imageData of initialBatch) {
+  function requestImage(imageData, priority = 'auto') {
+    const existing = imageRequests.get(imageData.id);
+    if (existing?.status === 'loaded') return Promise.resolve(existing);
+    if (existing?.status === 'loading') {
+      if (priority === 'high') existing.loader.fetchPriority = 'high';
+      return existing.promise;
+    }
+
+    const loader = new Image();
+    const startedAt = performance.now();
+    const state = { status: 'loading', loader, startedAt, promise: null };
+    loader.decoding = 'async';
+    loader.fetchPriority = priority;
+
+    state.promise = new Promise((resolve, reject) => {
+      loader.addEventListener('load', async () => {
+        try {
+          if (loader.decode) await loader.decode();
+        } catch (error) {}
+        state.status = 'loaded';
+        state.duration = performance.now() - startedAt;
+        recentImageDurations.push(state.duration);
+        if (recentImageDurations.length > 8) recentImageDurations.shift();
+        maybeWarmEverything();
+        resolve(state);
+      }, { once: true });
+      loader.addEventListener('error', () => {
+        state.status = 'error';
+        reject(new Error(`Could not load ${imageData.url}`));
+      }, { once: true });
+      loader.src = imageData.url;
+    });
+
+    imageRequests.set(imageData.id, state);
+    return state.promise;
+  }
+
+  function setImageDimensions(imgEl, imageData) {
+    if (!imageData.width || !imageData.height) return;
+    imgEl.width = imageData.width;
+    imgEl.height = imageData.height;
+  }
+
+  function createImageLayers(imageData, context) {
+    const preview = document.createElement('img');
+    preview.className = 'progressive-image-preview';
+    preview.src = imageData.preview || '';
+    preview.alt = '';
+    preview.setAttribute('aria-hidden', 'true');
+    preview.decoding = 'async';
+    setImageDimensions(preview, imageData);
+
+    const original = document.createElement('img');
+    original.className = 'progressive-image-original';
+    original.alt = context === 'carousel' ? '' : (imageData.title || 'Gallery photo');
+    original.decoding = 'async';
+    setImageDimensions(original, imageData);
+
+    return { preview, original };
+  }
+
+  async function revealOriginal(container, original, preview, imageData, priority = 'auto') {
+    if (container.classList.contains('is-sharp')) return true;
+    try {
+      await requestImage(imageData, priority);
+      if (!original.src) original.src = imageData.url;
+      if (priority === 'high') original.fetchPriority = 'high';
       try {
-        const img = new Image();
-        img.decoding = 'async';
-        img.src = imageData.url;
-        await img.decode();
-        imageData.naturalWidth = img.naturalWidth;
-        imageData.naturalHeight = img.naturalHeight;
-        galleryImages.push(imageData);
-      } catch (e) {}
-      completed++;
-      targetPct = checkpoints[completed - 1];
+        if (original.decode) await original.decode();
+      } catch (error) {}
+      container.classList.add('is-sharp');
+      window.setTimeout(() => {
+        if (container.classList.contains('is-sharp')) preview.removeAttribute('src');
+      }, 420);
+      return true;
+    } catch (error) {
+      container.classList.add('image-load-failed');
+      return false;
     }
-
-    await new Promise(r => {
-      function waitForAnimation() {
-        const currentText = document.getElementById('loading-percentage')?.textContent || '0%';
-        const displayedPct = parseFloat(currentText) || 0;
-        if (displayedPct >= 99.5) {
-          simRunning = false;
-          r();
-          return;
-        }
-        requestAnimationFrame(waitForAnimation);
-      }
-      waitForAnimation();
-    });
   }
 
-  function loadRemainingImages() {
-    if (!galleryData) return;
-    const remaining = getUnloadedImages();
-    if (remaining.length === 0) return;
-    let idx = 0;
-
-    function appendGalleryBatch() {
-      if (idx >= remaining.length) return;
-      const end = Math.min(idx + GALLERY_BATCH_SIZE, remaining.length);
-      while (idx < end) {
-        const imageData = remaining[idx++];
-        imageData.naturalWidth = imageData.naturalWidth || imageData.width;
-        imageData.naturalHeight = imageData.naturalHeight || imageData.height;
-        galleryImages.push(imageData);
-        appendToGalleryGrid(imageData);
-        appendToCarousel(imageData);
-      }
-      scheduleNextGalleryBatch();
-    }
-
-    function scheduleNextGalleryBatch() {
-      if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(appendGalleryBatch, { timeout: 700 });
-      } else {
-        window.setTimeout(appendGalleryBatch, 24);
-      }
-    }
-
-    scheduleNextGalleryBatch();
-  }
-
-  /* ============================================
-     3. GALLERY GRID
-     ============================================ */
   function getColumnCount() {
-    const w = window.innerWidth;
-    if (w <= 480) return 1;
-    if (w <= 768) return 2;
-    if (w <= 1024) return 3;
+    const width = window.innerWidth;
+    if (width <= 480) return 1;
+    if (width <= 768) return 2;
+    if (width <= 1024) return 3;
     return 4;
   }
 
   function getRenderedImageHeight(imageData) {
-    const imageWidth = imageData.naturalWidth || imageData.width;
-    const imageHeight = imageData.naturalHeight || imageData.height;
-    if (!imageWidth || !imageHeight) return 200;
-    if (galleryColumns.length === 0) return 200;
-    const colWidth = galleryColumns[0].offsetWidth || 200;
-    return (imageHeight / imageWidth) * colWidth;
+    if (!imageData.width || !imageData.height || galleryColumns.length === 0) return 200;
+    const columnWidth = galleryColumns[0].offsetWidth || 200;
+    return (imageData.height / imageData.width) * columnWidth;
   }
 
   function getShortestColumnIndex() {
@@ -201,169 +200,297 @@
   }
 
   function placeInShortestColumn(element, height) {
-    const shortestIdx = getShortestColumnIndex();
-    galleryColumns[shortestIdx].appendChild(element);
-    columnHeights[shortestIdx] += height + 6;
+    const index = getShortestColumnIndex();
+    galleryColumns[index].appendChild(element);
+    columnHeights[index] += height + 6;
   }
 
-  function setImageDimensions(imgEl, imageData) {
-    if (imageData.width && imageData.height) {
-      imgEl.width = imageData.width;
-      imgEl.height = imageData.height;
-    }
+  function createGalleryItem(imageData, index) {
+    const item = document.createElement('button');
+    item.type = 'button';
+    item.className = 'gallery-item progressive-image';
+    item.dataset.galleryIndex = String(index);
+    item.dataset.imageId = imageData.id;
+    item.setAttribute('aria-label', `Open ${imageData.title || 'gallery photo'}`);
+    item.style.aspectRatio = `${imageData.width} / ${imageData.height}`;
+
+    const { preview, original } = createImageLayers(imageData, 'gallery');
+    item.append(preview, original);
+    item.addEventListener('click', () => openLightbox(index));
+    galleryElements[index] = { item, preview, original, imageData };
+    return item;
   }
 
   function buildGalleryGrid() {
     const galleryGrid = document.getElementById('gallery-grid');
-    if (!galleryGrid) return;
-    const colCount = getColumnCount();
+    if (!galleryGrid || !galleryImages.length) return;
+
+    galleryObserver?.disconnect();
     galleryGrid.innerHTML = '';
     galleryColumns = [];
     columnHeights = [];
-    for (let i = 0; i < colCount; i++) {
-      const col = document.createElement('div');
-      col.className = 'gallery-column';
-      galleryGrid.appendChild(col);
-      galleryColumns.push(col);
+    galleryElements = [];
+
+    const columnCount = getColumnCount();
+    for (let i = 0; i < columnCount; i++) {
+      const column = document.createElement('div');
+      column.className = 'gallery-column';
+      galleryGrid.appendChild(column);
+      galleryColumns.push(column);
       columnHeights.push(0);
     }
-    galleryImages.forEach((img) => {
-      placeInShortestColumn(createGalleryItem(img), getRenderedImageHeight(img));
-    });
-    buildGallerySkeletons();
-  }
 
-  function createGalleryItem(img) {
-    const itemEl = document.createElement('button');
-    itemEl.type = 'button';
-    itemEl.className = 'gallery-item is-loading';
-    itemEl.setAttribute('aria-label', 'Open ' + (img.title || 'gallery photo'));
-    const imgEl = document.createElement('img');
-    imgEl.src = img.url;
-    imgEl.alt = img.title || 'Gallery photo';
-    imgEl.loading = 'lazy';
-    imgEl.decoding = 'async';
-    setImageDimensions(imgEl, img);
-    imgEl.addEventListener('load', () => itemEl.classList.remove('is-loading'), { once: true });
-    imgEl.addEventListener('error', () => itemEl.classList.remove('is-loading'), { once: true });
-    itemEl.appendChild(imgEl);
-    itemEl.addEventListener('click', () => openLightbox(galleryImages.indexOf(img)));
-    return itemEl;
-  }
-
-  function appendToGalleryGrid(imageData) {
-    if (galleryColumns.length === 0) return;
-    const item = createGalleryItem(imageData);
-    const skeleton = gallerySkeletonsById[imageData.id];
-    if (skeleton && skeleton.parentNode) {
-      skeleton.parentNode.replaceChild(item, skeleton);
-      delete gallerySkeletonsById[imageData.id];
-    } else {
+    galleryImages.forEach((imageData, index) => {
+      const item = createGalleryItem(imageData, index);
       placeInShortestColumn(item, getRenderedImageHeight(imageData));
+      if (index < galleryNextReveal && imageRequests.get(imageData.id)?.status === 'loaded') {
+        revealOriginal(item, galleryElements[index].original, galleryElements[index].preview, imageData);
+      }
+    });
+
+    initGalleryObserver();
+  }
+
+  function initGalleryObserver() {
+    galleryObserver?.disconnect();
+    if (!('IntersectionObserver' in window)) return;
+    const profile = getConnectionProfile();
+    const margin = profile === 'slow' ? '180px' : profile === 'fast' ? '1600px' : '700px';
+    galleryObserver = new IntersectionObserver((entries) => {
+      let furthestIndex = -1;
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        furthestIndex = Math.max(furthestIndex, Number(entry.target.dataset.galleryIndex));
+      });
+      if (furthestIndex >= 0) queueGalleryThrough(furthestIndex);
+    }, { rootMargin: `${margin} 0px`, threshold: 0.01 });
+    galleryElements.forEach(({ item }) => galleryObserver.observe(item));
+  }
+
+  function queueGalleryThrough(index) {
+    galleryLoadTarget = Math.max(galleryLoadTarget, Math.min(index, galleryImages.length - 1));
+    pumpGalleryQueue();
+  }
+
+  function pumpGalleryQueue() {
+    const concurrency = getGalleryConcurrency();
+    while (galleryActiveLoads < concurrency && galleryNextRequest <= galleryLoadTarget) {
+      const index = galleryNextRequest++;
+      const imageData = galleryImages[index];
+      galleryActiveLoads++;
+      requestImage(imageData, index < getColumnCount() ? 'high' : 'auto')
+        .then(() => galleryResults.set(index, true))
+        .catch(() => galleryResults.set(index, false))
+        .finally(() => {
+          galleryActiveLoads--;
+          flushGalleryResults();
+          pumpGalleryQueue();
+        });
     }
   }
 
-  function buildGallerySkeletons() {
-    gallerySkeletonsById = {};
-    if (!galleryData || galleryColumns.length === 0) return;
-    const colWidth = galleryColumns[0].offsetWidth || 200;
-    const remaining = getUnloadedImages();
+  function flushGalleryResults() {
+    while (galleryResults.has(galleryNextReveal)) {
+      const succeeded = galleryResults.get(galleryNextReveal);
+      galleryResults.delete(galleryNextReveal);
+      const entry = galleryElements[galleryNextReveal];
+      if (entry) {
+        if (succeeded) revealOriginal(entry.item, entry.original, entry.preview, entry.imageData);
+        else entry.item.classList.add('image-load-failed');
+      }
+      galleryNextReveal++;
+    }
+  }
 
-    remaining.forEach(imageData => {
-      const skeleton = document.createElement('div');
-      skeleton.className = 'gallery-skeleton';
-      const height = (imageData.width && imageData.height)
-        ? (imageData.height / imageData.width) * colWidth
-        : colWidth * 1.25;
-      skeleton.style.height = height + 'px';
-      placeInShortestColumn(skeleton, height);
-      gallerySkeletonsById[imageData.id] = skeleton;
+  function createCarouselSlide(imageData) {
+    const slide = document.createElement('div');
+    slide.className = 'photo-carousel-slide progressive-image';
+    slide.dataset.imageId = imageData.id;
+    slide.style.aspectRatio = `${imageData.width} / ${imageData.height}`;
+    slide.setAttribute('aria-label', imageData.title || 'Gallery photo');
+
+    const { preview, original } = createImageLayers(imageData, 'carousel');
+    slide.append(preview, original);
+    carouselSlides.set(imageData.id, { slide, preview, original, imageData });
+    return slide;
+  }
+
+  function buildCarouselTrack() {
+    const carousel = document.getElementById('photo-carousel');
+    if (!carousel || !carouselImages.length) return null;
+
+    carouselObserver?.disconnect();
+    carouselSlides = new Map();
+    const track = document.createElement('div');
+    track.className = 'photo-carousel-track';
+    carouselImages.forEach((imageData) => track.appendChild(createCarouselSlide(imageData)));
+    carousel.replaceChildren(track);
+    initCarouselObserver(carousel);
+    return track;
+  }
+
+  function initCarouselObserver(carousel) {
+    if (!('IntersectionObserver' in window)) return;
+    const profile = getConnectionProfile();
+    const marginPercent = profile === 'slow' ? 75 : profile === 'fast' ? 600 : 200;
+    carouselObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        const imageData = carouselSlides.get(entry.target.dataset.imageId)?.imageData;
+        if (imageData) revealCarouselImage(imageData);
+      });
+    }, {
+      root: carousel,
+      rootMargin: `0px ${marginPercent}%`,
+      threshold: 0.01
+    });
+    carouselSlides.forEach(({ slide }) => carouselObserver.observe(slide));
+  }
+
+  function revealCarouselImage(imageData, priority = 'auto') {
+    const entry = carouselSlides.get(imageData.id);
+    if (!entry) return Promise.resolve(false);
+    return revealOriginal(entry.slide, entry.original, entry.preview, imageData, priority);
+  }
+
+  function getInitialCarouselImages() {
+    const carousel = document.getElementById('photo-carousel');
+    const targetWidth = carousel?.clientWidth || window.innerWidth;
+    const estimatedHeight = 200;
+    const result = [];
+    let coveredWidth = 0;
+    for (const imageData of carouselImages) {
+      result.push(imageData);
+      coveredWidth += (imageData.width / imageData.height) * estimatedHeight + 8;
+      if (coveredWidth >= targetWidth && result.length >= 2) break;
+    }
+    return result;
+  }
+
+  async function preloadInitialImages(setProgress) {
+    const startedAt = performance.now();
+    setProgress(5);
+    await loadGalleryData();
+    setProgress(16);
+    if (!galleryImages.length) {
+      await waitUntil(startedAt + MINIMUM_LOADER_MS);
+      return;
+    }
+
+    buildGalleryGrid();
+    buildCarouselTrack();
+    setProgress(28);
+
+    const criticalImages = getInitialCarouselImages();
+    const totalBytes = criticalImages.reduce((sum, image) => sum + (image.fileSize || 1), 0);
+    const targetWidth = document.getElementById('photo-carousel')?.clientWidth || window.innerWidth;
+    let completedBytes = 0;
+    let sharpCount = 0;
+    let sharpCoverage = 0;
+    let finished = false;
+
+    await new Promise((resolve) => {
+      const finish = () => {
+        if (finished) return;
+        finished = true;
+        resolve();
+      };
+      const checkReadiness = () => {
+        const elapsed = performance.now() - startedAt;
+        const hasFullCoverage = sharpCoverage >= targetWidth;
+        const passedSoftLimit = elapsed >= SOFT_LOADER_MS && sharpCount >= 1;
+        const passedHardLimit = elapsed >= HARD_LOADER_MS;
+        if (elapsed >= MINIMUM_LOADER_MS && (hasFullCoverage || passedSoftLimit || passedHardLimit)) finish();
+      };
+
+      const scheduleFromStart = (deadline, callback) => {
+        const elapsed = performance.now() - startedAt;
+        window.setTimeout(callback, Math.max(0, deadline - elapsed));
+      };
+
+      scheduleFromStart(MINIMUM_LOADER_MS, checkReadiness);
+      scheduleFromStart(SOFT_LOADER_MS, checkReadiness);
+      scheduleFromStart(HARD_LOADER_MS, finish);
+
+      criticalImages.forEach((imageData) => {
+        requestImage(imageData, 'high')
+          .then(() => revealCarouselImage(imageData, 'high'))
+          .then((succeeded) => {
+            if (succeeded) {
+              sharpCount++;
+              sharpCoverage += (imageData.width / imageData.height) * 200 + 8;
+            }
+          })
+          .catch(() => {})
+          .finally(() => {
+            completedBytes += imageData.fileSize || 1;
+            const fraction = totalBytes ? completedBytes / totalBytes : 1;
+            setProgress(28 + fraction * 62);
+            checkReadiness();
+          });
+      });
+    });
+    setProgress(96);
+  }
+
+  function waitUntil(timestamp) {
+    return new Promise((resolve) => window.setTimeout(resolve, Math.max(0, timestamp - performance.now())));
+  }
+
+  function loadRemainingImages() {
+    if (!galleryImages.length) return;
+    const profile = getConnectionProfile();
+    const initialGalleryCount = profile === 'slow' ? 4 : profile === 'fast' ? galleryImages.length : 12;
+    queueGalleryThrough(initialGalleryCount - 1);
+    if (profile === 'fast') {
+      carouselImages.forEach((imageData) => revealCarouselImage(imageData, 'low'));
+    } else {
+      warmCarouselViewport();
+    }
+  }
+
+  function maybeWarmEverything() {
+    if (fastWarmScheduled || !galleryImages.length || getConnectionProfile() !== 'fast') return;
+    fastWarmScheduled = true;
+    scheduleIdleWork(() => {
+      queueGalleryThrough(galleryImages.length - 1);
+      carouselImages.forEach((imageData) => revealCarouselImage(imageData, 'low'));
     });
   }
 
-  /* ============================================
-     4. PHOTO CAROUSEL
-     ============================================ */
-  function isMobileCarousel() {
-    return window.innerWidth <= 768;
-  }
-
-  function scheduleIdleWork(callback, timeout = 1200) {
-    if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(callback, { timeout });
-    } else {
-      window.setTimeout(callback, Math.min(timeout, 600));
-    }
+  function warmCarouselViewport() {
+    const carousel = document.getElementById('photo-carousel');
+    if (!carousel) return;
+    const profile = getConnectionProfile();
+    const buffer = carousel.clientWidth * (profile === 'slow' ? 0.75 : 2);
+    const carouselRect = carousel.getBoundingClientRect();
+    carouselSlides.forEach((entry) => {
+      const rect = entry.slide.getBoundingClientRect();
+      if (rect.right >= carouselRect.left - buffer && rect.left <= carouselRect.right + buffer) {
+        revealCarouselImage(entry.imageData);
+      }
+    });
   }
 
   function loadPhotoCarousel() {
     const carousel = document.getElementById('photo-carousel');
-    if (!carousel || galleryImages.length === 0) return;
-    carouselImageLimit = isMobileCarousel() ? MOBILE_CAROUSEL_INITIAL_LIMIT : CAROUSEL_IMAGE_LIMIT;
-    carouselExpansionScheduled = false;
-    const track = document.createElement('div');
-    track.className = 'photo-carousel-track';
-    galleryImages.slice(0, carouselImageLimit).forEach((img, index) => {
-      appendToCarousel(img, track, { highPriority: index === 0 });
-    });
-    carousel.innerHTML = '';
-    carousel.appendChild(track);
-    scheduleCarouselExpansion();
-    requestAnimationFrame(() => initCarouselScroll(track));
-  }
-
-  function appendToCarousel(img, targetTrack, options = {}) {
-    const track = targetTrack || document.querySelector('.photo-carousel-track');
-    if (!track || track.children.length >= carouselImageLimit) return;
-    const imgEl = document.createElement('img');
-    imgEl.src = img.url;
-    imgEl.alt = img.title || 'Gallery photo';
-    imgEl.decoding = 'async';
-    imgEl.loading = options.highPriority ? 'eager' : 'lazy';
-    if (options.highPriority) {
-      imgEl.fetchPriority = 'high';
-    }
-    setImageDimensions(imgEl, img);
-    track.appendChild(imgEl);
-  }
-
-  function fillCarouselTrack() {
-    const track = document.querySelector('.photo-carousel-track');
-    if (!track) return;
-    for (let i = track.children.length; i < galleryImages.length && i < carouselImageLimit; i++) {
-      appendToCarousel(galleryImages[i], track);
-    }
-  }
-
-  function scheduleCarouselExpansion() {
-    if (!isMobileCarousel() || carouselExpansionScheduled) return;
-    carouselExpansionScheduled = true;
-    window.setTimeout(() => {
-      scheduleIdleWork(() => {
-        carouselImageLimit = CAROUSEL_IMAGE_LIMIT;
-        fillCarouselTrack();
-      }, 2000);
-    }, 2500);
+    let track = carousel?.querySelector('.photo-carousel-track');
+    if (!track) track = buildCarouselTrack();
+    if (track) requestAnimationFrame(() => initCarouselScroll(track));
   }
 
   function initCarouselScroll(track) {
     const carousel = track.parentElement;
     if (!carousel) return;
-    if (carouselAnimationFrame) {
-      cancelAnimationFrame(carouselAnimationFrame);
-      carouselAnimationFrame = null;
-    }
+    if (carouselAnimationFrame) cancelAnimationFrame(carouselAnimationFrame);
     let lastTimestamp = 0;
     let scrollPosition = carousel.scrollLeft;
     let isTouchScrolling = false;
     let touchResumeTimer = null;
-    const speed = 48;
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     function getSlideWidth(slide) {
       return slide ? slide.offsetWidth + 8 : 0;
     }
-
     function prependLastSlide() {
       const last = track.lastElementChild;
       const first = track.firstElementChild;
@@ -374,7 +501,6 @@
       scrollPosition += lastWidth;
       carousel.scrollLeft = scrollPosition;
     }
-
     function addBackwardScrollBuffer(count = 3) {
       let addedWidth = 0;
       for (let i = 0; i < count; i++) {
@@ -391,7 +517,6 @@
         carousel.scrollLeft = scrollPosition;
       }
     }
-
     function wrapForwardIfNeeded() {
       const first = track.firstElementChild;
       if (!first) return;
@@ -402,16 +527,18 @@
         carousel.scrollLeft = scrollPosition;
       }
     }
-
     function tick(timestamp) {
       if (!lastTimestamp) lastTimestamp = timestamp;
       const deltaMs = Math.min(timestamp - lastTimestamp, 100);
       lastTimestamp = timestamp;
-      const wrapperVisible = carousel.closest('.photo-carousel-wrapper')?.classList.contains('visible');
-      if (!document.hidden && wrapperVisible && !reducedMotion && !isTouchScrolling && speed > 0) {
-        scrollPosition += speed * (deltaMs / 1000);
+      if (!document.hidden && !reducedMotionQuery.matches && !isTouchScrolling) {
+        scrollPosition += CAROUSEL_SPEED * (deltaMs / 1000);
         carousel.scrollLeft = scrollPosition;
         wrapForwardIfNeeded();
+        if (timestamp - lastCarouselWarmAt > 500) {
+          lastCarouselWarmAt = timestamp;
+          warmCarouselViewport();
+        }
       }
       carouselAnimationFrame = requestAnimationFrame(tick);
     }
@@ -445,32 +572,37 @@
     }, { passive: true });
   }
 
-  /* ============================================
-     5. LIGHTBOX / STORY VIEWER
-     ============================================ */
+  function onSectionChange(sectionId) {
+    if (sectionId === 'gallery') {
+      const profile = getConnectionProfile();
+      queueGalleryThrough(profile === 'slow' ? 7 : profile === 'fast' ? galleryImages.length - 1 : 19);
+    }
+    if (sectionId === 'home') warmCarouselViewport();
+  }
+
   function openLightbox(index) {
-    if (galleryImages.length === 0) return;
+    if (!galleryImages.length) return;
     lightboxTrigger = document.activeElement;
     backgroundStates = [...document.body.children]
-      .filter(el => el !== lightbox && el.tagName !== 'SCRIPT')
-      .map(el => [el, el.inert]);
-    backgroundStates.forEach(([el]) => { el.inert = true; });
+      .filter((element) => element !== lightbox && element.tagName !== 'SCRIPT')
+      .map((element) => [element, element.inert]);
+    backgroundStates.forEach(([element]) => { element.inert = true; });
     currentImageIndex = index;
     lightboxScrollY = window.scrollY || document.documentElement.scrollTop || 0;
-    updateLightboxImage();
     lightbox.classList.add('active');
     lightbox.removeAttribute('aria-hidden');
-    lightboxClose.focus({ preventScroll: true });
     document.body.classList.add('lightbox-open');
     document.body.style.top = `-${lightboxScrollY}px`;
-    startStoryTimer();
+    lightboxClose.focus({ preventScroll: true });
+    updateLightboxImage();
     showTapHint();
   }
 
   function closeLightbox() {
     if (!lightbox.classList.contains('active')) return;
+    lightboxRequestToken++;
     lightbox.classList.remove('active');
-    backgroundStates.forEach(([el, wasInert]) => { el.inert = wasInert; });
+    backgroundStates.forEach(([element, wasInert]) => { element.inert = wasInert; });
     backgroundStates = [];
     if (lightboxTrigger?.isConnected) lightboxTrigger.focus({ preventScroll: true });
     lightbox.setAttribute('aria-hidden', 'true');
@@ -480,19 +612,76 @@
     const previousScrollBehavior = root.style.scrollBehavior;
     root.style.scrollBehavior = 'auto';
     window.scrollTo({ top: lightboxScrollY, behavior: 'auto' });
-    requestAnimationFrame(() => {
-      root.style.scrollBehavior = previousScrollBehavior;
-    });
+    requestAnimationFrame(() => { root.style.scrollBehavior = previousScrollBehavior; });
     stopStoryTimer();
     storyPaused = false;
   }
 
-  function updateLightboxImage() {
-    const img = galleryImages[currentImageIndex];
-    lightboxImg.src = img.url;
-    lightboxImg.alt = img.title || 'Gallery photo';
-    const counterText = (currentImageIndex + 1) + ' / ' + galleryImages.length;
-    lightboxCounter.textContent = counterText;
+  async function updateLightboxImage() {
+    const token = ++lightboxRequestToken;
+    const imageData = galleryImages[currentImageIndex];
+    stopStoryTimer();
+    lightbox.classList.remove('is-sharp', 'image-load-failed');
+    lightboxPreview.src = imageData.preview || '';
+    setImageDimensions(lightboxPreview, imageData);
+    lightboxImg.removeAttribute('src');
+    lightboxImg.alt = imageData.title || 'Gallery photo';
+    setImageDimensions(lightboxImg, imageData);
+    lightboxCounter.textContent = `${currentImageIndex + 1} / ${galleryImages.length}`;
+    const startedAt = performance.now();
+
+    try {
+      await requestImage(imageData, 'high');
+      if (token !== lightboxRequestToken || !lightbox.classList.contains('active')) return;
+      lightboxImg.fetchPriority = 'high';
+      lightboxImg.src = imageData.url;
+      try {
+        if (lightboxImg.decode) await lightboxImg.decode();
+      } catch (error) {}
+      if (token !== lightboxRequestToken) return;
+      lightbox.classList.add('is-sharp');
+      recentImageDurations.push(performance.now() - startedAt);
+      if (recentImageDurations.length > 8) recentImageDurations.shift();
+      prefetchLightboxNeighbours();
+      startStoryTimer();
+    } catch (error) {
+      if (token === lightboxRequestToken) lightbox.classList.add('image-load-failed');
+    }
+  }
+
+  function getAverageImageDuration() {
+    if (!recentImageDurations.length) return Infinity;
+    return recentImageDurations.reduce((sum, duration) => sum + duration, 0) / recentImageDurations.length;
+  }
+
+  function prefetchLightboxNeighbours() {
+    const profile = getConnectionProfile();
+    if (profile === 'slow') {
+      if (!connection?.saveData) prefetchLightboxOffset(1);
+      return;
+    }
+
+    const averageDuration = getAverageImageDuration();
+    const distance = profile === 'fast' && averageDuration < 300 ? 6 : profile === 'fast' ? 3 : 2;
+    for (let offset = 1; offset <= distance; offset++) {
+      prefetchLightboxOffset(offset);
+      prefetchLightboxOffset(-offset);
+    }
+    if (profile === 'fast' && averageDuration < 300) {
+      scheduleIdleWork(() => {
+        galleryImages.forEach((imageData) => requestImage(imageData, 'low').catch(() => {}));
+      });
+    }
+  }
+
+  function prefetchLightboxOffset(offset) {
+    const index = (currentImageIndex + offset + galleryImages.length) % galleryImages.length;
+    requestImage(galleryImages[index], 'low').catch(() => {});
+  }
+
+  function scheduleIdleWork(callback) {
+    if ('requestIdleCallback' in window) window.requestIdleCallback(callback, { timeout: 1200 });
+    else window.setTimeout(callback, 200);
   }
 
   function stopStoryTimer() {
@@ -521,7 +710,7 @@
     lightboxStoryProgress.style.animationPlayState = 'running';
     lightboxStoryProgress.style.animation = 'none';
     lightboxStoryProgress.offsetHeight;
-    lightboxStoryProgress.style.animation = 'story-progress ' + duration + 'ms linear forwards';
+    lightboxStoryProgress.style.animation = `story-progress ${duration}ms linear forwards`;
     lightboxStoryProgress.classList.add('is-running');
     storyTimer = setTimeout(showNextImage, duration);
   }
@@ -558,13 +747,11 @@
   function showPrevImage() {
     currentImageIndex = (currentImageIndex - 1 + galleryImages.length) % galleryImages.length;
     updateLightboxImage();
-    startStoryTimer();
   }
 
   function showNextImage() {
     currentImageIndex = (currentImageIndex + 1) % galleryImages.length;
     updateLightboxImage();
-    startStoryTimer();
   }
 
   function bindLightboxEvents() {
@@ -573,29 +760,26 @@
     lightboxTapPrev.addEventListener('click', showPrevImage);
     lightboxTapNext.addEventListener('click', showNextImage);
     lightboxPauseZone.addEventListener('click', () => {
-      if (storyPaused) {
-        resumeStoryTimer();
-      } else {
-        pauseStoryTimer();
-      }
+      if (storyPaused) resumeStoryTimer();
+      else pauseStoryTimer();
     });
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', (event) => {
       if (!lightbox.classList.contains('active')) return;
-      if (e.key === 'Tab') {
+      if (event.key === 'Tab') {
         const controls = [...lightbox.querySelectorAll('button:not(:disabled)')];
         const index = controls.indexOf(document.activeElement);
-        const next = e.shiftKey
+        const next = event.shiftKey
           ? (index <= 0 ? controls.length - 1 : index - 1)
           : (index + 1) % controls.length;
-        e.preventDefault();
+        event.preventDefault();
         controls[next].focus();
-      } else if (e.key === 'Escape') {
+      } else if (event.key === 'Escape') {
         closeLightbox();
-      } else if (e.key === 'ArrowLeft') {
-        e.preventDefault();
+      } else if (event.key === 'ArrowLeft') {
+        event.preventDefault();
         showPrevImage();
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
+      } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
         showNextImage();
       }
     });
@@ -603,21 +787,19 @@
 
   bindLightboxEvents();
   reducedMotionQuery.addEventListener('change', () => {
-    if (lightbox.classList.contains('active')) startStoryTimer();
+    if (lightbox.classList.contains('active') && lightbox.classList.contains('is-sharp')) startStoryTimer();
   });
 
-  /* ============================================
-     6. PUBLIC API
-     ============================================ */
   window.PortfolioGallery = {
     preloadInitialImages,
     loadRemainingImages,
     buildGalleryGrid,
     getColumnCount,
     loadPhotoCarousel,
+    onSectionChange,
     closeLightbox,
     isLightboxOpen() {
-      return !!(lightbox && lightbox.classList.contains('active'));
+      return !!lightbox?.classList.contains('active');
     }
   };
 })();

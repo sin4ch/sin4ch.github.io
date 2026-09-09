@@ -52,6 +52,10 @@ function getQueryRoute() {
 let actualPct = 0;
 let displayedPct = 0;
 let animating = false;
+let progressFrame = null;
+let progressLastTimestamp = 0;
+const progressRhythm = 0.82 + Math.random() * 0.36;
+const progressPhase = Math.random() * Math.PI * 2;
 const loadingScreen = document.getElementById('loading-screen');
 const loadingPercentage = document.getElementById('loading-percentage');
 const mainWrapper = document.getElementById('main-wrapper');
@@ -64,38 +68,56 @@ const sections = document.querySelectorAll('section');
    3. LOADING SCREEN
    ============================================ */
 function setActualProgress(pct) {
-  actualPct = Math.min(pct, 100);
+  actualPct = Math.max(actualPct, Math.min(pct, 100));
   if (!animating) {
     animating = true;
-    requestAnimationFrame(animateCounter);
+    progressFrame = requestAnimationFrame(animateCounter);
   }
 }
 
-function animateCounter() {
-  if (displayedPct < actualPct) {
-    const diff = actualPct - displayedPct;
-    const step = Math.max(0.3, diff * 0.12);
-    displayedPct = Math.min(displayedPct + step, actualPct);
-    loadingPercentage.textContent = Math.round(displayedPct) + '%';
-  }
-  if (displayedPct < 100) {
-    requestAnimationFrame(animateCounter);
+function animateCounter(timestamp) {
+  if (!progressLastTimestamp) progressLastTimestamp = timestamp;
+  const deltaSeconds = Math.min((timestamp - progressLastTimestamp) / 1000, 0.1);
+  progressLastTimestamp = timestamp;
+
+  const pulse = 1 + Math.sin(timestamp * 0.003 * progressRhythm + progressPhase) * 0.14;
+  const workingCeiling = actualPct < 100 ? Math.min(94, actualPct + 7) : 100;
+  const target = Math.max(actualPct, workingCeiling);
+  const gap = target - displayedPct;
+  const speed = actualPct >= 100
+    ? Math.max(32, gap * 5.5)
+    : Math.max(2.6, gap * 2.2) * pulse;
+
+  if (gap > 0.01) displayedPct = Math.min(target, displayedPct + speed * deltaSeconds);
+  loadingPercentage.textContent = Math.round(displayedPct) + '%';
+
+  if (displayedPct < 99.95) {
+    progressFrame = requestAnimationFrame(animateCounter);
   } else {
     loadingPercentage.textContent = '100%';
+    displayedPct = 100;
     animating = false;
+    progressFrame = null;
   }
 }
 
 async function initLoadingSequence() {
-  const profileImg = document.querySelector('.profile-photo img');
-  const profilePromise = profileImg && !profileImg.complete
-    ? new Promise(r => { profileImg.onload = r; profileImg.onerror = r; })
-    : Promise.resolve();
-  await Promise.all([document.fonts.ready, profilePromise]);
   loadingScreen.classList.add('ready');
   await window.PortfolioGallery.preloadInitialImages(setActualProgress);
+  setActualProgress(100);
+  await waitForDisplayedProgress(99.5);
   completeLoading();
   window.PortfolioGallery.loadRemainingImages();
+}
+
+function waitForDisplayedProgress(target) {
+  return new Promise(resolve => {
+    function check() {
+      if (displayedPct >= target) resolve();
+      else requestAnimationFrame(check);
+    }
+    check();
+  });
 }
 
 function completeLoading() {
@@ -123,28 +145,6 @@ function completeLoading() {
 /* ============================================
    4. FAVICON
    ============================================ */
-function createRoundedFavicon() {
-  const img = new Image();
-  img.crossOrigin = 'anonymous';
-  img.onload = function() {
-    const canvas = document.createElement('canvas');
-    const size = 32;
-    canvas.width = size;
-    canvas.height = size;
-    const ctx = canvas.getContext('2d');
-    ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(img, 0, 0, size, size);
-    const favicon = document.getElementById('favicon');
-    favicon.href = canvas.toDataURL('image/png');
-  };
-  img.src = '/profile-picture-128.webp';
-}
-
-
-
 /* ============================================
    5. NAVIGATION & ROUTING
    ============================================ */
@@ -189,6 +189,7 @@ function showSection(targetId, updateUrl = true) {
   const isHome = targetId === 'home';
   document.body.classList.toggle('home-active', isHome);
   document.documentElement.classList.toggle('home-active', isHome);
+  window.PortfolioGallery.onSectionChange(targetId);
   packFilterRows();
   positionCarousel();
   updatePinnedFilter();
@@ -865,8 +866,33 @@ function fetchGitHubStats() {
 /* ============================================
    13. BOOT
    ============================================ */
-createRoundedFavicon();
+initOrganizationLogos();
 initSectionFilters();
 initProjectSort();
 fetchGitHubStats();
 initLoadingSequence();
+
+function initOrganizationLogos() {
+  document.querySelectorAll('.experience-logo').forEach(img => {
+    const wrapper = img.closest('.experience-logo-link');
+    if (!wrapper) return;
+    wrapper.dataset.fallback = (img.alt || '?')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map(word => word[0])
+      .join('')
+      .toUpperCase();
+    img.loading = 'eager';
+    img.decoding = 'async';
+    const reveal = () => wrapper.classList.add('logo-loaded');
+    const fail = () => wrapper.classList.add('logo-failed');
+    if (img.complete) {
+      if (img.naturalWidth) reveal();
+      else fail();
+    } else {
+      img.addEventListener('load', reveal, { once: true });
+      img.addEventListener('error', fail, { once: true });
+    }
+  });
+}
