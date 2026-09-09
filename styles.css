@@ -449,8 +449,8 @@ body.is-resizing .sidebar {
 }
 
 .contact-icon svg {
-  width: 100%;
-  height: 100%;
+  width: 75%;
+  height: 75%;
   fill: none;
   stroke: currentColor;
   stroke-width: 1.8;
@@ -461,8 +461,8 @@ body.is-resizing .sidebar {
 /* Wide envelope: fills its box edge-to-edge like the other marks fill theirs */
 .contact-icon[aria-label="Email"] svg {
   flex: none;
-  width: 22px;
-  height: 18px;
+  width: 16.5px;
+  height: 13.5px;
 }
 
 .contact-icon svg.filled-icon {
