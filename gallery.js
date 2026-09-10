@@ -17,16 +17,13 @@
   let carouselSlides = new Map();
   let carouselAnimationFrame = null;
   let carouselObserver = null;
-  let galleryObserver = null;
   let loadingAnimationObserver = null;
-  let galleryLoadTarget = -1;
-  let galleryNextRequest = 0;
   let galleryNextReveal = 0;
-  let galleryActiveLoads = 0;
   let galleryResults = new Map();
   let galleryRevealed = new Set();
+  let galleryDownloadsStarted = false;
   let lastCarouselWarmAt = 0;
-  let fastWarmScheduled = false;
+  let fastCarouselWarmScheduled = false;
   let fastConnectionConfirmed = false;
 
   const imageRequests = new Map();
@@ -71,13 +68,6 @@
     if (measuredFast || reportedFast) fastConnectionConfirmed = true;
 
     return fastConnectionConfirmed ? 'fast' : 'standard';
-  }
-
-  function getGalleryConcurrency() {
-    const profile = getConnectionProfile();
-    if (profile === 'fast') return galleryImages.length;
-    if (profile === 'slow') return 4;
-    return 8;
   }
 
   function shuffle(images) {
@@ -131,7 +121,7 @@
         state.duration = performance.now() - startedAt;
         recentImageDurations.push(state.duration);
         if (recentImageDurations.length > 8) recentImageDurations.shift();
-        maybeWarmEverything();
+        maybeWarmCarousel();
         resolve(state);
       }, { once: true });
       loader.addEventListener('error', () => {
@@ -256,7 +246,6 @@
     const galleryGrid = document.getElementById('gallery-grid');
     if (!galleryGrid || !galleryImages.length) return;
 
-    galleryObserver?.disconnect();
     galleryGrid.innerHTML = '';
     galleryColumns = [];
     columnHeights = [];
@@ -284,74 +273,33 @@
       }
     });
 
-    initGalleryObserver();
   }
 
-  function initGalleryObserver() {
-    galleryObserver?.disconnect();
-    if (!('IntersectionObserver' in window)) return;
-    const profile = getConnectionProfile();
-    const margin = profile === 'slow' ? '180px' : profile === 'fast' ? '1600px' : '700px';
-    galleryObserver = new IntersectionObserver((entries) => {
-      let furthestIndex = -1;
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        furthestIndex = Math.max(furthestIndex, Number(entry.target.dataset.galleryIndex));
-      });
-      if (furthestIndex >= 0) queueGalleryThrough(furthestIndex);
-    }, { rootMargin: `${margin} 0px`, threshold: 0.01 });
-    galleryElements.forEach(({ item }) => galleryObserver.observe(item));
-  }
+  function startGalleryDownloads() {
+    if (galleryDownloadsStarted || !galleryImages.length) return;
+    galleryDownloadsStarted = true;
+    const firstGroupSize = getColumnCount();
 
-  function queueGalleryThrough(index) {
-    galleryLoadTarget = Math.max(galleryLoadTarget, Math.min(index, galleryImages.length - 1));
-    pumpGalleryQueue();
-  }
-
-  function pumpGalleryQueue() {
-    const concurrency = getGalleryConcurrency();
-    while (galleryActiveLoads < concurrency && galleryNextRequest <= galleryLoadTarget) {
-      const index = galleryNextRequest++;
-      const imageData = galleryImages[index];
-      galleryActiveLoads++;
-      requestImage(imageData, index < getColumnCount() ? 'high' : 'auto')
+    galleryImages.forEach((imageData, index) => {
+      requestImage(imageData, index < firstGroupSize ? 'high' : 'auto')
         .then(() => galleryResults.set(index, true))
         .catch(() => galleryResults.set(index, false))
         .finally(() => {
-          galleryActiveLoads--;
           flushGalleryResults();
-          pumpGalleryQueue();
         });
-    }
+    });
   }
 
   function flushGalleryResults() {
-    if (getConnectionProfile() === 'fast') {
-      flushFastGalleryResults();
-      return;
-    }
-
     while (galleryNextReveal < galleryImages.length) {
-      if (galleryRevealed.has(galleryNextReveal)) {
-        galleryNextReveal++;
-        continue;
+      const groupEnd = Math.min(galleryNextReveal + getColumnCount(), galleryImages.length);
+      for (let index = galleryNextReveal; index < groupEnd; index++) {
+        if (!galleryRevealed.has(index) && !galleryResults.has(index)) return;
       }
-      if (!galleryResults.has(galleryNextReveal)) break;
-      revealGalleryResult(galleryNextReveal++);
-    }
-  }
-
-  function flushFastGalleryResults() {
-    let previousStart = -1;
-    const revealWindow = Math.max(8, getColumnCount() * 2);
-
-    while (previousStart !== galleryNextReveal) {
-      previousStart = galleryNextReveal;
-      const revealLimit = Math.min(galleryNextReveal + revealWindow, galleryImages.length);
-      for (let index = galleryNextReveal; index < revealLimit; index++) {
-        if (galleryResults.has(index)) revealGalleryResult(index);
+      for (let index = galleryNextReveal; index < groupEnd; index++) {
+        if (!galleryRevealed.has(index)) revealGalleryResult(index);
       }
-      while (galleryRevealed.has(galleryNextReveal)) galleryNextReveal++;
+      galleryNextReveal = groupEnd;
     }
   }
 
@@ -506,26 +454,19 @@
   }
 
   function loadRemainingImages() {
-    if (!galleryImages.length) return;
-    const profile = getConnectionProfile();
-    const initialGalleryCount = profile === 'slow' ? 4 : profile === 'fast' ? galleryImages.length : 12;
-    if (profile === 'fast') {
-      warmEverything();
-      return;
-    }
-    queueGalleryThrough(initialGalleryCount - 1);
-    warmCarouselViewport();
+    startGalleryDownloads();
+    if (getConnectionProfile() === 'fast') warmCarouselCompletely();
+    else warmCarouselViewport();
   }
 
-  function maybeWarmEverything() {
-    if (fastWarmScheduled || !galleryImages.length || getConnectionProfile() !== 'fast') return;
-    warmEverything();
+  function maybeWarmCarousel() {
+    if (fastCarouselWarmScheduled || !carouselImages.length || getConnectionProfile() !== 'fast') return;
+    warmCarouselCompletely();
   }
 
-  function warmEverything() {
-    if (fastWarmScheduled) return;
-    fastWarmScheduled = true;
-    queueGalleryThrough(galleryImages.length - 1);
+  function warmCarouselCompletely() {
+    if (fastCarouselWarmScheduled) return;
+    fastCarouselWarmScheduled = true;
     carouselImages.forEach((imageData) => revealCarouselImage(imageData, 'low'));
   }
 
@@ -644,10 +585,7 @@
   }
 
   function onSectionChange(sectionId) {
-    if (sectionId === 'gallery') {
-      const profile = getConnectionProfile();
-      queueGalleryThrough(profile === 'slow' ? 7 : profile === 'fast' ? galleryImages.length - 1 : 19);
-    }
+    if (sectionId === 'gallery') startGalleryDownloads();
     if (sectionId === 'home') warmCarouselViewport();
   }
 
