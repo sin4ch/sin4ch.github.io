@@ -24,8 +24,10 @@
   let galleryNextReveal = 0;
   let galleryActiveLoads = 0;
   let galleryResults = new Map();
+  let galleryRevealed = new Set();
   let lastCarouselWarmAt = 0;
   let fastWarmScheduled = false;
+  let fastConnectionConfirmed = false;
 
   const imageRequests = new Map();
   const recentImageDurations = [];
@@ -54,16 +56,21 @@
   let backgroundStates = [];
 
   function getConnectionProfile() {
-    const measuredFast = recentImageDurations.length >= 3 && getAverageImageDuration() < 1500;
-    if (!connection) return measuredFast ? 'fast' : 'standard';
-    const measuredDownlink = Number(connection.downlink) || 0;
-    if (connection.saveData || /(^|-)2g$/.test(connection.effectiveType || '') || (measuredDownlink > 0 && measuredDownlink < 1.5)) {
+    const measuredDownlink = Number(connection?.downlink) || 0;
+    if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType || '') || (measuredDownlink > 0 && measuredDownlink < 1.5)) {
       return 'slow';
     }
-    if (measuredFast || (connection.effectiveType === '4g' && (!measuredDownlink || measuredDownlink >= 8))) {
-      return 'fast';
-    }
-    return 'standard';
+
+    const latestDuration = recentImageDurations.at(-1) || Infinity;
+    const recentPair = recentImageDurations.slice(-2);
+    const recentPairAverage = recentPair.length === 2
+      ? recentPair.reduce((sum, duration) => sum + duration, 0) / recentPair.length
+      : Infinity;
+    const measuredFast = latestDuration < 350 || recentPairAverage < 800;
+    const reportedFast = connection?.effectiveType === '4g' && (!measuredDownlink || measuredDownlink >= 8);
+    if (measuredFast || reportedFast) fastConnectionConfirmed = true;
+
+    return fastConnectionConfirmed ? 'fast' : 'standard';
   }
 
   function getGalleryConcurrency() {
@@ -195,7 +202,7 @@
       stopLoadingAnimation(container);
       window.setTimeout(() => {
         if (container.classList.contains('is-sharp')) preview.removeAttribute('src');
-      }, 420);
+      }, 100);
       return true;
     } catch (error) {
       container.classList.add('image-load-failed');
@@ -267,8 +274,13 @@
     galleryImages.forEach((imageData, index) => {
       const item = createGalleryItem(imageData, index);
       placeInShortestColumn(item, getRenderedImageHeight(imageData));
-      if (index < galleryNextReveal && imageRequests.get(imageData.id)?.status === 'loaded') {
-        revealOriginal(item, galleryElements[index].original, galleryElements[index].preview, imageData);
+      if (galleryRevealed.has(index)) {
+        if (imageRequests.get(imageData.id)?.status === 'loaded') {
+          revealOriginal(item, galleryElements[index].original, galleryElements[index].preview, imageData);
+        } else {
+          item.classList.add('image-load-failed');
+          stopLoadingAnimation(item);
+        }
       }
     });
 
@@ -314,18 +326,45 @@
   }
 
   function flushGalleryResults() {
-    while (galleryResults.has(galleryNextReveal)) {
-      const succeeded = galleryResults.get(galleryNextReveal);
-      galleryResults.delete(galleryNextReveal);
-      const entry = galleryElements[galleryNextReveal];
-      if (entry) {
-        if (succeeded) revealOriginal(entry.item, entry.original, entry.preview, entry.imageData);
-        else {
-          entry.item.classList.add('image-load-failed');
-          stopLoadingAnimation(entry.item);
-        }
+    if (getConnectionProfile() === 'fast') {
+      flushFastGalleryResults();
+      return;
+    }
+
+    while (galleryNextReveal < galleryImages.length) {
+      if (galleryRevealed.has(galleryNextReveal)) {
+        galleryNextReveal++;
+        continue;
       }
-      galleryNextReveal++;
+      if (!galleryResults.has(galleryNextReveal)) break;
+      revealGalleryResult(galleryNextReveal++);
+    }
+  }
+
+  function flushFastGalleryResults() {
+    let previousStart = -1;
+    const revealWindow = Math.max(8, getColumnCount() * 2);
+
+    while (previousStart !== galleryNextReveal) {
+      previousStart = galleryNextReveal;
+      const revealLimit = Math.min(galleryNextReveal + revealWindow, galleryImages.length);
+      for (let index = galleryNextReveal; index < revealLimit; index++) {
+        if (galleryResults.has(index)) revealGalleryResult(index);
+      }
+      while (galleryRevealed.has(galleryNextReveal)) galleryNextReveal++;
+    }
+  }
+
+  function revealGalleryResult(index) {
+    const succeeded = galleryResults.get(index);
+    galleryResults.delete(index);
+    galleryRevealed.add(index);
+    const entry = galleryElements[index];
+    if (!entry) return;
+    if (succeeded) revealOriginal(entry.item, entry.original, entry.preview, entry.imageData);
+    else {
+      entry.item.classList.add('image-load-failed');
+      stopLoadingAnimation(entry.item);
     }
   }
 
@@ -470,21 +509,24 @@
     if (!galleryImages.length) return;
     const profile = getConnectionProfile();
     const initialGalleryCount = profile === 'slow' ? 4 : profile === 'fast' ? galleryImages.length : 12;
-    queueGalleryThrough(initialGalleryCount - 1);
     if (profile === 'fast') {
-      carouselImages.forEach((imageData) => revealCarouselImage(imageData, 'low'));
-    } else {
-      warmCarouselViewport();
+      warmEverything();
+      return;
     }
+    queueGalleryThrough(initialGalleryCount - 1);
+    warmCarouselViewport();
   }
 
   function maybeWarmEverything() {
     if (fastWarmScheduled || !galleryImages.length || getConnectionProfile() !== 'fast') return;
+    warmEverything();
+  }
+
+  function warmEverything() {
+    if (fastWarmScheduled) return;
     fastWarmScheduled = true;
-    scheduleIdleWork(() => {
-      queueGalleryThrough(galleryImages.length - 1);
-      carouselImages.forEach((imageData) => revealCarouselImage(imageData, 'low'));
-    });
+    queueGalleryThrough(galleryImages.length - 1);
+    carouselImages.forEach((imageData) => revealCarouselImage(imageData, 'low'));
   }
 
   function warmCarouselViewport() {

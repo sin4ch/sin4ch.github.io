@@ -1017,7 +1017,7 @@ section.filter-compact {
   opacity: 1;
   filter: blur(12px);
   transform: scale(1.08);
-  transition: opacity 0.36s ease-out, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 40ms ease-out, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .progressive-image.is-loading-visible:not(.is-sharp):not(.image-load-failed) .progressive-image-preview,
@@ -1033,7 +1033,7 @@ section.filter-compact {
 .progressive-image-original {
   opacity: 0;
   transform: scale(1);
-  transition: opacity 0.36s ease-out, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 40ms ease-out, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .progressive-image.is-sharp .progressive-image-preview {
@@ -1330,14 +1330,14 @@ section.filter-compact {
   opacity: 1;
   filter: blur(12px);
   transform: scale(1.08);
-  transition: opacity 0.3s ease-out;
+  transition: opacity 40ms ease-out;
 }
 
 .lightbox-content #lightbox-img {
   position: relative;
   z-index: 1;
   opacity: 0;
-  transition: opacity 0.3s ease-out;
+  transition: opacity 40ms ease-out;
 }
 
 .lightbox.is-sharp .lightbox-preview {
