@@ -1201,9 +1201,7 @@ section.filter-compact {
   justify-items: center;
   gap: 12px;
   padding: calc(var(--spacing) * 2);
-  background:
-    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.84), rgba(0, 0, 0, 0.66) 34%, transparent 72%),
-    linear-gradient(90deg, rgba(0, 0, 0, 0.76), rgba(0, 0, 0, 0.34) 28%, rgba(0, 0, 0, 0.34) 72%, rgba(0, 0, 0, 0.76));
+  background: rgba(0, 0, 0, 0.7);
   opacity: 0;
   pointer-events: none;
 }
