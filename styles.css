@@ -34,7 +34,6 @@
   --color-cream: #ffead3;
   --color-ink: #121212;
   --font-sans: 'InterVariable';
-  --font-mono: 'Geist Mono';
   --badge-padding: 2px 6px;
   --badge-radius: 2px;
   --bg-light: var(--color-cream);
@@ -65,30 +64,6 @@
   font-weight: 300 500;
   font-display: swap;
   src: url('https://rsms.me/inter/font-files/InterVariable-Italic.woff2?v=4.1') format('woff2');
-}
-
-@font-face {
-  font-family: 'Geist Mono';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/GeistMono-Regular.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'Geist Mono';
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url('/fonts/GeistMono-Medium.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'Geist Mono';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/GeistMono-SemiBold.ttf') format('truetype');
 }
 
 
@@ -275,7 +250,7 @@ body.is-resizing .sidebar {
 .sidebar,
 .mobile-top-bar,
 .hamburger {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
 }
 
 @media (min-width: 769px) {
@@ -370,7 +345,7 @@ body.is-resizing .sidebar {
   padding: 24px var(--spacing) var(--spacing);
   background-color: var(--bg-light);
   z-index: 100;
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
 }
 
 .profile-photo {
@@ -429,7 +404,7 @@ body.is-resizing .sidebar {
   border: 1px solid var(--text-muted);
   border-radius: var(--badge-radius);
   color: var(--text-muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-badge);
   font-weight: 400;
   line-height: 1.2;
@@ -524,7 +499,7 @@ section.filter-compact {
   margin-bottom: 0;
   padding: 8px 0 16px;
   background-color: var(--bg-light);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
 }
 
 /* Mask: paints everything above the bar in page background, so scrolled
@@ -540,7 +515,7 @@ section.filter-compact {
 }
 
 .section-filter-label {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-badge);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -616,7 +591,7 @@ section.filter-compact {
 }
 
 .item-meta {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-small);
   letter-spacing: 0.1em;
   color: var(--text-muted);
@@ -664,7 +639,7 @@ section.filter-compact {
 }
 
 .item-tags {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-body);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -696,7 +671,7 @@ section.filter-compact {
 }
 
 .article-badge {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   background: var(--bg-light);
   color: var(--text-muted);
   border: 1px solid var(--text-muted);
@@ -743,7 +718,7 @@ section.filter-compact {
   corner-shape: squircle;
   background-color: var(--line-color);
   color: var(--text-muted);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-small);
   text-decoration: none;
 }
@@ -838,7 +813,7 @@ section.filter-compact {
 }
 
 .item-stats {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-small);
   letter-spacing: 0.1em;
   line-height: 1.2;
@@ -856,7 +831,7 @@ section.filter-compact {
 
 .stat-badge,
 .role-badge {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   background: var(--bg-light);
   color: var(--text-muted);
   border: 1px solid var(--text-muted);
@@ -874,10 +849,13 @@ section.filter-compact {
   height: 10px;
 }
 
-#talks .item-meta,
+#talks .item-meta {
+  font-family: var(--font-sans);
+}
+
 #talks .item-tags,
 #talks .role-badge {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
 }
 
 #talks .item-subtitle {
@@ -1376,7 +1354,11 @@ section.filter-compact {
   left: 50%;
   transform: translateX(-50%);
   color: var(--color-cream);
+  font-family: var(--font-sans);
   font-size: var(--lightbox-counter-size);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
@@ -1438,7 +1420,7 @@ section.filter-compact {
 }
 
 .loading-percentage {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--font-size-body);
   font-weight: 400;
   letter-spacing: 0.1em;
