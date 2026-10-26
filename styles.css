@@ -1613,7 +1613,7 @@ section.filter-compact {
     justify-content: space-between;
     gap: 12px;
     padding:
-      16px
+      calc(16px + env(safe-area-inset-top, 0px))
       calc(var(--spacing) + env(safe-area-inset-right, 0px))
       16px
       calc(var(--spacing) + env(safe-area-inset-left, 0px));
@@ -1690,11 +1690,11 @@ section.filter-compact {
     grid-template-rows: 1fr;
     min-height: 100vh;
     min-height: 100svh;
-    padding-top: 168px;
+    padding-top: calc(168px + env(safe-area-inset-top, 0px));
   }
 
   body.home-active .layout {
-    padding-top: 64px;
+    padding-top: calc(64px + env(safe-area-inset-top, 0px));
   }
 
   .nav-links .theme-toggle {
