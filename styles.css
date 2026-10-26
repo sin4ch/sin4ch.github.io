@@ -548,6 +548,7 @@ section.filter-compact {
 /* Row boxes built by packFilterRows(): each hugs exactly one row of buttons,
    so wrapped rows never stretch a box full-width. */
 .section-filter-row {
+  position: relative;
   display: flex;
   background: transparent;
   border: 1px solid var(--text-muted);
@@ -556,6 +557,17 @@ section.filter-compact {
 
 .section-filter-row + .section-filter-row {
   border-top: none;
+}
+
+.section-filter-row + .section-filter-row::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: var(--exposed-top-line-width, 0px);
+  height: 1px;
+  background-color: var(--text-muted);
+  pointer-events: none;
 }
 
 .section-filter-button:hover {

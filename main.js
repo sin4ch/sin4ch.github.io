@@ -579,11 +579,19 @@ function packFilterRows() {
       currentWidth += widths[index];
     });
     if (current.length) rows.push(current);
+    const rowElements = [];
     rows.forEach(rowButtons => {
       const row = document.createElement('div');
       row.className = 'section-filter-row';
       rowButtons.forEach(button => row.appendChild(button));
       filter.appendChild(row);
+      rowElements.push(row);
+    });
+    const rowLefts = rowElements.map(row => row.getBoundingClientRect().left);
+    rowElements.forEach((row, index) => {
+      if (index === 0) return;
+      const exposedWidth = Math.max(0, rowLefts[index - 1] - rowLefts[index]);
+      row.style.setProperty('--exposed-top-line-width', `${exposedWidth}px`);
     });
     if (pinnedFilter) {
       const pinnedHeight = pinnedFilter.getBoundingClientRect().height;
