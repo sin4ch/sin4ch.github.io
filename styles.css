@@ -580,6 +580,11 @@ section.filter-compact {
   color: var(--bg-light) !important;
 }
 
+/* Keep the selected fill from covering the button's translucent border. */
+.section-filter-button.active {
+  background-clip: padding-box;
+}
+
 .items {
   display: flex;
   flex-direction: column;
