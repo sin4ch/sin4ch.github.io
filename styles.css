@@ -245,6 +245,7 @@ body.is-resizing .sidebar {
   padding: 0;
   width: fit-content;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .sidebar,
@@ -912,6 +913,8 @@ section.filter-compact {
   color: var(--text-dark);
   font-size: var(--home-name-size);
   line-height: 1.35;
+  font-weight: inherit;
+  margin: 0;
 }
 
 .home-roles {
@@ -1596,6 +1599,11 @@ section.filter-compact {
    15. RESPONSIVE - MOBILE (max-width: 768px)
    ============================================ */
 @media (max-width: 768px) {
+  :root {
+    --mobile-route-top-offset: 168px;
+    --mobile-home-top-offset: 64px;
+  }
+
   html, body {
     overflow: auto;
     height: auto;
@@ -1662,6 +1670,8 @@ section.filter-compact {
     font-size: var(--font-size-body);
     font-weight: 500;
     color: var(--text-dark);
+    line-height: 1.2;
+    margin: 0;
   }
 
   .mobile-top-bar .profile-photo {
@@ -1707,11 +1717,11 @@ section.filter-compact {
     grid-template-rows: 1fr;
     min-height: 100vh;
     min-height: 100svh;
-    padding-top: calc(168px + env(safe-area-inset-top, 0px));
+    padding-top: calc(var(--mobile-route-top-offset) + env(safe-area-inset-top, 0px));
   }
 
   body.home-active .layout {
-    padding-top: calc(64px + env(safe-area-inset-top, 0px));
+    padding-top: calc(var(--mobile-home-top-offset) + env(safe-area-inset-top, 0px));
   }
 
   .nav-links .theme-toggle {
@@ -1730,7 +1740,7 @@ section.filter-compact {
     align-items: flex-start;
     gap: 24px;
     padding:
-      168px
+      calc(var(--mobile-route-top-offset) + env(safe-area-inset-top, 0px))
       calc(var(--spacing) + env(safe-area-inset-right, 0px))
       calc(72px + env(safe-area-inset-bottom, 0px))
       calc(var(--spacing) + env(safe-area-inset-left, 0px));
@@ -1826,6 +1836,10 @@ section.filter-compact {
     display: block;
     margin-top: 0;
     line-height: 1.35 !important;
+  }
+
+  .home-name {
+    display: inline;
   }
 
   .home-work-link {

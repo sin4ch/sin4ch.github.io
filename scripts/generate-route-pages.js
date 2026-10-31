@@ -8,6 +8,7 @@ const SITE_URL = 'https://sin4.ch';
 const routes = [
   {
     slug: '',
+    heading: 'Osinachi Okpara',
     title: 'Osinachi Okpara - AI Developer Advocate and Software Engineer',
     description: 'Osinachi Okpara is a software engineer, developer advocate and AWS Community Builder, passionate about agentic AI, cloud engineering, and open-source software.',
     image: '/social-preview.png?v=2',
@@ -15,6 +16,7 @@ const routes = [
   },
   {
     slug: 'projects',
+    heading: 'Projects',
     title: 'Projects - Osinachi Okpara',
     description: 'Selected software, AI, infrastructure, and open-source projects by Osinachi Okpara.',
     image: '/social-preview-projects.png',
@@ -22,6 +24,7 @@ const routes = [
   },
   {
     slug: 'opensource',
+    heading: 'Open Source',
     title: 'Open Source - Osinachi Okpara',
     description: 'Open-source contributions by Osinachi Okpara across developer tooling, documentation, AI, and infrastructure projects.',
     image: '/social-preview-opensource.png',
@@ -29,6 +32,7 @@ const routes = [
   },
   {
     slug: 'writing',
+    heading: 'Writing',
     title: 'Writing - Osinachi Okpara',
     description: 'Articles by Osinachi Okpara on AI, cloud infrastructure, DevOps, developer tools, and technology systems.',
     image: '/social-preview-writing.png',
@@ -36,6 +40,7 @@ const routes = [
   },
   {
     slug: 'talks',
+    heading: 'Speaking & Hosting',
     title: 'Speaking and Hosting - Osinachi Okpara',
     description: 'Speaking and hosting engagements by Osinachi Okpara at developer, cloud, AI, and community events.',
     image: '/social-preview-talks.png',
@@ -43,6 +48,7 @@ const routes = [
   },
   {
     slug: 'gallery',
+    heading: 'Gallery',
     title: 'Gallery - Osinachi Okpara',
     description: 'A personal gallery of Osinachi Okpara at conferences, community events, talks, and technology gatherings.',
     image: '/social-preview.png?v=2',
@@ -50,6 +56,7 @@ const routes = [
   },
   {
     slug: 'experience',
+    heading: 'Experience',
     title: 'Experience - Osinachi Okpara',
     description: 'Professional experience by Osinachi Okpara across software engineering, developer advocacy, technical writing, and community building.',
     image: '/social-preview.png?v=2',
@@ -59,6 +66,10 @@ const routes = [
 
 function escapeAttr(value) {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
+function escapeHtml(value) {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function routeUrl(slug) {
@@ -76,6 +87,61 @@ function replaceOrFail(html, pattern, replacement, label) {
   return html.replace(pattern, replacement);
 }
 
+function withRouteView(sourceHtml, route) {
+  const target = route.slug || 'home';
+  const sectionIds = ['home', 'projects', 'opensource', 'writing', 'talks', 'gallery', 'experience'];
+  let sectionCount = 0;
+  let html = sourceHtml.replace(
+    /<section id="([a-z]+)"(?: class="([^"]*)")?>/g,
+    (match, sectionId, classNames = '') => {
+      if (!sectionIds.includes(sectionId)) return match;
+      sectionCount += 1;
+      const classes = classNames.split(/\s+/).filter(name => name && name !== 'active');
+      if (sectionId === target) classes.push('active');
+      return `<section id="${sectionId}"${classes.length ? ` class="${classes.join(' ')}"` : ''}>`;
+    }
+  );
+
+  if (sectionCount !== sectionIds.length) {
+    throw new Error(`Expected ${sectionIds.length} route sections, found ${sectionCount}`);
+  }
+
+  if (route.slug) {
+    html = replaceOrFail(
+      html,
+      /<span class="mobile-section-title" id="mobileSectionTitle"><\/span>/,
+      `<h1 class="mobile-section-title" id="mobileSectionTitle">${escapeHtml(route.heading)}</h1>`,
+      'mobile route heading'
+    );
+    html = replaceOrFail(
+      html,
+      /<h1 class="home-name">([\s\S]*?)<\/h1>/,
+      '<span class="home-name">$1</span>',
+      'inactive home heading'
+    );
+  }
+
+  let navCount = 0;
+  html = html.replace(/<a\b([^>]*\bdata-target="([^"]+)"[^>]*)>/g, (match, attributes, sectionId) => {
+    if (!sectionIds.includes(sectionId)) return match;
+    navCount += 1;
+    let updatedAttributes = attributes.replace(/\sclass="([^"]*)"/, (classAttribute, classNames) => {
+      const classes = classNames.split(/\s+/).filter(name => name && name !== 'active');
+      if (sectionId === target) classes.push('active');
+      return ` class="${classes.join(' ')}"`;
+    });
+    updatedAttributes = updatedAttributes.replace(/\saria-current="page"/, '');
+    if (sectionId === target) updatedAttributes += ' aria-current="page"';
+    return `<a${updatedAttributes}>`;
+  });
+
+  if (navCount !== sectionIds.length) {
+    throw new Error(`Expected ${sectionIds.length} route links, found ${navCount}`);
+  }
+
+  return html;
+}
+
 function withRouteMetadata(sourceHtml, route) {
   const title = escapeAttr(route.title);
   const description = escapeAttr(route.description);
@@ -83,7 +149,7 @@ function withRouteMetadata(sourceHtml, route) {
   const image = assetUrl(route.image || '/social-preview.png?v=2');
   const imageAlt = escapeAttr(`${route.title} social preview`);
 
-  let html = sourceHtml;
+  let html = withRouteView(sourceHtml, route);
   html = replaceOrFail(html, /<title>.*?<\/title>/, `<title>${route.title}</title>`, 'title');
   html = replaceOrFail(html, /<meta name="description" content="[^"]*">/, `<meta name="description" content="${description}">`, 'meta description');
   html = replaceOrFail(html, /<meta property="og:title" content="[^"]*">/, `<meta property="og:title" content="${title}">`, 'og title');

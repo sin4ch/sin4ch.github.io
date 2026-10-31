@@ -21,6 +21,15 @@
    1. CONSTANTS & CONFIGURATION
    ============================================ */
 const VALID_SECTIONS = ['home', 'projects', 'opensource', 'writing', 'talks', 'gallery', 'experience'];
+const SECTION_PAGE_TITLES = {
+  home: 'Osinachi Okpara - AI Developer Advocate and Software Engineer',
+  projects: 'Projects - Osinachi Okpara',
+  opensource: 'Open Source - Osinachi Okpara',
+  writing: 'Writing - Osinachi Okpara',
+  talks: 'Speaking and Hosting - Osinachi Okpara',
+  gallery: 'Gallery - Osinachi Okpara',
+  experience: 'Experience - Osinachi Okpara'
+};
 const EXTERNAL_REDIRECTS = {
   'linkedin': 'https://linkedin.com/in/osinachiokpara',
   'github': 'https://github.com/sin4ch',
@@ -55,6 +64,46 @@ const loadingProgress = window.LoadingProgress;
 const mainWrapper = document.getElementById('main-wrapper');
 const navItems = document.querySelectorAll('.nav-item');
 const sections = document.querySelectorAll('section');
+
+function setElementTag(element, tagName) {
+  if (!element || element.tagName.toLowerCase() === tagName) return element;
+  const replacement = document.createElement(tagName);
+  for (const attribute of element.attributes) {
+    replacement.setAttribute(attribute.name, attribute.value);
+  }
+  replacement.textContent = element.textContent;
+  element.replaceWith(replacement);
+  return replacement;
+}
+
+function syncPageHeading(targetId) {
+  let mobileTitle = document.getElementById('mobileSectionTitle');
+  let homeName = document.querySelector('.home-name');
+
+  if (targetId === 'home') {
+    homeName = setElementTag(homeName, 'h1');
+    mobileTitle = setElementTag(mobileTitle, 'span');
+    if (mobileTitle) mobileTitle.textContent = '';
+    return;
+  }
+
+  homeName = setElementTag(homeName, 'span');
+  mobileTitle = setElementTag(mobileTitle, 'h1');
+  const activeNav = [...navItems].find(nav => nav.dataset.target === targetId);
+  if (mobileTitle) {
+    mobileTitle.textContent = activeNav
+      ? (activeNav.textContent.trim() || targetId)
+      : targetId;
+  }
+}
+
+function syncPageMetadata(targetId) {
+  document.title = SECTION_PAGE_TITLES[targetId] || SECTION_PAGE_TITLES.home;
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) {
+    canonical.href = new URL(getSectionPath(targetId), window.location.origin).href;
+  }
+}
 
 
 
@@ -128,21 +177,14 @@ function showSection(targetId, updateUrl = true) {
   }
   navItems.forEach(nav => {
     nav.classList.remove('active');
+    nav.removeAttribute('aria-current');
     if (nav.dataset.target === targetId) {
       nav.classList.add('active');
+      nav.setAttribute('aria-current', 'page');
     }
   });
-  const mobileSectionTitle = document.getElementById('mobileSectionTitle');
-  if (mobileSectionTitle) {
-    if (targetId === 'home') {
-      mobileSectionTitle.textContent = '';
-    } else {
-      const activeNav = [...navItems].find(nav => nav.dataset.target === targetId);
-      mobileSectionTitle.textContent = activeNav
-        ? (activeNav.textContent.trim() || activeNav.getAttribute('aria-label') || targetId)
-        : targetId;
-    }
-  }
+  syncPageHeading(targetId);
+  syncPageMetadata(targetId);
   if (updateUrl) {
     history.pushState({ section: targetId }, '', getSectionPath(targetId));
   }
@@ -218,7 +260,7 @@ function openMobileMenu() {
   hamburger.setAttribute('aria-expanded', 'true');
   repaintMobileMenuText();
   window.setTimeout(repaintMobileMenuText, 380);
-  const firstNav = sidebar.querySelector('button.nav-item:not([data-target="home"])');
+  const firstNav = sidebar.querySelector('a.nav-item:not([data-target="home"])');
   if (firstNav) firstNav.focus({ preventScroll: true });
   document.addEventListener('keydown', handleMenuFocusTrap);
 }
@@ -275,15 +317,29 @@ hamburger.addEventListener('click', () => {
   }
 });
 
-navItems.forEach(item => {
-  item.addEventListener('click', () => {
-    const targetId = item.dataset.target;
-    if (sidebar.classList.contains('menu-open')) {
-      showMenuSection(targetId);
-    } else {
-      showSection(targetId);
-    }
-  });
+sidebar.addEventListener('click', event => {
+  const link = event.target instanceof Element
+    ? event.target.closest('a.nav-item[href]')
+    : null;
+  if (!link || event.defaultPrevented || event.button !== 0 ||
+      event.metaKey || event.ctrlKey || event.shiftKey || event.altKey ||
+      link.hasAttribute('download') || (link.target && link.target !== '_self')) {
+    return;
+  }
+
+  const targetId = link.dataset.target;
+  if (!VALID_SECTIONS.includes(targetId)) return;
+  const destination = new URL(link.href, window.location.href);
+  if (destination.origin !== window.location.origin) return;
+  const destinationRoute = destination.pathname.replace(/^\/|\/$/g, '').toLowerCase() || 'home';
+  if (destinationRoute !== targetId) return;
+
+  event.preventDefault();
+  if (sidebar.classList.contains('menu-open')) {
+    showMenuSection(targetId);
+  } else {
+    showSection(targetId);
+  }
 });
 
 document.querySelectorAll('.home-work-link').forEach(link => {

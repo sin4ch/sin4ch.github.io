@@ -337,7 +337,7 @@
       <button class="profile-photo mobile-profile-photo" id="mobileProfilePhoto" type="button" aria-label="Go to Home">
         <img src="/profile-picture-128.webp" alt="Osinachi Okpara" width="128" height="128" decoding="async">
       </button>
-      <span class="mobile-section-title" id="mobileSectionTitle"></span>
+      <h1 class="mobile-section-title" id="mobileSectionTitle">Experience</h1>
       <div class="mobile-top-bar-actions">
         <button class="theme-toggle" id="themeToggleMobile" aria-label="Toggle dark mode"></button>
         <button class="hamburger" id="hamburger" aria-controls="sidebar" aria-expanded="false" aria-label="Open menu">
@@ -349,17 +349,17 @@
     <div class="layout">
       <nav class="sidebar" id="sidebar">
         <div class="nav-links">
-          <button class="nav-item nav-item-profile active" data-target="home" aria-label="Home">
+          <a class="nav-item nav-item-profile" data-target="home" href="/" aria-label="Home">
             <span class="profile-photo">
               <img src="/profile-picture-128.webp" alt="Osinachi Okpara" width="128" height="128" decoding="async">
             </span>
-          </button>
-          <button class="nav-item" data-target="projects">Projects</button>
-          <button class="nav-item" data-target="opensource">Open Source</button>
-          <button class="nav-item" data-target="writing">Writing</button>
-          <button class="nav-item" data-target="talks">Speaking & Hosting</button>
-          <button class="nav-item" data-target="gallery">Gallery</button>
-          <button class="nav-item" data-target="experience">Experience</button>
+          </a>
+          <a class="nav-item" data-target="projects" href="/projects/">Projects</a>
+          <a class="nav-item" data-target="opensource" href="/opensource/">Open Source</a>
+          <a class="nav-item" data-target="writing" href="/writing/">Writing</a>
+          <a class="nav-item" data-target="talks" href="/talks/">Speaking &amp; Hosting</a>
+          <a class="nav-item" data-target="gallery" href="/gallery/">Gallery</a>
+          <a class="nav-item active" data-target="experience" href="/experience/" aria-current="page">Experience</a>
           <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode"></button>
           <div class="mobile-menu-contact" aria-label="Contact links">
             <a class="contact-icon" href="mailto:okparaosi17@gmail.com" aria-label="Email"><span class="contact-tooltip" aria-hidden="true">Email</span>
@@ -382,7 +382,7 @@
       </nav>
       <main class="content">
         <!-- Home -->
-        <section id="home" class="active">
+        <section id="home">
           <div class="section-description home-intro" id="home-intro"><span class="home-name">Osinachi Okpara.</span> <span class="home-roles">Software Engineer. Developer Advocate. <a href="https://builder.aws.com/community/community-builders" target="_blank" rel="noopener">2x AWS Community Builder</a>.</span></div>
           <button class="home-work-link" type="button">See my work <span aria-hidden="true">→</span></button>
         </section>
@@ -1022,7 +1022,7 @@
         </section>
 
         <!-- Experience -->
-        <section id="experience">
+        <section id="experience" class="active">
           <div class="items">
             <div class="item">
               <div class="item-meta"></div>
