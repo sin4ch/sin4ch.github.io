@@ -1141,7 +1141,7 @@ section.filter-compact {
 
 .lightbox-story-bar {
   position: absolute;
-  top: var(--spacing);
+  top: calc(var(--spacing) + env(safe-area-inset-top, 0px));
   left: var(--spacing);
   right: var(--spacing);
   z-index: 3;
@@ -1868,14 +1868,13 @@ section.filter-compact {
   }
 
   .lightbox-story-bar {
-    top: var(--spacing);
     left: var(--spacing);
     right: var(--spacing);
   }
 
   .lightbox-close {
     position: absolute;
-    top: calc(var(--spacing) + 10px);
+    top: calc(var(--spacing) + env(safe-area-inset-top, 0px) + 10px);
     right: 0;
     width: 44px;
     height: 44px;
