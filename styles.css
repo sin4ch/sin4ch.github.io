@@ -344,7 +344,7 @@ body.is-resizing .sidebar {
   justify-content: flex-start;
   gap: 20px;
   padding: 24px var(--spacing) var(--spacing);
-  background-color: var(--bg-light);
+  background-color: transparent;
   z-index: 100;
   font-family: var(--font-sans);
 }
@@ -499,20 +499,13 @@ section.filter-compact {
   gap: 0;
   margin-bottom: 0;
   padding: 8px 0 16px;
-  background-color: var(--bg-light);
+  background-color: transparent;
   font-family: var(--font-sans);
 }
 
-/* Mask: paints everything above the bar in page background, so scrolled
-   content never shows past it (desktop only; mobile keeps its top gap). */
+/* Mask removed: content scrolls behind the filter with no opaque cover. */
 .section-filter::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 100%;
-  height: 100vh;
-  background-color: var(--bg-light);
+  content: none;
 }
 
 .section-filter-label {
@@ -1647,7 +1640,7 @@ section.filter-compact {
     left: 0;
     right: 0;
     z-index: 10020;
-    background-color: var(--bg-light);
+    background-color: transparent;
     background-image: none;
     border: 0;
     box-shadow: none;
@@ -1696,7 +1689,7 @@ section.filter-compact {
     z-index: 50;
     margin-bottom: 0;
     padding: 0 0 16px;
-    background-color: var(--bg-light);
+    background-color: transparent;
     align-items: flex-start;
   }
 
