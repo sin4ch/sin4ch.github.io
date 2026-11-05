@@ -1634,6 +1634,14 @@ section.filter-compact {
     display: block;
   }
 
+  /* No curtains on Home, or while the hamburger menu is open. */
+  body.home-active #top-fade,
+  body.home-active #bottom-fade,
+  body.menu-active #top-fade,
+  body.menu-active #bottom-fade {
+    display: none;
+  }
+
   #top-fade {
     --top-fade-solid: calc(48px + env(safe-area-inset-top, 0px));
     position: fixed;
@@ -1660,27 +1668,29 @@ section.filter-compact {
   }
 
   #bottom-fade {
-    --bottom-fade-solid: 48px;
+    --bottom-fade-solid: 24px;
+    /* Same Peng alpha curve as the top, spread over 160px so content
+       dissolves more slowly into the bottom edge. */
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(var(--bottom-fade-solid) + 96px);
+    height: calc(var(--bottom-fade-solid) + 160px);
     z-index: 40;
     pointer-events: none;
     background: linear-gradient(to top,
       var(--bg-light) 0,
       var(--bg-light) var(--bottom-fade-solid),
-      color-mix(in srgb, var(--bg-light) 97.2%, transparent) calc(var(--bottom-fade-solid) + 9.6px),
-      color-mix(in srgb, var(--bg-light) 89.6%, transparent) calc(var(--bottom-fade-solid) + 19.2px),
-      color-mix(in srgb, var(--bg-light) 78.4%, transparent) calc(var(--bottom-fade-solid) + 28.8px),
-      color-mix(in srgb, var(--bg-light) 64.8%, transparent) calc(var(--bottom-fade-solid) + 38.4px),
-      color-mix(in srgb, var(--bg-light) 50%, transparent) calc(var(--bottom-fade-solid) + 48px),
-      color-mix(in srgb, var(--bg-light) 35.2%, transparent) calc(var(--bottom-fade-solid) + 57.6px),
-      color-mix(in srgb, var(--bg-light) 21.6%, transparent) calc(var(--bottom-fade-solid) + 67.2px),
-      color-mix(in srgb, var(--bg-light) 10.4%, transparent) calc(var(--bottom-fade-solid) + 76.8px),
-      color-mix(in srgb, var(--bg-light) 2.8%, transparent) calc(var(--bottom-fade-solid) + 86.4px),
-      transparent calc(var(--bottom-fade-solid) + 96px),
+      color-mix(in srgb, var(--bg-light) 97.2%, transparent) calc(var(--bottom-fade-solid) + 16px),
+      color-mix(in srgb, var(--bg-light) 89.6%, transparent) calc(var(--bottom-fade-solid) + 32px),
+      color-mix(in srgb, var(--bg-light) 78.4%, transparent) calc(var(--bottom-fade-solid) + 48px),
+      color-mix(in srgb, var(--bg-light) 64.8%, transparent) calc(var(--bottom-fade-solid) + 64px),
+      color-mix(in srgb, var(--bg-light) 50%, transparent) calc(var(--bottom-fade-solid) + 80px),
+      color-mix(in srgb, var(--bg-light) 35.2%, transparent) calc(var(--bottom-fade-solid) + 96px),
+      color-mix(in srgb, var(--bg-light) 21.6%, transparent) calc(var(--bottom-fade-solid) + 112px),
+      color-mix(in srgb, var(--bg-light) 10.4%, transparent) calc(var(--bottom-fade-solid) + 128px),
+      color-mix(in srgb, var(--bg-light) 2.8%, transparent) calc(var(--bottom-fade-solid) + 144px),
+      transparent calc(var(--bottom-fade-solid) + 160px),
       transparent 100%);
   }
 
