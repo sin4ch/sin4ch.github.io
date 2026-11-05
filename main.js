@@ -534,6 +534,20 @@ function getPinnedTopbarHeight() {
   return bar.getBoundingClientRect().height;
 }
 
+function syncPinnedFilter(topbarH) {
+  if (!pinnedFilter || !pinnedPlaceholder) return;
+  const rect = pinnedPlaceholder.getBoundingClientRect();
+  pinnedFilter.style.top = topbarH + 'px';
+  pinnedFilter.style.left = rect.left + 'px';
+  pinnedFilter.style.width = rect.width + 'px';
+  // The pinned filter extends the top curtain's solid zone behind itself.
+  const topFade = document.getElementById('top-fade');
+  if (topFade) {
+    const filterH = pinnedFilter.getBoundingClientRect().height;
+    topFade.style.setProperty('--top-fade-solid', `${Math.round(topbarH + filterH)}px`);
+  }
+}
+
 function unpinFilter() {
   if (!pinnedFilter) return;
   pinnedFilter.style.position = '';
@@ -541,19 +555,13 @@ function unpinFilter() {
   pinnedFilter.style.left = '';
   pinnedFilter.style.width = '';
   pinnedFilter.style.zIndex = '';
+  const topFade = document.getElementById('top-fade');
+  if (topFade) topFade.style.removeProperty('--top-fade-solid');
   if (pinnedPlaceholder && pinnedPlaceholder.parentNode) {
     pinnedPlaceholder.parentNode.removeChild(pinnedPlaceholder);
   }
   pinnedPlaceholder = null;
   pinnedFilter = null;
-}
-
-function syncPinnedFilter(topbarH) {
-  if (!pinnedFilter || !pinnedPlaceholder) return;
-  const rect = pinnedPlaceholder.getBoundingClientRect();
-  pinnedFilter.style.top = topbarH + 'px';
-  pinnedFilter.style.left = rect.left + 'px';
-  pinnedFilter.style.width = rect.width + 'px';
 }
 
 function updatePinnedFilter() {

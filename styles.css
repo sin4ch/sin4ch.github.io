@@ -221,6 +221,13 @@ body.is-resizing .sidebar {
   touch-action: pan-y pinch-zoom;
 }
 
+/* Mobile-only fade curtains: full definitions live in the mobile media
+   block. Desktop keeps its original opaque bars and mask. */
+#top-fade,
+#bottom-fade {
+  display: none;
+}
+
 
 /* ============================================
    4. NAVIGATION
@@ -344,7 +351,7 @@ body.is-resizing .sidebar {
   justify-content: flex-start;
   gap: 20px;
   padding: 24px var(--spacing) var(--spacing);
-  background-color: transparent;
+  background-color: var(--bg-light);
   z-index: 100;
   font-family: var(--font-sans);
 }
@@ -499,13 +506,20 @@ section.filter-compact {
   gap: 0;
   margin-bottom: 0;
   padding: 8px 0 16px;
-  background-color: transparent;
+  background-color: var(--bg-light);
   font-family: var(--font-sans);
 }
 
-/* Mask removed: content scrolls behind the filter with no opaque cover. */
+/* Mask: paints everything above the bar in page background, so scrolled
+   content never shows past it (desktop only; mobile keeps its top gap). */
 .section-filter::before {
-  content: none;
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 100vh;
+  background-color: var(--bg-light);
 }
 
 .section-filter-label {
@@ -1609,6 +1623,65 @@ section.filter-compact {
   body.home-active {
     height: 100vh;
     height: 100svh;
+  }
+
+  /* pengzhe.ng-style fade curtains, mobile only: content dissolves into
+     the top header, and the bottom edge keeps hinting that content is
+     still behind it. The curtains sit above page content but below both
+     filter bars (z-index 50), so they can never cover the filters. */
+  #top-fade,
+  #bottom-fade {
+    display: block;
+  }
+
+  #top-fade {
+    --top-fade-solid: calc(48px + env(safe-area-inset-top, 0px));
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--top-fade-solid) + 96px);
+    z-index: 40;
+    pointer-events: none;
+    background: linear-gradient(to bottom,
+      var(--bg-light) 0,
+      var(--bg-light) var(--top-fade-solid),
+      color-mix(in srgb, var(--bg-light) 97.2%, transparent) calc(var(--top-fade-solid) + 9.6px),
+      color-mix(in srgb, var(--bg-light) 89.6%, transparent) calc(var(--top-fade-solid) + 19.2px),
+      color-mix(in srgb, var(--bg-light) 78.4%, transparent) calc(var(--top-fade-solid) + 28.8px),
+      color-mix(in srgb, var(--bg-light) 64.8%, transparent) calc(var(--top-fade-solid) + 38.4px),
+      color-mix(in srgb, var(--bg-light) 50%, transparent) calc(var(--top-fade-solid) + 48px),
+      color-mix(in srgb, var(--bg-light) 35.2%, transparent) calc(var(--top-fade-solid) + 57.6px),
+      color-mix(in srgb, var(--bg-light) 21.6%, transparent) calc(var(--top-fade-solid) + 67.2px),
+      color-mix(in srgb, var(--bg-light) 10.4%, transparent) calc(var(--top-fade-solid) + 76.8px),
+      color-mix(in srgb, var(--bg-light) 2.8%, transparent) calc(var(--top-fade-solid) + 86.4px),
+      transparent calc(var(--top-fade-solid) + 96px),
+      transparent 100%);
+  }
+
+  #bottom-fade {
+    --bottom-fade-solid: 48px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: calc(var(--bottom-fade-solid) + 96px);
+    z-index: 40;
+    pointer-events: none;
+    background: linear-gradient(to top,
+      var(--bg-light) 0,
+      var(--bg-light) var(--bottom-fade-solid),
+      color-mix(in srgb, var(--bg-light) 97.2%, transparent) calc(var(--bottom-fade-solid) + 9.6px),
+      color-mix(in srgb, var(--bg-light) 89.6%, transparent) calc(var(--bottom-fade-solid) + 19.2px),
+      color-mix(in srgb, var(--bg-light) 78.4%, transparent) calc(var(--bottom-fade-solid) + 28.8px),
+      color-mix(in srgb, var(--bg-light) 64.8%, transparent) calc(var(--bottom-fade-solid) + 38.4px),
+      color-mix(in srgb, var(--bg-light) 50%, transparent) calc(var(--bottom-fade-solid) + 48px),
+      color-mix(in srgb, var(--bg-light) 35.2%, transparent) calc(var(--bottom-fade-solid) + 57.6px),
+      color-mix(in srgb, var(--bg-light) 21.6%, transparent) calc(var(--bottom-fade-solid) + 67.2px),
+      color-mix(in srgb, var(--bg-light) 10.4%, transparent) calc(var(--bottom-fade-solid) + 76.8px),
+      color-mix(in srgb, var(--bg-light) 2.8%, transparent) calc(var(--bottom-fade-solid) + 86.4px),
+      transparent calc(var(--bottom-fade-solid) + 96px),
+      transparent 100%);
   }
 
   html.home-active,
