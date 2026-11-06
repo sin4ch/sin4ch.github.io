@@ -1634,11 +1634,12 @@ section.filter-compact {
     display: block;
   }
 
-  /* No curtains on Home, or while the hamburger menu is open. */
+  /* No curtains on Home. While the hamburger menu is open they stay in
+     place underneath it: the menu surface is opaque, full-screen, and
+     z-index 10010 — far above the curtains' z-index 40 — so the curtains
+     can never paint on top of the menu. */
   body.home-active #top-fade,
-  body.home-active #bottom-fade,
-  body.menu-active #top-fade,
-  body.menu-active #bottom-fade {
+  body.home-active #bottom-fade {
     display: none;
   }
 
