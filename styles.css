@@ -1643,10 +1643,12 @@ section.filter-compact {
     display: none;
   }
 
-  /* Curtain shapes: top 33px solid + 40px fade, bottom 24px + 24px, both
-     softness 1 (full smoothstep). */
+  /* Curtain shapes: top 50px solid + 40px fade (Peng smoothstep); bottom
+     16px solid + 32px fade on an end-weighted smootherstep curve — the
+     wash stays denser near the solid band, then lands flat at full
+     transparency, so the extra fade length never shows a hard edge. */
   #top-fade {
-    --top-fade-solid: 33px;
+    --top-fade-solid: 50px;
     position: fixed;
     top: 0;
     left: 0;
@@ -1671,27 +1673,30 @@ section.filter-compact {
   }
 
   #bottom-fade {
-    --bottom-fade-solid: 24px;
+    --bottom-fade-solid: 16px;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(var(--bottom-fade-solid) + 24px);
+    height: calc(var(--bottom-fade-solid) + 32px);
     z-index: 40;
     pointer-events: none;
+    /* Perlin smootherstep (6t^5 - 15t^4 + 10t^3): tangent-flat at both
+       ends, so the near-solid part holds ~99% opacity before letting
+       go, and the transparent end never steps. */
     background: linear-gradient(to top,
       var(--bg-light) 0,
       var(--bg-light) var(--bottom-fade-solid),
-      color-mix(in srgb, var(--bg-light) 97.2%, transparent) calc(var(--bottom-fade-solid) + 2.4px),
-      color-mix(in srgb, var(--bg-light) 89.6%, transparent) calc(var(--bottom-fade-solid) + 4.8px),
-      color-mix(in srgb, var(--bg-light) 78.4%, transparent) calc(var(--bottom-fade-solid) + 7.2px),
-      color-mix(in srgb, var(--bg-light) 64.8%, transparent) calc(var(--bottom-fade-solid) + 9.6px),
-      color-mix(in srgb, var(--bg-light) 50%, transparent) calc(var(--bottom-fade-solid) + 12px),
-      color-mix(in srgb, var(--bg-light) 35.2%, transparent) calc(var(--bottom-fade-solid) + 14.4px),
-      color-mix(in srgb, var(--bg-light) 21.6%, transparent) calc(var(--bottom-fade-solid) + 16.8px),
-      color-mix(in srgb, var(--bg-light) 10.4%, transparent) calc(var(--bottom-fade-solid) + 19.2px),
-      color-mix(in srgb, var(--bg-light) 2.8%, transparent) calc(var(--bottom-fade-solid) + 21.6px),
-      transparent calc(var(--bottom-fade-solid) + 24px),
+      color-mix(in srgb, var(--bg-light) 99.1%, transparent) calc(var(--bottom-fade-solid) + 3.2px),
+      color-mix(in srgb, var(--bg-light) 94.2%, transparent) calc(var(--bottom-fade-solid) + 6.4px),
+      color-mix(in srgb, var(--bg-light) 83.7%, transparent) calc(var(--bottom-fade-solid) + 9.6px),
+      color-mix(in srgb, var(--bg-light) 68.3%, transparent) calc(var(--bottom-fade-solid) + 12.8px),
+      color-mix(in srgb, var(--bg-light) 50%, transparent) calc(var(--bottom-fade-solid) + 16px),
+      color-mix(in srgb, var(--bg-light) 31.7%, transparent) calc(var(--bottom-fade-solid) + 19.2px),
+      color-mix(in srgb, var(--bg-light) 16.3%, transparent) calc(var(--bottom-fade-solid) + 22.4px),
+      color-mix(in srgb, var(--bg-light) 5.8%, transparent) calc(var(--bottom-fade-solid) + 25.6px),
+      color-mix(in srgb, var(--bg-light) 0.9%, transparent) calc(var(--bottom-fade-solid) + 28.8px),
+      transparent calc(var(--bottom-fade-solid) + 32px),
       transparent 100%);
   }
 
@@ -1986,7 +1991,8 @@ section.filter-compact {
     margin-top: 0;
   }
 
-  /* Keep the last item clear of the bottom fade curtain (24px + 24px). */
+  /* Keep the last item clear of the bottom fade curtain (16px + 32px,
+     end-weighted curve). */
   section,
   section.filter-compact,
   #experience {
