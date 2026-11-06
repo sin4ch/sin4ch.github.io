@@ -1648,7 +1648,7 @@ section.filter-compact {
      wash stays denser near the solid band, then lands flat at full
      transparency, so the extra fade length never shows a hard edge. */
   #top-fade {
-    --top-fade-solid: 50px;
+    --top-fade-solid: calc(50px + env(safe-area-inset-top, 0px));
     position: fixed;
     top: 0;
     left: 0;
