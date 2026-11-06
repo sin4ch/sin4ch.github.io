@@ -1642,8 +1642,8 @@ section.filter-compact {
     display: none;
   }
 
-  /* Curtain shapes tuned live with the on-page tuner:
-     top 50/80/1, bottom 24/48/1 (solid/fade/softness). */
+  /* Curtain shapes: top 50px solid + 80px fade, bottom 24px + 48px, both
+     softness 1 (full smoothstep). */
   #top-fade {
     --top-fade-solid: 50px;
     position: fixed;
