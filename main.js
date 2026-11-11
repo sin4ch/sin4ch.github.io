@@ -52,6 +52,62 @@ function getQueryRoute() {
   return new URLSearchParams(window.location.search).get('section')?.toLowerCase() || '';
 }
 
+const sectionFilterControllers = new Map();
+const projectSortControllers = new Map();
+
+function getRouteControlParam(sectionId) {
+  if (sectionId === 'writing' || sectionId === 'talks' || sectionId === 'projects') return 'sort';
+  return null;
+}
+
+function updateRouteControlQuery(sectionId, paramName, value, defaultValue) {
+  const url = new URL(window.location.href);
+  url.pathname = getSectionPath(sectionId);
+  url.searchParams.delete('section');
+  url.searchParams.delete('f');
+  if (value === defaultValue) {
+    url.searchParams.delete(paramName);
+  } else {
+    url.searchParams.set(paramName, value);
+  }
+
+  history.pushState(
+    { ...(history.state || {}), section: sectionId, [paramName]: value },
+    '',
+    url.pathname + url.search + url.hash
+  );
+}
+
+function syncRouteControlsFromUrl(sectionId) {
+  const url = new URL(window.location.href);
+  const paramName = getRouteControlParam(sectionId);
+
+  ['f', 'sort'].forEach(param => {
+    if (param !== paramName) url.searchParams.delete(param);
+  });
+  url.searchParams.delete('section');
+
+  let result = null;
+  if (paramName) {
+    const controller = sectionFilterControllers.get(sectionId)
+      || projectSortControllers.get(sectionId);
+    if (controller) {
+      const value = url.searchParams.has(paramName) ? url.searchParams.get(paramName) : null;
+      result = controller(value);
+    }
+  }
+
+  if (result && (!result.valid || result.value === result.defaultValue)) {
+    url.searchParams.delete(paramName);
+  }
+
+  const nextUrl = url.pathname + url.search + url.hash;
+  const currentUrl = window.location.pathname + window.location.search + window.location.hash;
+  if (nextUrl !== currentUrl) {
+    history.replaceState({ ...(history.state || {}), section: sectionId }, '', nextUrl);
+  }
+}
+
 
 
 
@@ -188,6 +244,7 @@ function showSection(targetId, updateUrl = true) {
   if (updateUrl) {
     history.pushState({ section: targetId }, '', getSectionPath(targetId));
   }
+  syncRouteControlsFromUrl(targetId);
   const carouselWrapper = document.getElementById('carousel-wrapper');
   if (carouselWrapper) {
     carouselWrapper.classList.toggle('visible', targetId === 'home');
@@ -211,7 +268,14 @@ function handleInitialRoute() {
   const query = getQueryRoute();
   const route = query || path || 'home';
   const targetSection = VALID_SECTIONS.includes(route)  ? route : 'home';
-  history.replaceState({ section: targetSection }, '', getSectionPath(targetSection));
+  const url = new URL(window.location.href);
+  url.pathname = getSectionPath(targetSection);
+  url.searchParams.delete('section');
+  history.replaceState(
+    { section: targetSection },
+    '',
+    url.pathname + url.search + url.hash
+  );
   showSection(targetSection, false);
 }
 
@@ -369,6 +433,7 @@ function initSectionFilters() {
     if (!section) return;
     const items = Array.from(section.querySelectorAll('.items > .item'));
     const buttons = Array.from(filter.querySelectorAll('.section-filter-button'));
+    const defaultButton = buttons.find(button => button.classList.contains('active')) || buttons[0];
     let currentGroup = '';
 
     items.forEach(item => {
@@ -387,7 +452,8 @@ function initSectionFilters() {
       return item.dataset.filterCategory === selected;
     }
 
-    function applyFilter(activeButton) {
+    function applyFilter(activeButton, updateUrl = false) {
+      if (!activeButton) return;
       const selected = activeButton.dataset.filterValue;
       const isFavouriteFilter = selected === 'favourite';
       let lastVisibleGroup = '';
@@ -436,13 +502,33 @@ function initSectionFilters() {
 
       section.classList.toggle('filter-compact', selected !== 'all');
       updatePinnedFilter();
+      if (updateUrl) {
+        updateRouteControlQuery(
+          section.id,
+          'sort',
+          selected,
+          defaultButton?.dataset.filterValue
+        );
+      }
     }
 
-    buttons.forEach(button => {
-      button.addEventListener('click', () => applyFilter(button));
+    sectionFilterControllers.set(section.id, value => {
+      const selectedButton = value === null
+        ? defaultButton
+        : buttons.find(button => button.dataset.filterValue === value);
+      applyFilter(selectedButton || defaultButton);
+      return {
+        valid: value === null || Boolean(selectedButton),
+        value: selectedButton?.dataset.filterValue,
+        defaultValue: defaultButton?.dataset.filterValue
+      };
     });
 
-    applyFilter(buttons.find(button => button.classList.contains('active')) || buttons[0]);
+    buttons.forEach(button => {
+      button.addEventListener('click', () => applyFilter(button, true));
+    });
+
+    applyFilter(defaultButton);
   });
 }
 
@@ -482,7 +568,10 @@ function initProjectSort() {
       item.dataset.projectForks = '0';
     });
 
-    function applySort(activeButton) {
+    const defaultButton = buttons.find(button => button.classList.contains('active')) || buttons[0];
+
+    function applySort(activeButton, updateUrl = false) {
+      if (!activeButton) return;
       const selected = activeButton.dataset.sortValue;
       buttons.forEach(button => {
         const isActive = button === activeButton;
@@ -501,7 +590,27 @@ function initProjectSort() {
       sortedItems.forEach(item => itemsContainer.appendChild(item));
       syncProjectYears(selected === 'date');
       updatePinnedFilter();
+      if (updateUrl) {
+        updateRouteControlQuery(
+          section.id,
+          'sort',
+          selected,
+          defaultButton?.dataset.sortValue
+        );
+      }
     }
+
+    projectSortControllers.set(section.id, value => {
+      const selectedButton = value === null
+        ? defaultButton
+        : buttons.find(button => button.dataset.sortValue === value);
+      applySort(selectedButton || defaultButton);
+      return {
+        valid: value === null || Boolean(selectedButton),
+        value: selectedButton?.dataset.sortValue,
+        defaultValue: defaultButton?.dataset.sortValue
+      };
+    });
 
     document.addEventListener('projectstatschange', () => {
       const activeButton = buttons.find(button => button.classList.contains('active'));
@@ -511,10 +620,10 @@ function initProjectSort() {
     });
 
     buttons.forEach(button => {
-      button.addEventListener('click', () => applySort(button));
+      button.addEventListener('click', () => applySort(button, true));
     });
 
-    applySort(buttons.find(button => button.classList.contains('active')) || buttons[0]);
+    applySort(defaultButton);
   });
 }
 
