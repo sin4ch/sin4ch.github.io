@@ -649,11 +649,12 @@ function syncPinnedFilter(topbarH) {
   pinnedFilter.style.top = topbarH + 'px';
   pinnedFilter.style.left = rect.left + 'px';
   pinnedFilter.style.width = rect.width + 'px';
-  // The pinned filter extends the top curtain's solid zone behind itself.
+  // The pinned filter extends the top curtain's solid zone behind itself,
+  // stopping the same --top-fade-tuck short of the bars' bottom edge.
   const topFade = document.getElementById('top-fade');
   if (topFade) {
     const filterH = pinnedFilter.getBoundingClientRect().height;
-    topFade.style.setProperty('--top-fade-solid', `${Math.round(topbarH + filterH)}px`);
+    topFade.style.setProperty('--top-fade-solid', `calc(${Math.round(topbarH + filterH)}px - var(--top-fade-tuck))`);
   }
 }
 
