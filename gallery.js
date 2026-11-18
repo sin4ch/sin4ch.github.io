@@ -41,6 +41,7 @@
   const lightboxHintOverlay = document.getElementById('lightbox-hint-overlay');
   const lightboxCounter = document.getElementById('lightbox-counter');
   const lightboxStoryProgress = document.getElementById('lightbox-story-progress');
+  const lightboxThumbs = document.getElementById('lightbox-thumbs');
 
   let currentImageIndex = 0;
   let lightboxRequestToken = 0;
@@ -51,6 +52,8 @@
   let lightboxScrollY = 0;
   let lightboxTrigger = null;
   let backgroundStates = [];
+  let thumbButtons = [];
+  let thumbsTouchedAt = 0;
 
   function getConnectionProfile() {
     const measuredDownlink = Number(connection?.downlink) || 0;
@@ -603,7 +606,9 @@
     document.body.classList.add('lightbox-open');
     document.body.style.top = `-${lightboxScrollY}px`;
     lightboxClose.focus({ preventScroll: true });
-    updateLightboxImage();
+    buildThumbStrip();
+    thumbsTouchedAt = 0;
+    updateLightboxImage('auto');
     showTapHint();
   }
 
@@ -626,7 +631,62 @@
     storyPaused = false;
   }
 
-  async function updateLightboxImage() {
+  function getThumbUrl(imageData) {
+    return imageData.url.replace(/\/([^/]+)$/, '/thumbs/$1');
+  }
+
+  function buildThumbStrip() {
+    if (!lightboxThumbs || thumbButtons.length === galleryImages.length) return;
+    lightboxThumbs.replaceChildren();
+    thumbButtons = galleryImages.map((imageData, index) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'lightbox-thumb';
+      button.tabIndex = -1;
+      button.setAttribute('aria-label', `Show photo ${index + 1} of ${galleryImages.length}`);
+      if (imageData.width && imageData.height) {
+        button.style.aspectRatio = `${imageData.width} / ${imageData.height}`;
+      }
+      if (imageData.preview) button.style.backgroundImage = `url("${imageData.preview}")`;
+      const image = document.createElement('img');
+      image.alt = '';
+      image.loading = 'lazy';
+      image.decoding = 'async';
+      image.addEventListener('error', () => image.remove());
+      image.src = getThumbUrl(imageData);
+      button.append(image);
+      button.addEventListener('click', () => {
+        thumbsTouchedAt = 0;
+        if (index === currentImageIndex) return;
+        currentImageIndex = index;
+        updateLightboxImage();
+      });
+      lightboxThumbs.append(button);
+      return button;
+    });
+  }
+
+  // Highlights the current photo's thumbnail and centres it, unless the
+  // viewer is browsing the strip themselves.
+  function syncThumbStrip(behavior) {
+    if (!lightboxThumbs || !thumbButtons.length) return;
+    thumbButtons.forEach((button, index) => {
+      const isActive = index === currentImageIndex;
+      button.classList.toggle('is-active', isActive);
+      button.tabIndex = isActive ? 0 : -1;
+      if (isActive) button.setAttribute('aria-current', 'true');
+      else button.removeAttribute('aria-current');
+    });
+    if (performance.now() - thumbsTouchedAt < 3000) return;
+    const active = thumbButtons[currentImageIndex];
+    if (!active) return;
+    lightboxThumbs.scrollTo({
+      left: active.offsetLeft - (lightboxThumbs.clientWidth - active.offsetWidth) / 2,
+      behavior: reducedMotionQuery.matches ? 'auto' : behavior
+    });
+  }
+
+  async function updateLightboxImage(thumbScrollBehavior = 'smooth') {
     const token = ++lightboxRequestToken;
     const imageData = galleryImages[currentImageIndex];
     stopStoryTimer();
@@ -637,6 +697,7 @@
     lightboxImg.alt = imageData.title || 'Gallery photo';
     setImageDimensions(lightboxImg, imageData);
     lightboxCounter.textContent = `${currentImageIndex + 1} / ${galleryImages.length}`;
+    syncThumbStrip(thumbScrollBehavior);
     const startedAt = performance.now();
 
     try {
@@ -768,6 +829,12 @@
     lightboxClose.addEventListener('click', closeLightbox);
     lightboxTapPrev.addEventListener('click', showPrevImage);
     lightboxTapNext.addEventListener('click', showNextImage);
+    if (lightboxThumbs) {
+      const markThumbsTouched = () => { thumbsTouchedAt = performance.now(); };
+      lightboxThumbs.addEventListener('pointerdown', markThumbsTouched, { passive: true });
+      lightboxThumbs.addEventListener('wheel', markThumbsTouched, { passive: true });
+      lightboxThumbs.addEventListener('touchmove', markThumbsTouched, { passive: true });
+    }
     lightboxPauseZone.addEventListener('click', () => {
       if (storyPaused) resumeStoryTimer();
       else pauseStoryTimer();
@@ -775,7 +842,7 @@
     document.addEventListener('keydown', (event) => {
       if (!lightbox.classList.contains('active')) return;
       if (event.key === 'Tab') {
-        const controls = [...lightbox.querySelectorAll('button:not(:disabled)')];
+        const controls = [...lightbox.querySelectorAll('button:not(:disabled):not([tabindex="-1"])')];
         const index = controls.indexOf(document.activeElement);
         const next = event.shiftKey
           ? (index <= 0 ? controls.length - 1 : index - 1)
