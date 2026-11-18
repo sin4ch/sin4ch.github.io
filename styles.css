@@ -1367,12 +1367,115 @@ section.filter-compact {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: color 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+  transition: color 0.16s ease, border-color 0.16s ease, transform 0.16s ease, opacity 0.3s ease, visibility 0s;
   font-family: var(--font-sans);
 }
 
 .lightbox-close:hover {
   border-color: var(--color-cream);
+}
+
+/* Pausing fades everything but the photo; playing brings it back. */
+.lightbox-story-bar,
+.lightbox-thumbs {
+  transition: opacity 0.3s ease, visibility 0s;
+}
+
+/* Visibility flips only after the fade-out, but at once on fade-in, so
+   the controls are focusable the moment they come back. */
+.lightbox.is-chrome-hidden .lightbox-story-bar,
+.lightbox.is-chrome-hidden .lightbox-close,
+.lightbox.is-chrome-hidden .lightbox-thumbs,
+.lightbox.is-chrome-hidden .lightbox-hint-overlay {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0s 0.3s;
+}
+
+.lightbox-play-state {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lightbox-play-state.is-visible {
+  animation: lightbox-play-flash 0.8s ease-out forwards;
+}
+
+.lightbox-play-state.is-visible.has-label {
+  animation: lightbox-play-flash-label 1.8s ease-out forwards;
+}
+
+.lightbox-play-icon {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.lightbox-play-state.is-paused .lightbox-play-icon::before,
+.lightbox-play-state.is-paused .lightbox-play-icon::after {
+  content: '';
+  position: absolute;
+  top: 19px;
+  width: 5px;
+  height: 18px;
+  background: var(--color-cream);
+}
+
+.lightbox-play-state.is-paused .lightbox-play-icon::before {
+  left: 21px;
+}
+
+.lightbox-play-state.is-paused .lightbox-play-icon::after {
+  right: 21px;
+}
+
+.lightbox-play-state.is-playing .lightbox-play-icon::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  width: 16px;
+  height: 20px;
+  background: var(--color-cream);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+}
+
+.lightbox-play-label {
+  display: none;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--color-cream);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-small);
+  line-height: 1.2;
+}
+
+.lightbox-play-state.has-label .lightbox-play-label {
+  display: block;
+}
+
+@keyframes lightbox-play-flash {
+  0% { opacity: 0; transform: scale(0.9); }
+  20% { opacity: 1; transform: scale(1); }
+  60% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+@keyframes lightbox-play-flash-label {
+  0% { opacity: 0; transform: scale(0.95); }
+  10% { opacity: 1; transform: scale(1); }
+  75% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1); }
 }
 
 .lightbox-counter {

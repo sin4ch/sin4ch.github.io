@@ -42,6 +42,9 @@
   const lightboxCounter = document.getElementById('lightbox-counter');
   const lightboxStoryProgress = document.getElementById('lightbox-story-progress');
   const lightboxThumbs = document.getElementById('lightbox-thumbs');
+  const lightboxPlayState = document.getElementById('lightbox-play-state');
+  const PAUSE_HINT_SEEN_KEY = 'gallery-pause-hint-seen';
+  const PAUSE_HINT_MS = 1400;
 
   let currentImageIndex = 0;
   let lightboxRequestToken = 0;
@@ -54,6 +57,7 @@
   let backgroundStates = [];
   let thumbButtons = [];
   let thumbsTouchedAt = 0;
+  let chromeHideTimer = null;
 
   function getConnectionProfile() {
     const measuredDownlink = Number(connection?.downlink) || 0;
@@ -606,6 +610,7 @@
     document.body.classList.add('lightbox-open');
     document.body.style.top = `-${lightboxScrollY}px`;
     lightboxClose.focus({ preventScroll: true });
+    setChromeHidden(false);
     buildThumbStrip();
     thumbsTouchedAt = 0;
     updateLightboxImage('auto');
@@ -629,6 +634,7 @@
     requestAnimationFrame(() => { root.style.scrollBehavior = previousScrollBehavior; });
     stopStoryTimer();
     storyPaused = false;
+    setChromeHidden(false);
   }
 
   function getThumbUrl(imageData) {
@@ -690,6 +696,7 @@
     const token = ++lightboxRequestToken;
     const imageData = galleryImages[currentImageIndex];
     stopStoryTimer();
+    setChromeHidden(false);
     lightbox.classList.remove('is-sharp', 'image-load-failed');
     lightboxPreview.src = imageData.preview || '';
     setImageDimensions(lightboxPreview, imageData);
@@ -806,6 +813,53 @@
     storyTimer = setTimeout(showNextImage, storyRemaining);
   }
 
+  // While paused, everything but the photo fades away; playing brings it back.
+  function setChromeHidden(hidden, delay = 0) {
+    window.clearTimeout(chromeHideTimer);
+    chromeHideTimer = null;
+    if (!hidden) {
+      lightbox.classList.remove('is-chrome-hidden');
+      return;
+    }
+    chromeHideTimer = window.setTimeout(() => {
+      if (storyPaused && lightbox.classList.contains('active')) {
+        lightbox.classList.add('is-chrome-hidden');
+      }
+    }, delay);
+  }
+
+  function flashPlayState(state, withLabel = false) {
+    if (!lightboxPlayState) return;
+    lightboxPlayState.classList.remove('is-visible', 'is-paused', 'is-playing', 'has-label');
+    lightboxPlayState.offsetHeight;
+    lightboxPlayState.classList.add('is-visible', state === 'paused' ? 'is-paused' : 'is-playing');
+    if (withLabel) lightboxPlayState.classList.add('has-label');
+  }
+
+  // The "Tap to play" label shows on a visitor's first pause only.
+  function takeFirstPauseHint() {
+    try {
+      if (localStorage.getItem(PAUSE_HINT_SEEN_KEY)) return false;
+      localStorage.setItem(PAUSE_HINT_SEEN_KEY, '1');
+    } catch (error) {}
+    return true;
+  }
+
+  function togglePause() {
+    if (storyPaused) {
+      resumeStoryTimer();
+      setChromeHidden(false);
+      flashPlayState('playing');
+      return;
+    }
+    pauseStoryTimer();
+    if (!storyPaused) return;
+    lightboxHintOverlay?.classList.remove('is-visible');
+    const firstPause = takeFirstPauseHint();
+    flashPlayState('paused', firstPause);
+    setChromeHidden(true, firstPause ? PAUSE_HINT_MS : 0);
+  }
+
   function showTapHint() {
     if (!lightboxHintOverlay) return;
     lightboxHintOverlay.classList.remove('is-visible');
@@ -835,13 +889,12 @@
       lightboxThumbs.addEventListener('wheel', markThumbsTouched, { passive: true });
       lightboxThumbs.addEventListener('touchmove', markThumbsTouched, { passive: true });
     }
-    lightboxPauseZone.addEventListener('click', () => {
-      if (storyPaused) resumeStoryTimer();
-      else pauseStoryTimer();
-    });
+    lightboxPauseZone.addEventListener('click', togglePause);
     document.addEventListener('keydown', (event) => {
       if (!lightbox.classList.contains('active')) return;
       if (event.key === 'Tab') {
+        // Keyboard users must be able to see the controls they move to.
+        setChromeHidden(false);
         const controls = [...lightbox.querySelectorAll('button:not(:disabled):not([tabindex="-1"])')];
         const index = controls.indexOf(document.activeElement);
         const next = event.shiftKey

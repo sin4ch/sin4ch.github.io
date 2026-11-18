@@ -158,9 +158,9 @@
       text-align: right;
     }
   </style>
-  <link id="site-stylesheet" rel="preload" href="/styles.css?v=87" as="style"
+  <link id="site-stylesheet" rel="preload" href="/styles.css?v=89" as="style"
     onload="this.onload=null;this.rel='stylesheet';this.dataset.loaded='true';window.dispatchEvent(new Event('site-styles-ready'))">
-  <noscript><link rel="stylesheet" href="/styles.css?v=87"></noscript>
+  <noscript><link rel="stylesheet" href="/styles.css?v=89"></noscript>
 </head>
 <body class="loading-active">
 
@@ -315,6 +315,10 @@
         <span class="lightbox-hint-symbol lightbox-hint-arrow lightbox-hint-arrow-right">→</span>
         <span>Tap for<br>next</span>
       </div>
+    </div>
+    <div class="lightbox-play-state" id="lightbox-play-state" aria-hidden="true">
+      <span class="lightbox-play-icon"></span>
+      <span class="lightbox-play-label">Tap to play</span>
     </div>
     <div class="lightbox-content">
       <img alt="" id="lightbox-preview" class="lightbox-preview" decoding="async" aria-hidden="true" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
@@ -1149,7 +1153,7 @@
       </div>
     </div>
   </div>
-  <script src="/gallery.js?v=12" defer></script>
+  <script src="/gallery.js?v=13" defer></script>
   <script src="/main.js?v=24" defer></script>
 </body>
 </html>
