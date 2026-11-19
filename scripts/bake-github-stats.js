@@ -1,81 +1,39 @@
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = path.resolve(__dirname, '..');
+const CONTENT_PATH = path.resolve(__dirname, '..', '_src', 'content.json');
 
-async function fetchJson(url) {
-  const response = await fetch(url, {
+async function fetchRepo(repo) {
+  const response = await fetch('https://api.github.com/repos/' + repo, {
     headers: {
       'User-Agent': 'sin4ch-site-builder',
       'Accept': 'application/vnd.github+json'
     },
     signal: AbortSignal.timeout(10000)
   });
-  if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
-  return response.json();
-}
-
-function getRepos(html) {
-  const repos = new Set();
-  new HTMLRewriter().on('.item-stats, [data-repo]', {
-    element(el) {
-      const repo = el.getAttribute('data-repo')?.trim();
-      const classes = (el.getAttribute('class') || '').split(/\s+/);
-      if (!repo || !classes.includes('item-stats')) {
-        throw new Error('Expected an item-stats element with a non-empty data-repo');
-      }
-      repos.add(repo);
-    }
-  }).transform(html);
-  if (!repos.size) throw new Error('No GitHub stats elements found');
-  return [...repos];
-}
-
-function updateStats(html, counts) {
-  const missing = new Set(counts.keys());
-  const result = new HTMLRewriter().on('.item-stats[data-repo]', {
-    element(el) {
-      const repo = el.getAttribute('data-repo').trim();
-      const stats = counts.get(repo);
-      if (!stats) return;
-      el.setAttribute('data-stars', String(stats.stars));
-      el.setAttribute('data-forks', String(stats.forks));
-      missing.delete(repo);
-    }
-  }).transform(html);
-  if (missing.size) throw new Error('Missing stats elements: ' + [...missing].join(', '));
-  return result;
-}
-
-async function bakeStats(html) {
-  const counts = new Map();
-  const errors = [];
-  for (const repo of getRepos(html)) {
-    try {
-      const data = await fetchJson('https://api.github.com/repos/' + repo);
-      const stars = data.stargazers_count;
-      const forks = data.forks_count;
-      if (![stars, forks].every(value => Number.isSafeInteger(value) && value >= 0)) {
-        throw new Error('Invalid star or fork count');
-      }
-      counts.set(repo, { stars, forks });
-    } catch (error) {
-      errors.push(`${repo}: ${error.message} (kept previous values)`);
-    }
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const { stargazers_count: stars, forks_count: forks } = await response.json();
+  if (![stars, forks].every(value => Number.isSafeInteger(value) && value >= 0)) {
+    throw new Error('Invalid star or fork count');
   }
-  return { html: updateStats(html, counts), counts, errors };
+  return { stars, forks };
 }
 
 async function main() {
-  const indexPath = path.join(ROOT, 'index.html');
-  const result = await bakeStats(fs.readFileSync(indexPath, 'utf8'));
-  fs.writeFileSync(indexPath, result.html);
-  for (const [repo, { stars, forks }] of result.counts) {
-    console.log(`${repo}: ${stars} stars, ${forks} forks`);
+  const content = JSON.parse(fs.readFileSync(CONTENT_PATH, 'utf8'));
+  let failed = 0;
+  for (const project of content.projects.filter(project => project.repo)) {
+    try {
+      Object.assign(project, await fetchRepo(project.repo));
+      console.log(`${project.repo}: ${project.stars} stars, ${project.forks} forks`);
+    } catch (error) {
+      failed += 1;
+      console.error(`SKIP ${project.repo}: ${error.message} (kept previous values)`);
+    }
   }
-  result.errors.forEach(error => console.error('SKIP ' + error));
-  console.log(`baked ${result.counts.size} repositories, ${result.errors.length} failed`);
-  if (result.errors.length) process.exitCode = 1;
+  fs.writeFileSync(CONTENT_PATH, JSON.stringify(content, null, 2) + '\n');
+  console.log(`baked ${content.projects.length - failed} repositories, ${failed} failed. Now run: bun scripts/generate-route-pages.js`);
+  if (failed) process.exitCode = 1;
 }
 
 main().catch(error => {

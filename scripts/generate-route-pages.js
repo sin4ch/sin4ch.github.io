@@ -4,91 +4,94 @@ const { createHash } = require('crypto');
 
 const ROOT = path.resolve(__dirname, '..');
 const SITE_URL = 'https://sin4.ch';
+const SOURCE_DIR = path.join(ROOT, '_src');
 const SITEMAP_STATE_PATH = path.join(ROOT, 'scripts', 'sitemap-state.json');
+const LINK = 'target="_blank" rel="noopener"';
 
-const routes = [
-  {
-    slug: '',
-    description: 'Osinachi Okpara is a software engineer, developer advocate and AWS Community Builder, passionate about agentic AI, cloud engineering, and open-source software.',
-    image: '/social-preview.png?v=2',
-    priority: '1.0'
-  },
-  {
-    slug: 'projects',
-    heading: 'Projects',
-    description: 'Selected software, AI, infrastructure, and open-source projects by Osinachi Okpara.',
-    image: '/social-preview-projects.png',
-    priority: '0.8'
-  },
-  {
-    slug: 'opensource',
-    heading: 'Open Source',
-    description: 'Open-source contributions by Osinachi Okpara across developer tooling, documentation, AI, and infrastructure projects.',
-    image: '/social-preview-opensource.png',
-    priority: '0.8'
-  },
-  {
-    slug: 'writing',
-    heading: 'Writing',
-    description: 'Articles by Osinachi Okpara on AI, cloud infrastructure, DevOps, developer tools, and technology systems.',
-    image: '/social-preview-writing.png',
-    priority: '0.8'
-  },
-  {
-    slug: 'talks',
-    heading: 'Speaking & Hosting',
-    description: 'Speaking and hosting engagements by Osinachi Okpara at developer, cloud, AI, and community events.',
-    image: '/social-preview-talks.png',
-    priority: '0.7'
-  },
-  {
-    slug: 'gallery',
-    heading: 'Gallery',
-    description: 'A personal gallery of Osinachi Okpara at conferences, community events, talks, and technology gatherings.',
-    image: '/social-preview.png?v=2',
-    priority: '0.6'
-  },
-  {
-    slug: 'experience',
-    heading: 'Experience',
-    description: 'Professional experience by Osinachi Okpara across software engineering, developer advocacy, technical writing, and community building.',
-    image: '/social-preview.png?v=2',
-    priority: '0.8'
-  }
-];
-
-const redirects = {
-  linkedin: 'https://linkedin.com/in/osinachiokpara',
-  github: 'https://github.com/sin4ch',
-  x: 'https://x.com/sin4ch',
-  twitter: 'https://x.com/sin4ch',
-  email: 'mailto:okparaosi17@gmail.com',
-  resume: 'https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view'
-};
-
-const sectionId = route => route.slug || 'home';
-const sectionIds = routes.map(sectionId);
+const content = JSON.parse(fs.readFileSync(path.join(SOURCE_DIR, 'content.json'), 'utf8'));
+const { pages, redirects } = content;
+const pageIds = pages.map(page => page.id);
 
 function escapeAttr(value) {
-  return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+  return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
 function escapeHtml(value) {
-  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function routeUrl(slug) {
-  return slug ? `${SITE_URL}/${slug}/` : `${SITE_URL}/`;
+function pagePath(page) {
+  return page.id === 'home' ? '/' : `/${page.id}/`;
 }
 
-function readSource() {
-  return fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+function link(url, label, className) {
+  return `<a${className ? ` class="${className}"` : ''} href="${escapeAttr(url)}" ${LINK}>${escapeHtml(label)}</a>`;
 }
 
-function getTitle(sourceHtml, route) {
-  const match = sourceHtml.match(new RegExp(`<section id="${sectionId(route)}" data-title="([^"]*)"`));
-  if (!match) throw new Error(`Missing data-title on section ${sectionId(route)}`);
-  return match[1];
+function logo(file, alt) {
+  return `<img class="experience-logo" src="/assets/org-icons/${escapeAttr(file)}" alt="${escapeAttr(alt)}" width="48" height="48" decoding="async">`;
+}
+
+function item(meta, body, attributes = '') {
+  return `            <div class="item"${attributes}>
+              <div class="item-meta">${escapeHtml(meta)}</div>
+              <div class="item-content">
+${body}
+              </div>
+            </div>`;
+}
+
+const renderers = {
+  projects: entry => `                <div class="item-title">${link(entry.url, entry.title)}</div>
+                <div class="item-description">${escapeHtml(entry.description)}</div>
+                <div class="item-stats" data-repo="${escapeAttr(entry.repo)}" data-stars="${entry.stars}" data-forks="${entry.forks}"></div>`,
+
+  opensource: entry => `                <a class="opensource-card-link" href="${escapeAttr(entry.url)}" ${LINK}>
+                  <div class="experience-logo-link">
+                    ${logo(entry.logo, entry.org)}
+                  </div>
+                  <div class="experience-details">
+                    <div class="item-title">${escapeHtml(entry.title)}</div>
+                    <div class="item-subtitle">${escapeHtml(entry.subtitle)}</div>
+                  </div>
+                </a>`,
+
+  writing: entry => {
+    const dot = '<span aria-hidden="true">&middot;</span>';
+    const extra = entry.link ? `${dot}${link(entry.link.url, entry.link.label, 'meta-link')}` : '';
+    return `                <div class="item-title">${link(entry.url, entry.title)}</div>
+                <div class="item-subtitle date-text"><span class="article-badge">${escapeHtml(entry.type.toUpperCase())}</span>${dot}<span>${escapeHtml(entry.date)}</span>${extra}</div>`;
+  },
+
+  talks: entry => `                <div class="item-title">${entry.url ? link(entry.url, entry.title) : escapeHtml(entry.title)}</div>
+                <div class="item-subtitle">${escapeHtml(entry.event)}</div>
+                <div class="item-tags"><span class="role-badge">${escapeHtml(entry.role.toUpperCase())}</span></div>`,
+
+  experience: entry => {
+    const logoBlock = entry.url
+      ? `                <a class="experience-logo-link" href="${escapeAttr(entry.url)}" ${LINK} aria-label="${escapeAttr(entry.org)}">
+                  ${logo(entry.logo, entry.org)}
+                </a>`
+      : `                <div class="experience-logo-link">
+                  ${logo(entry.logo, entry.org)}
+                </div>`;
+    const org = entry.url ? link(entry.url, entry.org, 'source-ref') : escapeHtml(entry.org);
+    return `${logoBlock}
+                <div class="experience-details">
+                  <div class="item-title">${escapeHtml(entry.title)}</div>
+                  <div class="item-subtitle">${org} · <span class="experience-duration">${escapeHtml(entry.duration)}</span></div>
+                </div>`;
+  }
+};
+
+function renderSection(name) {
+  let lastYear = null;
+  return content[name].map(entry => {
+    const meta = entry.year && entry.year !== lastYear ? entry.year : '';
+    lastYear = entry.year;
+    const attributes = entry.favourite ? ` data-filter-favourite="true" data-filter-order="${entry.favourite}"` : '';
+    return item(meta, renderers[name](entry), attributes);
+  }).join('\n');
 }
 
 function replaceOrFail(html, pattern, replacement, label) {
@@ -96,6 +99,19 @@ function replaceOrFail(html, pattern, replacement, label) {
     throw new Error(`Could not update ${label}`);
   }
   return html.replace(pattern, replacement);
+}
+
+function rewriteAll(html, pattern, label, rewrite) {
+  let count = 0;
+  const result = html.replace(pattern, (match, attributes, id) => {
+    if (!pageIds.includes(id)) return match;
+    count += 1;
+    return rewrite(attributes, id);
+  });
+  if (count !== pageIds.length) {
+    throw new Error(`Expected ${pageIds.length} ${label}, found ${count}`);
+  }
+  return result;
 }
 
 function setActiveClass(attributes, isActive) {
@@ -109,30 +125,27 @@ function setActiveClass(attributes, isActive) {
   return found || !isActive ? result : `${result} class="active"`;
 }
 
-function rewriteAll(html, pattern, label, rewrite) {
-  let count = 0;
-  const result = html.replace(pattern, (match, attributes, id) => {
-    if (!sectionIds.includes(id)) return match;
-    count += 1;
-    return rewrite(attributes, id);
-  });
-  if (count !== sectionIds.length) {
-    throw new Error(`Expected ${sectionIds.length} route ${label}, found ${count}`);
+function renderTemplate() {
+  let html = fs.readFileSync(path.join(SOURCE_DIR, 'index.html'), 'utf8');
+  for (const name of Object.keys(renderers)) {
+    html = replaceOrFail(html, new RegExp(`\\{\\{${name}\\}\\}`), () => renderSection(name), `${name} items`);
   }
-  return result;
+  return html;
 }
 
-function withRouteView(sourceHtml, route) {
-  const target = sectionId(route);
-  let html = rewriteAll(sourceHtml, /<section\b(\s+id="([a-z]+)"[^>]*)>/g, 'sections', (attributes, id) =>
-    `<section${setActiveClass(attributes, id === target)}>`
-  );
+function renderPage(template, page) {
+  const isHome = page.id === 'home';
+  let html = rewriteAll(template, /<section\b(\s+id="([a-z]+)"[^>]*)>/g, 'sections', (attributes, id) => {
+    const title = pages.find(other => other.id === id).title;
+    const rest = setActiveClass(attributes.replace(/\s+id="[a-z]+"/, ''), id === page.id);
+    return `<section id="${id}" data-title="${escapeAttr(title)}"${rest}>`;
+  });
 
-  if (route.slug) {
+  if (!isHome) {
     html = replaceOrFail(
       html,
       /<span class="mobile-section-title" id="mobileSectionTitle"><\/span>/,
-      `<h1 class="mobile-section-title" id="mobileSectionTitle">${escapeHtml(route.heading)}</h1>`,
+      `<h1 class="mobile-section-title" id="mobileSectionTitle">${escapeHtml(page.heading)}</h1>`,
       'mobile route heading'
     );
     html = replaceOrFail(
@@ -143,20 +156,17 @@ function withRouteView(sourceHtml, route) {
     );
   }
 
-  return rewriteAll(html, /<a\b([^>]*\bdata-target="([^"]+)"[^>]*)>/g, 'links', (attributes, id) => {
-    const isActive = id === target;
+  html = rewriteAll(html, /<a\b([^>]*\bdata-target="([^"]+)"[^>]*)>/g, 'nav links', (attributes, id) => {
+    const isActive = id === page.id;
     const updated = setActiveClass(attributes, isActive).replace(/\saria-current="page"/, '');
     return `<a${updated}${isActive ? ' aria-current="page"' : ''}>`;
   });
-}
 
-function withRouteMetadata(sourceHtml, route) {
-  const rawTitle = getTitle(sourceHtml, route);
-  const title = escapeAttr(rawTitle);
-  const description = escapeAttr(route.description);
-  const url = routeUrl(route.slug);
-  const image = `${SITE_URL}${route.image}`;
-  const imageAlt = escapeAttr(`${rawTitle} social preview`);
+  const title = escapeAttr(page.title);
+  const description = escapeAttr(page.description);
+  const url = SITE_URL + pagePath(page);
+  const image = SITE_URL + page.image;
+  const imageAlt = escapeAttr(`${page.title} social preview`);
   const tags = [
     ['meta name="description"', 'content', description],
     ['meta property="og:title"', 'content', title],
@@ -170,25 +180,34 @@ function withRouteMetadata(sourceHtml, route) {
     ['meta name="twitter:image:alt"', 'content', imageAlt],
     ['link rel="canonical"', 'href', url]
   ];
-
-  let html = withRouteView(sourceHtml, route);
-  html = replaceOrFail(html, /<title>.*?<\/title>/, `<title>${rawTitle}</title>`, 'title');
+  html = replaceOrFail(html, /<title>.*?<\/title>/, `<title>${escapeHtml(page.title)}</title>`, 'title');
   for (const [tag, attribute, value] of tags) {
     html = replaceOrFail(html, new RegExp(`<${tag} ${attribute}="[^"]*">`), `<${tag} ${attribute}="${value}">`, tag);
   }
   return html;
 }
 
-function generateRoutePages(emit) {
-  const sourceHtml = readSource();
-  routes.filter(route => route.slug).forEach(route => {
-    emit(path.join(ROOT, route.slug, 'index.html'), withRouteMetadata(sourceHtml, route));
-  });
+function renderRedirect(name, target) {
+  const href = escapeAttr(target);
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>${escapeHtml(name)} - Osinachi Okpara</title>
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0; url=${href}">
+  <script>location.replace(${JSON.stringify(target)});</script>
+</head>
+<body>
+  <a href="${href}">${href}</a>
+</body>
+</html>
+`;
 }
 
-function generateNotFoundPage(emit) {
-  const sections = routes.filter(route => route.slug).map(route => route.slug);
-  emit(path.join(ROOT, '404.html'), `<!DOCTYPE html>
+function renderNotFound() {
+  const sections = pageIds.filter(id => id !== 'home');
+  return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -205,28 +224,26 @@ function generateNotFoundPage(emit) {
   <p>Redirecting...</p>
 </body>
 </html>
-`);
+`;
 }
 
-function getPageState(content, previous, today) {
-  const hash = createHash('sha256').update(content).digest('hex');
+function getPageState(text, previous, today) {
+  const hash = createHash('sha256').update(text).digest('hex');
   return {
     hash,
     lastmod: previous?.hash === hash ? previous.lastmod : today
   };
 }
 
-function generateSitemap(emit) {
+function renderSitemap(emit, pageHtml) {
   const today = new Date().toISOString().slice(0, 10);
   const previous = fs.existsSync(SITEMAP_STATE_PATH)
     ? JSON.parse(fs.readFileSync(SITEMAP_STATE_PATH, 'utf8'))
     : {};
-  const next = {};
-  const sourceHtml = readSource();
   const css = fs.readFileSync(path.join(ROOT, 'styles.css'), 'utf8');
   const gallery = JSON.parse(fs.readFileSync(path.join(ROOT, 'gallery', 'gallery.json'), 'utf8'));
   const assets = new Set(['styles.css', 'main.js', 'gallery.js', 'gallery/gallery.json', 'site.webmanifest']);
-  for (const match of sourceHtml.matchAll(/(?:src|href)="\/([^"?#]+)(?:[^\"]*)"/g)) {
+  for (const match of pageHtml.get('home').matchAll(/(?:src|href)="\/([^"?#]+)(?:[^"]*)"/g)) {
     const file = path.join(ROOT, match[1]);
     if (fs.existsSync(file) && fs.statSync(file).isFile()) assets.add(match[1]);
   }
@@ -237,15 +254,15 @@ function generateSitemap(emit) {
     assetHash.update(asset).update('\0').update(fs.readFileSync(path.join(ROOT, asset)));
   }
   const sharedHash = assetHash.digest('hex');
-  for (const route of routes) {
-    const html = route.slug ? withRouteMetadata(sourceHtml, route) : sourceHtml;
-    next[sectionId(route)] = getPageState(html + sharedHash, previous[sectionId(route)], today);
+  const next = {};
+  for (const page of pages) {
+    next[page.id] = getPageState(pageHtml.get(page.id) + sharedHash, previous[page.id], today);
   }
-  const entries = routes.map(route => `  <url>
-    <loc>${routeUrl(route.slug)}</loc>
-    <lastmod>${next[sectionId(route)].lastmod}</lastmod>
+  const entries = pages.map(page => `  <url>
+    <loc>${SITE_URL}${pagePath(page)}</loc>
+    <lastmod>${next[page.id].lastmod}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>${route.priority}</priority>
+    <priority>${page.priority}</priority>
   </url>`).join('\n');
 
   emit(path.join(ROOT, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>
@@ -258,16 +275,23 @@ ${entries}
 
 function getGeneratedFiles() {
   const files = new Map();
-  const emit = (file, content) => files.set(file, content);
-  generateRoutePages(emit);
-  generateNotFoundPage(emit);
-  generateSitemap(emit);
+  const emit = (file, text) => files.set(file, text);
+  const template = renderTemplate();
+  const pageHtml = new Map(pages.map(page => [page.id, renderPage(template, page)]));
+  for (const [id, html] of pageHtml) {
+    emit(path.join(ROOT, id === 'home' ? '' : id, 'index.html'), html);
+  }
+  for (const [name, target] of Object.entries(redirects)) {
+    emit(path.join(ROOT, `${name}.html`), renderRedirect(name, target));
+  }
+  emit(path.join(ROOT, '404.html'), renderNotFound());
+  renderSitemap(emit, pageHtml);
   return files;
 }
 
 function findOutdatedFiles(files) {
-  return [...files].filter(([file, content]) =>
-    !fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== content
+  return [...files].filter(([file, text]) =>
+    !fs.existsSync(file) || fs.readFileSync(file, 'utf8') !== text
   ).map(([file]) => path.relative(ROOT, file));
 }
 
@@ -283,9 +307,9 @@ if (args.some(arg => arg !== '--check')) {
     if (outdated.length) process.exitCode = 1;
     else console.log('All generated files are up to date.');
   } else {
-    for (const [file, content] of files) {
+    for (const [file, text] of files) {
       fs.mkdirSync(path.dirname(file), { recursive: true });
-      fs.writeFileSync(file, content);
+      fs.writeFileSync(file, text);
     }
   }
 }

@@ -1,0 +1,651 @@
+{
+  "pages": [
+    {
+      "id": "home",
+      "title": "Osinachi Okpara - AI Developer Advocate and Software Engineer",
+      "description": "Osinachi Okpara is a software engineer, developer advocate and AWS Community Builder, passionate about agentic AI, cloud engineering, and open-source software.",
+      "image": "/assets/brand/social-preview.png",
+      "priority": "1.0"
+    },
+    {
+      "id": "projects",
+      "title": "Projects - Osinachi Okpara",
+      "heading": "Projects",
+      "description": "Selected software, AI, infrastructure, and open-source projects by Osinachi Okpara.",
+      "image": "/assets/brand/social-preview-projects.png",
+      "priority": "0.8"
+    },
+    {
+      "id": "opensource",
+      "title": "Open Source - Osinachi Okpara",
+      "heading": "Open Source",
+      "description": "Open-source contributions by Osinachi Okpara across developer tooling, documentation, AI, and infrastructure projects.",
+      "image": "/assets/brand/social-preview-opensource.png",
+      "priority": "0.8"
+    },
+    {
+      "id": "writing",
+      "title": "Writing - Osinachi Okpara",
+      "heading": "Writing",
+      "description": "Articles by Osinachi Okpara on AI, cloud infrastructure, DevOps, developer tools, and technology systems.",
+      "image": "/assets/brand/social-preview-writing.png",
+      "priority": "0.8"
+    },
+    {
+      "id": "talks",
+      "title": "Speaking and Hosting - Osinachi Okpara",
+      "heading": "Speaking & Hosting",
+      "description": "Speaking and hosting engagements by Osinachi Okpara at developer, cloud, AI, and community events.",
+      "image": "/assets/brand/social-preview-talks.png",
+      "priority": "0.7"
+    },
+    {
+      "id": "gallery",
+      "title": "Gallery - Osinachi Okpara",
+      "heading": "Gallery",
+      "description": "A personal gallery of Osinachi Okpara at conferences, community events, talks, and technology gatherings.",
+      "image": "/assets/brand/social-preview.png",
+      "priority": "0.6"
+    },
+    {
+      "id": "experience",
+      "title": "Experience - Osinachi Okpara",
+      "heading": "Experience",
+      "description": "Professional experience by Osinachi Okpara across software engineering, developer advocacy, technical writing, and community building.",
+      "image": "/assets/brand/social-preview.png",
+      "priority": "0.8"
+    }
+  ],
+  "redirects": {
+    "linkedin": "https://linkedin.com/in/osinachiokpara",
+    "github": "https://github.com/sin4ch",
+    "x": "https://x.com/sin4ch",
+    "twitter": "https://x.com/sin4ch",
+    "email": "mailto:okparaosi17@gmail.com",
+    "resume": "https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view"
+  },
+  "projects": [
+    {
+      "year": "2026",
+      "title": "MetaEdit",
+      "url": "https://github.com/sin4ch/MetaEdit",
+      "description": "Annotate any website and ship the changes with AI agents",
+      "repo": "sin4ch/MetaEdit",
+      "stars": 0,
+      "forks": 0
+    },
+    {
+      "year": "2026",
+      "title": "Odyssey Hero Recreation",
+      "url": "https://github.com/sin4ch/odyssey_landing_page",
+      "description": "A study of a black modern landing page inspired by Odyssey",
+      "repo": "sin4ch/odyssey_landing_page",
+      "stars": 0,
+      "forks": 0
+    },
+    {
+      "year": "2026",
+      "title": "Visitors.now Hero Recreation",
+      "url": "https://github.com/sin4ch/visitors-now-design",
+      "description": "A recreation of the Visitors.now hero section",
+      "repo": "sin4ch/visitors-now-design",
+      "stars": 0,
+      "forks": 0
+    },
+    {
+      "year": "2026",
+      "title": "Clothing App",
+      "url": "https://github.com/sin4ch/clothing-app",
+      "description": "An online clothing shopping app",
+      "repo": "sin4ch/clothing-app",
+      "stars": 0,
+      "forks": 0
+    },
+    {
+      "year": "2026",
+      "title": "Canvas",
+      "url": "https://github.com/sin4ch/multiplayer-terminal-canvas",
+      "description": "A real-time collaborative ASCII terminal canvas",
+      "repo": "sin4ch/multiplayer-terminal-canvas",
+      "stars": 1,
+      "forks": 0
+    },
+    {
+      "year": "2026",
+      "title": "Flappy Bird MCP",
+      "url": "https://github.com/sin4ch/flappy-bird-mcp",
+      "description": "Play Flappy Bird directly in your AI assistant via Model Context Protocol",
+      "repo": "sin4ch/flappy-bird-mcp",
+      "stars": 1,
+      "forks": 0
+    },
+    {
+      "year": "2026",
+      "title": "Nigerian Fintech LLMs.txt",
+      "url": "https://github.com/sin4ch/nigerian-fintech-llms-txt",
+      "description": "Curated llms.txt files for Nigerian fintech API documentation",
+      "repo": "sin4ch/nigerian-fintech-llms-txt",
+      "stars": 34,
+      "forks": 14
+    },
+    {
+      "year": "2026",
+      "title": "Resume to LaTeX",
+      "url": "https://github.com/sin4ch/resume-to-latex",
+      "description": "Convert resumes to clean LaTeX format using AI",
+      "repo": "sin4ch/resume-to-latex",
+      "stars": 11,
+      "forks": 2
+    },
+    {
+      "year": "2025",
+      "title": "Mono Banking MCP Server",
+      "url": "https://github.com/sin4ch/mono-mcp",
+      "description": "MCP server for Nigerian banking operations via Mono Open Banking API",
+      "repo": "sin4ch/mono-mcp",
+      "stars": 59,
+      "forks": 12
+    },
+    {
+      "year": "2025",
+      "title": "QualGent Job Orchestrator",
+      "url": "https://github.com/sin4ch/qgjob",
+      "description": "Production-ready job orchestration system for AppWright automated tests on BrowserStack and GitHub Actions runners",
+      "repo": "sin4ch/qgjob",
+      "stars": 2,
+      "forks": 1
+    },
+    {
+      "year": "2025",
+      "title": "AWS Innovation Sandbox API",
+      "url": "https://github.com/sin4ch/aws-innovation-sb-api",
+      "description": "FastAPI application for managing AWS Innovation Sandbox accounts and resources",
+      "repo": "sin4ch/aws-innovation-sb-api",
+      "stars": 1,
+      "forks": 1
+    },
+    {
+      "year": "2025",
+      "title": "Quick Face Sort",
+      "url": "https://github.com/sin4ch/quick-face-sort",
+      "description": "Scan a folder with media and sort out images & videos based on reference images",
+      "repo": "sin4ch/quick-face-sort",
+      "stars": 5,
+      "forks": 1
+    },
+    {
+      "year": "2025",
+      "title": "Exchange Rate MCP Server",
+      "url": "https://github.com/sin4ch/exchange-rate-mcp",
+      "description": "MCP server for real-time currency exchange rate lookups",
+      "repo": "sin4ch/exchange-rate-mcp",
+      "stars": 0,
+      "forks": 0
+    }
+  ],
+  "opensource": [
+    {
+      "year": "2026",
+      "url": "https://github.com/anomalyco/opencode/issues/6712",
+      "logo": "anomalyco.webp",
+      "org": "Anomaly Co",
+      "title": "Improve MCP documentation clarity about config file location",
+      "subtitle": "anomalyco/opencode#6712"
+    },
+    {
+      "year": "2026",
+      "url": "https://github.com/ChromeDevTools/chrome-devtools-mcp/issues/721",
+      "logo": "chromedevtools.webp",
+      "org": "ChromeDevTools",
+      "title": "Add OpenCode MCP configuration to README",
+      "subtitle": "ChromeDevTools/chrome-devtools-mcp#721"
+    },
+    {
+      "year": "2025",
+      "url": "https://github.com/anomalyco/opencode/pull/2707",
+      "logo": "anomalyco.webp",
+      "org": "Anomaly Co",
+      "title": "Enhance theme documentation with links to original sources",
+      "subtitle": "anomalyco/opencode#2707"
+    },
+    {
+      "year": "2025",
+      "url": "https://github.com/anomalyco/opencode/issues/2625",
+      "logo": "anomalyco.webp",
+      "org": "Anomaly Co",
+      "title": "Fix incomplete statement in config documentation",
+      "subtitle": "anomalyco/opencode#2625"
+    },
+    {
+      "year": "2025",
+      "url": "https://github.com/browser-use/browser-use/pull/2998",
+      "logo": "browser-use.webp",
+      "org": "browser-use",
+      "title": "Add comprehensive MCP Server documentation",
+      "subtitle": "browser-use/browser-use#2998"
+    },
+    {
+      "year": "2025",
+      "url": "https://github.com/truffle-ai/dexto/issues/309",
+      "logo": "truffle-ai.webp",
+      "org": "truffle-ai",
+      "title": "Create llms.txt and add View as Markdown functionality",
+      "subtitle": "truffle-ai/dexto#309"
+    },
+    {
+      "year": "2025",
+      "url": "https://github.com/aws-solutions/innovation-sandbox-on-aws/issues/19",
+      "logo": "aws-solutions.webp",
+      "org": "aws-solutions",
+      "title": "Enable automatic programmatic authentication for third-party APIs",
+      "subtitle": "aws-solutions/innovation-sandbox-on-aws#19"
+    },
+    {
+      "year": "2025",
+      "url": "https://github.com/SINTEF/ci-cd/pull/357",
+      "logo": "sintef.webp",
+      "org": "SINTEF",
+      "title": "Fix GitHub environment variables issue across workflow files",
+      "subtitle": "SINTEF/ci-cd#357"
+    }
+  ],
+  "writing": [
+    {
+      "year": "2026",
+      "title": "Monitoring Your App Without Running Your Own Prometheus Stack",
+      "url": "https://blog.appsignal.com/2026/03/26/monitoring-your-app-without-running-your-own-prometheus-stack.html",
+      "type": "explainer",
+      "date": "Mar 26"
+    },
+    {
+      "year": "2026",
+      "title": "Here's Why Nigeria Doesn't Have - or Need - an LLM",
+      "url": "https://x.com/sin4ch/status/2027780726083449209?s=20",
+      "type": "opinion",
+      "date": "Feb 28"
+    },
+    {
+      "year": "2026",
+      "title": "Systems—or the lack thereof—not people, is Nigeria's true problem",
+      "url": "https://sin4ch.substack.com/p/systemsor-the-lack-therofnot-people",
+      "type": "opinion",
+      "date": "Jan 15"
+    },
+    {
+      "year": "2026",
+      "title": "I can game on Linux... Goodbye (and good riddance), Windows!",
+      "url": "https://x.com/sin4ch/status/2011831408046571623?s=20",
+      "type": "explainer",
+      "date": "Jan 15"
+    },
+    {
+      "year": "2025",
+      "title": "LLMs might not be human-level intelligent, but they sure are human",
+      "url": "https://sin4ch.substack.com/p/llms-might-not-be-human-level-intelligent",
+      "type": "opinion",
+      "date": "Oct 1"
+    },
+    {
+      "year": "2025",
+      "title": "Building a Simple Exchange Rate MCP Server using FastMCP",
+      "url": "https://medium.com/@sin4ch/building-a-simple-exchange-rate-mcp-server-using-fastmcp-c87d7a454545",
+      "type": "walkthrough",
+      "date": "Sep 29"
+    },
+    {
+      "year": "2025",
+      "title": "The need for compromise in innovation communication in the age of AI",
+      "url": "https://sin4ch.substack.com/p/the-need-for-compromise-in-innovation",
+      "type": "opinion",
+      "date": "Sep 11"
+    },
+    {
+      "year": "2025",
+      "title": "Browser Use MCP Server Documentation",
+      "url": "https://docs.browser-use.com/open-source/customize/integrations/mcp-server",
+      "type": "documentation",
+      "date": "Sep 8",
+      "link": {
+        "label": "PR #2998",
+        "url": "https://github.com/browser-use/browser-use/pull/2998"
+      }
+    },
+    {
+      "year": "2025",
+      "title": "We might just be the ones holding our tech back",
+      "url": "https://sin4ch.substack.com/p/were-the-ones-holding-our-tech-back",
+      "type": "opinion",
+      "date": "Aug 27"
+    },
+    {
+      "year": "2025",
+      "title": "Understanding Model Context Protocol (MCP)",
+      "url": "https://medium.com/@sin4ch/understanding-model-context-protocol-mcp-2f8f0e7e9240",
+      "type": "explainer",
+      "date": "Aug 6"
+    },
+    {
+      "year": "2025",
+      "title": "Deploying a FastAPI Number Classification API with Docker, Nginx, and AWS EC2",
+      "url": "https://medium.com/@sin4ch/deploying-a-fastapi-number-classification-api-with-docker-nginx-and-aws-ec2-fe2358ef7835",
+      "type": "walkthrough",
+      "date": "May 3"
+    },
+    {
+      "year": "2025",
+      "title": "Why Tech Innovation Seems Slower These Days",
+      "url": "https://medium.com/@sin4ch/why-tech-innovation-seems-slower-these-days-fe79b14d0f99",
+      "type": "opinion",
+      "date": "Apr 18"
+    },
+    {
+      "year": "2025",
+      "title": "Understanding SSH and SSH Keys",
+      "url": "https://www.everythingdevops.dev/blog/understanding-ssh-and-ssh-keys",
+      "type": "explainer",
+      "date": "Feb 25"
+    },
+    {
+      "year": "2025",
+      "title": "Serving A Simple Webpage Through NGINX On An Amazon EC2 Instance",
+      "url": "https://medium.com/@sin4ch/hng-stage-0-serving-a-simple-webpage-through-nginx-on-an-amazon-ec2-instance-c885225c3bd7",
+      "type": "walkthrough",
+      "date": "Jan 31"
+    },
+    {
+      "year": "2024",
+      "title": "Infrastructure is the Future of AI",
+      "url": "https://medium.com/@sin4ch/infrastructure-is-the-future-of-ai-72fd31dd7c03",
+      "type": "opinion",
+      "date": "Dec 7"
+    },
+    {
+      "year": "2024",
+      "title": "Road to My AWS Community Builder Application",
+      "url": "https://medium.com/@sin4ch/road-to-my-aws-community-builder-application-in-january-2025-f4626330076d",
+      "type": "opinion",
+      "date": "Oct 20"
+    }
+  ],
+  "talks": [
+    {
+      "year": "2026",
+      "title": "General Panel Session",
+      "event": "APIConf Lagos 2026",
+      "role": "host"
+    },
+    {
+      "year": "2026",
+      "title": "The Audacity to Win in Tech",
+      "url": "https://3mttedostate.substack.com/i/196139996/community-highlights",
+      "event": "3MTT Edo State Community",
+      "role": "speaker"
+    },
+    {
+      "year": "2026",
+      "title": "AI That Works For Your Business: AWS Solutions for SMBs",
+      "url": "https://www.linkedin.com/posts/fernwoodsystems_speakerannouncement-aiforbusiness-cloudcomputing-ugcPost-7429594344464117761-PFzH",
+      "event": "Fernwood Systems",
+      "role": "speaker"
+    },
+    {
+      "year": "2025",
+      "title": "Building a Career from Open Source Contribution",
+      "url": "https://gdg.community.dev/events/details/google-gdg-on-campus-university-of-benin-benin-nigeria-presents-building-a-career-from-open-source-contribution-2025-11-13/",
+      "event": "Google Developer Groups on Campus UNIBEN",
+      "role": "speaker",
+      "favourite": 3
+    },
+    {
+      "year": "2025",
+      "title": "AI, Cloud, and the African Hustle: Turning Challenges into Opportunities",
+      "url": "https://www.linkedin.com/posts/awscloudsecwestafrica_awscommunityday-genai-awscd25-activity-7378412697677107201-ASBh",
+      "event": "AWS Community Day West Africa 2025",
+      "role": "speaker",
+      "favourite": 2
+    },
+    {
+      "year": "2025",
+      "title": "Arthurite x AWS GenAI 2025",
+      "url": "https://x.com/sin4ch/status/1958408726601453857",
+      "event": "Arthurite Integrated",
+      "role": "host"
+    },
+    {
+      "year": "2025",
+      "title": "Building Your Cloud Career",
+      "url": "https://x.com/awsfutminna/status/1959010661490389492",
+      "event": "AWS Cloud Clubs, FUTMinna",
+      "role": "speaker"
+    },
+    {
+      "year": "2025",
+      "title": "From Local to Global: Real Stories of Landing Global Internships",
+      "url": "https://x.com/Geektutor/status/1953746378267509132",
+      "event": "X Space",
+      "role": "host"
+    },
+    {
+      "year": "2025",
+      "title": "Building an Impactful Tech Career",
+      "url": "https://x.com/sin4ch/status/1941218347275673925",
+      "event": "X Space with Julian Duru",
+      "role": "host"
+    },
+    {
+      "year": "2025",
+      "title": "Remote DevOps Work: Real talk & Tips",
+      "url": "https://x.com/thedevopsdojo/status/1935989233115648313",
+      "event": "DevOps Dojo",
+      "role": "host"
+    },
+    {
+      "year": "2025",
+      "title": "NexaScale 2nd Anniversary: Level Up or Get Left Behind",
+      "url": "https://x.com/NexaScaleHQ/status/1933898503735885951",
+      "event": "NexaScale",
+      "role": "host"
+    },
+    {
+      "year": "2025",
+      "title": "Introduction to RESTful APIs with FastAPI",
+      "event": "NexaScale",
+      "role": "speaker"
+    },
+    {
+      "year": "2025",
+      "title": "Why Tech Matters",
+      "event": "DheGroup Birthday Event",
+      "role": "speaker"
+    },
+    {
+      "year": "2025",
+      "title": "Infrastructure is the Future of AI",
+      "url": "https://gdg.community.dev/events/details/google-gdg-on-campus-university-of-ilorin-ilorin-nigeria-presents-build-with-ai-2025/",
+      "event": "Build with AI 2025, Google Developer Groups on Campus University of Ilorin",
+      "role": "speaker",
+      "favourite": 4
+    },
+    {
+      "year": "2025",
+      "title": "Ultimate Beginner Guide to Acing the AWS CCP Exam",
+      "url": "https://www.youtube.com/live/h-9Ph-J7Bh8",
+      "event": "Cloud with Anne Academy",
+      "role": "speaker"
+    },
+    {
+      "year": "2025",
+      "title": "Breaking into Tech (AMA)",
+      "url": "https://x.com/sin4ch/status/1895475604759449713",
+      "event": "TRIIBE Network",
+      "role": "speaker"
+    },
+    {
+      "year": "2025",
+      "title": "Getting Started in Cloud",
+      "url": "https://x.com/sin4ch/status/1883135211556475122",
+      "event": "AWS Cloud Clubs, FUTO",
+      "role": "speaker"
+    },
+    {
+      "year": "2025",
+      "title": "Guide to Joining the AWS Community Builder's Program",
+      "url": "https://x.com/sin4ch/status/1877432769967423878",
+      "event": "DevOps Conclave",
+      "role": "host"
+    },
+    {
+      "year": "2024",
+      "title": "Tech Vision Board for 2025",
+      "event": "The Virtual Assistant Hub",
+      "role": "speaker"
+    },
+    {
+      "year": "2024",
+      "title": "Infrastructure is the Future of AI",
+      "url": "https://x.com/sin4ch/status/1865479789089349976",
+      "event": "DevFest Benin, Google Developer Groups Benin",
+      "role": "speaker",
+      "favourite": 1
+    },
+    {
+      "year": "2024",
+      "title": "How to Build a Personal Brand to Stand Out",
+      "url": "https://x.com/sin4ch/status/1862059187137573097",
+      "event": "Assem Lucem, NFCS UNIBEN",
+      "role": "speaker"
+    },
+    {
+      "year": "2024",
+      "title": "Navigating Your Career",
+      "url": "https://x.com/sin4ch/status/1856038008257986582",
+      "event": "ACES UNIBEN Tech Week",
+      "role": "speaker"
+    },
+    {
+      "year": "2024",
+      "title": "ACES Software Developer Club Launch",
+      "event": "ACES, UNIBEN",
+      "role": "speaker"
+    },
+    {
+      "year": "2024",
+      "title": "The Young and Thriving Youth Conference (AMA)",
+      "url": "https://www.linkedin.com/posts/osinachiokpara_october-was-amazing-who-am-i-kidding-activity-7257994792989560832-wO2U",
+      "event": "SCIWA",
+      "role": "speaker"
+    },
+    {
+      "year": "2024",
+      "title": "Maximize Technology to Supercharge YOU",
+      "url": "https://www.linkedin.com/posts/osinachiokpara_october-was-amazing-who-am-i-kidding-activity-7257994792989560832-wO2U",
+      "event": "UNIBEN Tech Wave 2.0",
+      "role": "speaker"
+    },
+    {
+      "year": "2024",
+      "title": "The Human Side of Cloud Innovation: Everyday Solutions with AWS",
+      "url": "https://x.com/awssecwestafri/status/1837146709333336118",
+      "event": "AWS Cloud Security User Group West Africa",
+      "role": "host"
+    },
+    {
+      "year": "2024",
+      "title": "Leveraging Global Opportunities to Build your Tech Career",
+      "url": "https://x.com/sin4ch/status/1830628464602251310",
+      "event": "Effjays Tech Hub",
+      "role": "speaker"
+    },
+    {
+      "year": "2024",
+      "title": "What, Really, is the Cloud and Why Should I Care?",
+      "url": "https://x.com/thecloudcrowdng/status/1805239437082697827",
+      "event": "The Cloud Crowd",
+      "role": "host"
+    },
+    {
+      "year": "2024",
+      "title": "AMA Session on The Future of Technology",
+      "url": "https://www.linkedin.com/posts/osinachiokpara_bfff-activity-7197109513995374592-GkcX",
+      "event": "Blockchain For Financial Freedom, UNIBEN",
+      "role": "speaker"
+    },
+    {
+      "year": "2024",
+      "title": "Taking Your Business to the Global Stage",
+      "event": "Path-Finders Christian Assembly",
+      "role": "speaker"
+    },
+    {
+      "year": "2024",
+      "title": "Upskilling: The New Currency in the World of Work",
+      "url": "https://www.linkedin.com/posts/osinachiokpara_navigating-into-tech-doesnt-have-to-be-hard-activity-7171934520479236096--EWi",
+      "event": "Cenfortech TechSkillUpEdo",
+      "role": "speaker"
+    },
+    {
+      "year": "2024",
+      "title": "How to Leverage Social Media for Career Growth",
+      "url": "https://www.linkedin.com/posts/osinachiokpara_yesterday-was-probably-up-there-among-the-activity-7156958483416784896-TIks",
+      "event": "LinkedIn Local Benin",
+      "role": "speaker"
+    }
+  ],
+  "experience": [
+    {
+      "title": "Software Engineer Intern",
+      "org": "Stealth",
+      "logo": "stealth.webp",
+      "duration": "Mar 2026 - Present"
+    },
+    {
+      "title": "Technical Writer",
+      "org": "Hackmamba",
+      "url": "https://hackmamba.io",
+      "logo": "hackmamba.webp",
+      "duration": "Oct 2025 - Present"
+    },
+    {
+      "title": "Technical Writer",
+      "org": "Literally",
+      "url": "https://literally.dev",
+      "logo": "literally.webp",
+      "duration": "Oct 2025 - Present"
+    },
+    {
+      "title": "Software Engineer Intern",
+      "org": "TextCortex AI",
+      "url": "https://textcortex.com",
+      "logo": "textcortex.webp",
+      "duration": "Jan 2026 - Mar 2026"
+    },
+    {
+      "title": "Developer Advocate, Cloud",
+      "org": "NexaScale",
+      "url": "https://nexascale.org",
+      "logo": "nexascale.webp",
+      "duration": "Jan 2024 - Dec 2025"
+    },
+    {
+      "title": "Technical Writer",
+      "org": "EverythingDevOps",
+      "url": "https://everythingdevops.dev",
+      "logo": "everythingdevops.webp",
+      "duration": "Feb 2025 - May 2025"
+    },
+    {
+      "title": "Developer Advocate Intern",
+      "org": "Learn to Cloud",
+      "url": "https://learntocloud.guide",
+      "logo": "learn-to-cloud.webp",
+      "duration": "Jan 2025 - Mar 2025"
+    },
+    {
+      "title": "Software Engineer Intern",
+      "org": "HNG Tech",
+      "url": "https://hng.tech",
+      "logo": "hotels-ng.webp",
+      "duration": "Jun 2024 - Aug 2024"
+    }
+  ]
+}

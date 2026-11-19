@@ -3,7 +3,8 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
-const SOURCE_PATH = path.join(ROOT, 'profile-picture.png');
+const BRAND = path.join(ROOT, 'assets', 'brand');
+const SOURCE_PATH = path.join(BRAND, 'profile-picture.png');
 
 function runMagick(args, input) {
   return execFileSync('magick', args, input ? { input } : undefined);
@@ -26,10 +27,10 @@ function main() {
     'png:-'
   ]);
 
-  fs.writeFileSync(path.join(ROOT, 'profile-picture.png'), master);
-  fs.writeFileSync(path.join(ROOT, 'profile-picture-128.webp'), resize(master, 128, 'webp', 82));
-  fs.writeFileSync(path.join(ROOT, 'favicon-16x16.png'), resize(master, 16, 'png'));
-  fs.writeFileSync(path.join(ROOT, 'favicon-32x32.png'), resize(master, 32, 'png'));
+  fs.writeFileSync(path.join(BRAND, 'profile-picture.png'), master);
+  fs.writeFileSync(path.join(BRAND, 'profile-picture-128.webp'), resize(master, 128, 'webp', 82));
+  fs.writeFileSync(path.join(BRAND, 'favicon-16x16.png'), resize(master, 16, 'png'));
+  fs.writeFileSync(path.join(BRAND, 'favicon-32x32.png'), resize(master, 32, 'png'));
 
   const icon = runMagick([
     'png:-',

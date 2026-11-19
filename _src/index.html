@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en" class="loading-active">
+<head>
+  <script>
+    if (window.location.hostname === 'sin4ch.github.io') {
+      window.location.replace('https://sin4.ch' + window.location.pathname + window.location.search);
+    }
+  </script>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-5ZPPHJKRHE"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-5ZPPHJKRHE');
+  </script>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Osinachi">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <meta name="description" content="Osinachi Okpara is a software engineer, developer advocate and AWS Community Builder, passionate about agentic AI, cloud engineering, and open-source software.">
+  <meta name="author" content="Osinachi Okpara">
+  <meta name="keywords" content="Osinachi Okpara, Developer Advocate, Software Engineer, AWS Community Builder, Agentic AI, Cloud Engineering, Open Source, DevOps, Python, FastAPI, MCP, Model Context Protocol, LLM, GenAI, AI Agents, Cloud Infrastructure, Technical Writing, Community Architect, AWS, Terraform, Docker, GitHub Actions, API Development">
+  <meta name="robots" content="index, follow">
+
+  <meta id="system-theme-color" name="theme-color" content="#ffead3">
+  <script>
+    (() => {
+      let isDark = false;
+      try {
+        isDark = localStorage.getItem('theme') === 'dark';
+      } catch {}
+      document.documentElement.classList.toggle('dark-mode', isDark);
+      document.getElementById('system-theme-color')?.setAttribute('content', isDark ? '#121212' : '#ffead3');
+    })();
+  </script>
+
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Osinachi Okpara - AI Developer Advocate and Software Engineer">
+  <meta property="og:description" content="Osinachi Okpara is a software engineer, developer advocate and AWS Community Builder, passionate about agentic AI, cloud engineering, and open-source software.">
+  <meta property="og:image" content="https://sin4.ch/assets/brand/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Osinachi Okpara - AI Developer Advocate and Software Engineer">
+  <meta property="og:url" content="https://sin4.ch">
+  <meta property="og:site_name" content="Osinachi Okpara">
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@sin4ch">
+  <meta name="twitter:creator" content="@sin4ch">
+  <meta name="twitter:title" content="Osinachi Okpara - AI Developer Advocate and Software Engineer">
+  <meta name="twitter:description" content="Osinachi Okpara is a software engineer, developer advocate and AWS Community Builder, passionate about agentic AI, cloud engineering, and open-source software.">
+  <meta name="twitter:image" content="https://sin4.ch/assets/brand/social-preview.png">
+  <meta name="twitter:image:alt" content="Osinachi Okpara - AI Developer Advocate and Software Engineer">
+
+  <link rel="canonical" href="https://sin4.ch">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    "@id": "https://sin4.ch/#profile",
+    "url": "https://sin4.ch/",
+    "mainEntity": {
+      "@type": "Person",
+      "@id": "https://sin4.ch/#person",
+      "name": "Osinachi Okpara",
+      "alternateName": "sin4ch",
+      "url": "https://sin4.ch/",
+      "image": "https://sin4.ch/assets/brand/profile-picture.png",
+      "jobTitle": [
+        "Software Engineer",
+        "Developer Advocate"
+      ],
+      "description": "Software engineer, developer advocate and AWS Community Builder focused on agentic AI, cloud engineering and open-source software.",
+      "sameAs": [
+        "https://builder.aws.com/community/@sin4ch",
+        "https://github.com/sin4ch",
+        "https://www.linkedin.com/in/osinachiokpara",
+        "https://x.com/sin4ch",
+        "https://www.instagram.com/sin4ch/",
+        "https://medium.com/@sin4ch",
+        "https://sin4ch.substack.com/",
+        "https://sessionize.com/sin4ch/",
+        "https://dev.to/sin4ch1",
+        "https://linktr.ee/osinachiokpara",
+        "https://blog.appsignal.com/authors/osinachi-okpara.html",
+        "https://news.everythingdevops.dev/authors/osinachi-prosper-okpara"
+      ],
+      "knowsAbout": [
+        "Agentic AI",
+        "Cloud Engineering",
+        "Open-source Software",
+        "Python",
+        "FastAPI",
+        "AWS",
+        "Model Context Protocol"
+      ]
+    }
+  }
+  </script>
+
+  <link id="favicon" rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/brand/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <title>Osinachi Okpara - AI Developer Advocate and Software Engineer</title>
+  <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: 'InterVariable';
+      font-weight: 300 500;
+      font-display: block;
+      src: url('/fonts/inter.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'InterLoader';
+      font-display: block;
+      src: url('data:font/woff2;base64,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') format('woff2');
+    }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: #ffead3;
+      color-scheme: light;
+    }
+    html.dark-mode, html.dark-mode body {
+      background: #121212;
+      color-scheme: dark;
+    }
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffead3;
+      color: #121212;
+    }
+    html.dark-mode .loading-screen {
+      background: #121212;
+      color: #ffead3;
+    }
+    .loading-content { text-align: center; }
+    .loading-percentage {
+      display: inline-block;
+      width: 5ch;
+      font: 400 1rem/1.2 'InterLoader';
+      font-variant-numeric: tabular-nums;
+      letter-spacing: .1em;
+      text-align: right;
+    }
+  </style>
+  <link id="site-stylesheet" rel="preload" href="/styles.css" as="style"
+    onload="this.onload=null;this.rel='stylesheet';this.dataset.loaded='true';window.dispatchEvent(new Event('site-styles-ready'))">
+  <noscript><link rel="stylesheet" href="/styles.css"></noscript>
+</head>
+<body>
+
+  <div class="loading-screen" id="loading-screen">
+    <div class="loading-content">
+      <div class="loading-percentage" id="loading-percentage">0%</div>
+    </div>
+  </div>
+  <script>
+    (() => {
+      const percentage = document.getElementById('loading-percentage');
+      const phaseNames = ['styles', 'scripts', 'manifest', 'previews', 'carousel'];
+      const baseWeights = { styles: 12, scripts: 12, manifest: 16, previews: 10, carousel: 44 };
+      const phaseState = Object.fromEntries(phaseNames.map((name) => [name, 0]));
+      const phaseLead = {};
+      const phaseWeights = {};
+      const randomUnit = () => {
+        if (globalThis.crypto?.getRandomValues) {
+          const value = new Uint32Array(1);
+          globalThis.crypto.getRandomValues(value);
+          return value[0] / 4294967296;
+        }
+        return Math.random();
+      };
+      let weightTotal = 0;
+      phaseNames.forEach((name) => {
+        phaseWeights[name] = baseWeights[name] * (.78 + randomUnit() * .44);
+        phaseLead[name] = .68 + randomUnit() * .24;
+        weightTotal += phaseWeights[name];
+      });
+      phaseNames.forEach((name) => {
+        phaseWeights[name] = phaseWeights[name] / weightTotal * 94;
+      });
+
+      let displayed = 0;
+      let displayedInteger = 0;
+      let isComplete = false;
+      let frame = null;
+      let lastTimestamp = 0;
+      let velocity = .9 + randomUnit() * .3;
+      let velocityTarget = velocity;
+      let nextVelocityChange = 0;
+      const waiters = [];
+
+      function getConfirmedProgress() {
+        return phaseNames.reduce((total, name) => total + phaseWeights[name] * phaseState[name], 0);
+      }
+
+      function getWorkingTarget() {
+        if (isComplete) return 100;
+        const confirmed = getConfirmedProgress();
+        const activeName = phaseNames.find((name) => phaseState[name] < 1);
+        if (!activeName) return 94;
+        const remaining = phaseWeights[activeName] * (1 - phaseState[activeName]);
+        return Math.min(94, confirmed + remaining * phaseLead[activeName]);
+      }
+
+      function resolveWaiters() {
+        for (let index = waiters.length - 1; index >= 0; index--) {
+          if (displayed >= waiters[index].target) {
+            waiters.splice(index, 1)[0].resolve();
+          }
+        }
+      }
+
+      function animate(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const deltaSeconds = Math.min((timestamp - lastTimestamp) / 1000, .1);
+        lastTimestamp = timestamp;
+
+        if (timestamp >= nextVelocityChange) {
+          velocityTarget = .68 + randomUnit() * .74;
+          nextVelocityChange = timestamp + 420 + randomUnit() * 980;
+        }
+        velocity += (velocityTarget - velocity) * Math.min(1, deltaSeconds * 2.4);
+
+        const target = getWorkingTarget();
+        const gap = target - displayed;
+        const speed = isComplete
+          ? Math.max(30, gap * 5.5)
+          : Math.max(.45, Math.min(8, gap * 1.35)) * velocity;
+
+        if (gap > .01) displayed = Math.min(target, displayed + speed * deltaSeconds);
+        const nextInteger = Math.round(displayed);
+        if (nextInteger !== displayedInteger) {
+          displayedInteger = nextInteger;
+          percentage.textContent = displayedInteger + '%';
+        }
+        resolveWaiters();
+
+        if (!isComplete || displayed < 99.95) frame = requestAnimationFrame(animate);
+        else {
+          displayed = 100;
+          displayedInteger = 100;
+          percentage.textContent = '100%';
+          frame = null;
+          resolveWaiters();
+        }
+      }
+
+      window.LoadingProgress = {
+        report(name, value = 1) {
+          if (!(name in phaseState)) return;
+          phaseState[name] = Math.max(phaseState[name], Math.min(Math.max(value, 0), 1));
+          if (frame === null) {
+            lastTimestamp = 0;
+            frame = requestAnimationFrame(animate);
+          }
+        },
+        complete() {
+          phaseNames.forEach((name) => { phaseState[name] = 1; });
+          isComplete = true;
+          if (frame === null) {
+            lastTimestamp = 0;
+            frame = requestAnimationFrame(animate);
+          }
+        },
+        waitFor(target) {
+          if (displayed >= target) return Promise.resolve();
+          return new Promise((resolve) => waiters.push({ target, resolve }));
+        }
+      };
+
+      frame = requestAnimationFrame(animate);
+      const stylesheet = document.getElementById('site-stylesheet');
+      if (stylesheet?.dataset.loaded === 'true') window.LoadingProgress.report('styles');
+      else window.addEventListener('site-styles-ready', () => window.LoadingProgress.report('styles'), { once: true });
+    })();
+  </script>
+  <noscript><style>.loading-screen { display: none; }</style></noscript>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Gallery image viewer" aria-hidden="true">
+    <div class="lightbox-story-bar" aria-hidden="true">
+      <div class="lightbox-story-progress" id="lightbox-story-progress"></div>
+    </div>
+    <button class="lightbox-close" id="lightbox-close" aria-label="Close">&#x2715;</button>
+    <button class="lightbox-tap-zone lightbox-tap-prev" id="lightbox-tap-prev" aria-label="Previous image"></button>
+    <button class="lightbox-tap-zone lightbox-pause-zone" id="lightbox-pause-zone" aria-pressed="false" aria-label="Pause or play slideshow"></button>
+    <button class="lightbox-tap-zone lightbox-tap-next" id="lightbox-tap-next" aria-label="Next image"></button>
+    <div class="lightbox-hint-overlay" id="lightbox-hint-overlay" aria-hidden="true">
+      <div class="lightbox-hint-item">
+        <span class="lightbox-hint-symbol lightbox-hint-arrow lightbox-hint-arrow-left">←</span>
+        <span>Tap for<br>previous</span>
+      </div>
+      <div class="lightbox-hint-item">
+        <span class="lightbox-hint-symbol lightbox-hint-click"></span>
+        <span>Tap to<br>pause/play</span>
+      </div>
+      <div class="lightbox-hint-item">
+        <span class="lightbox-hint-symbol lightbox-hint-arrow lightbox-hint-arrow-right">→</span>
+        <span>Tap for<br>next</span>
+      </div>
+    </div>
+    <div class="lightbox-play-state" id="lightbox-play-state" aria-hidden="true">
+      <span class="lightbox-play-icon"></span>
+      <span class="lightbox-play-label">Tap to play</span>
+    </div>
+    <div class="lightbox-content">
+      <img alt="" id="lightbox-preview" class="lightbox-preview" decoding="async" aria-hidden="true" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+      <img alt="Gallery image" id="lightbox-img" decoding="async" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+    </div>
+    <div class="lightbox-counter" id="lightbox-counter"></div>
+    <div class="lightbox-thumbs" id="lightbox-thumbs"></div>
+  </div>
+
+  <div class="cursor-follower" id="cursorFollower"></div>
+
+  <div class="photo-carousel-wrapper" id="carousel-wrapper">
+    <div class="photo-carousel" id="photo-carousel"></div>
+  </div>
+
+  <div id="top-fade" aria-hidden="true"></div>
+  <div id="bottom-fade" aria-hidden="true"></div>
+  <div class="main-wrapper" id="main-wrapper">
+    <div class="mobile-top-bar" id="mobile-top-bar">
+      <button class="profile-photo mobile-profile-photo" id="mobileProfilePhoto" type="button" aria-label="Go to Home">
+        <img src="/assets/brand/profile-picture-128.webp" alt="Osinachi Okpara" width="128" height="128" decoding="async">
+      </button>
+      <span class="mobile-section-title" id="mobileSectionTitle"></span>
+      <div class="mobile-top-bar-actions">
+        <button class="theme-toggle" id="themeToggleMobile" aria-label="Toggle dark mode"></button>
+        <button class="hamburger" id="hamburger" aria-controls="sidebar" aria-expanded="false" aria-label="Open menu">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
+      </div>
+    </div>
+    <div class="layout">
+      <nav class="sidebar" id="sidebar">
+        <div class="nav-links">
+          <a class="nav-item nav-item-profile active" data-target="home" href="/" aria-current="page" aria-label="Home">
+            <span class="profile-photo">
+              <img src="/assets/brand/profile-picture-128.webp" alt="Osinachi Okpara" width="128" height="128" decoding="async">
+            </span>
+          </a>
+          <a class="nav-item" data-target="projects" href="/projects/">Projects</a>
+          <a class="nav-item" data-target="opensource" href="/opensource/">Open Source</a>
+          <a class="nav-item" data-target="writing" href="/writing/">Writing</a>
+          <a class="nav-item" data-target="talks" href="/talks/">Speaking &amp; Hosting</a>
+          <a class="nav-item" data-target="gallery" href="/gallery/">Gallery</a>
+          <a class="nav-item" data-target="experience" href="/experience/">Experience</a>
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode"></button>
+          <div class="mobile-menu-contact" aria-label="Contact links"></div>
+        </div>
+      </nav>
+      <main class="content">
+        <section id="home" class="active">
+          <div class="section-description home-intro" id="home-intro"><h1 class="home-name">Osinachi Okpara.</h1> <span class="home-roles">Software Engineer. Developer Advocate. <a href="https://builder.aws.com/community/community-builders" target="_blank" rel="noopener">2x AWS Community Builder</a>.</span></div>
+          <button class="home-work-link" type="button">See my work <span aria-hidden="true">→</span></button>
+        </section>
+
+        <section id="projects">
+          <div class="section-filter project-sort" data-sort-section="projects" aria-label="Sort projects">
+            <span class="section-filter-label" aria-hidden="true">Filter by</span>
+            <button class="section-filter-button active" type="button" data-sort-value="date" aria-pressed="true">DATE</button>
+            <button class="section-filter-button" type="button" data-sort-value="stars" aria-pressed="false">STARS</button>
+            <button class="section-filter-button" type="button" data-sort-value="forks" aria-pressed="false">FORKS</button>
+          </div>
+          <div class="items">
+{{projects}}
+          </div>
+        </section>
+
+        <section id="opensource">
+          <div class="items">
+{{opensource}}
+          </div>
+        </section>
+
+        <section id="writing">
+          <div class="section-filter" data-filter-section="writing" aria-label="Filter writing">
+            <span class="section-filter-label" aria-hidden="true">Filter by</span>
+            <button class="section-filter-button active" type="button" data-filter-value="all" aria-pressed="true">ALL</button>
+            <button class="section-filter-button" type="button" data-filter-value="opinion" aria-pressed="false">OPINION</button>
+            <button class="section-filter-button" type="button" data-filter-value="walkthrough" aria-pressed="false">WALKTHROUGH</button>
+            <button class="section-filter-button" type="button" data-filter-value="explainer" aria-pressed="false">EXPLAINER</button>
+            <button class="section-filter-button" type="button" data-filter-value="documentation" aria-pressed="false">DOCUMENTATION</button>
+          </div>
+          <div class="items">
+{{writing}}
+          </div>
+        </section>
+
+        <section id="talks">
+          <div class="section-filter" data-filter-section="talks" aria-label="Filter speaking and hosting">
+            <span class="section-filter-label" aria-hidden="true">Filter by</span>
+            <button class="section-filter-button active" type="button" data-filter-value="favourite" aria-pressed="true">FAVOURITES</button>
+            <button class="section-filter-button" type="button" data-filter-value="all" aria-pressed="false">ALL</button>
+            <button class="section-filter-button" type="button" data-filter-value="speaker" aria-pressed="false">SPEAKER</button>
+            <button class="section-filter-button" type="button" data-filter-value="host" aria-pressed="false">HOST</button>
+          </div>
+          <div class="items">
+{{talks}}
+          </div>
+        </section>
+
+        <section id="gallery">
+          <div class="bento-grid" id="gallery-grid"></div>
+        </section>
+
+        <section id="experience">
+          <div class="items">
+{{experience}}
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="contact-bar" id="contact-bar">
+      <div class="contact-links">
+        <a class="contact-icon" href="mailto:okparaosi17@gmail.com" aria-label="Email"><span class="contact-tooltip" aria-hidden="true">Email</span>
+          <svg class="filled-icon" viewBox="1 3 22 18" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M23 6V18C23 19.6523 21.6523 21 20 21H4C2.34772 21 1 19.6523 1 18V6C1 4.34315 2.34315 3 4 3H20C21.6569 3 23 4.34315 23 6ZM3.10658 5.55395C3.27196 5.22692 3.61204 5 4 5H20C20.388 5 20.728 5.22692 20.8934 5.55395L12 11.7793L3.10658 5.55395ZM3 7.92066L10.8531 13.4178C11.5417 13.8999 12.4583 13.8999 13.1469 13.4178L21 7.92066V18C21 18.5477 20.5477 19 20 19H4C3.45228 19 3 18.5477 3 18V7.92066Z"></path></svg>
+        </a>
+        <a class="contact-icon" href="https://linkedin.com/in/osinachiokpara" target="_blank" rel="noopener" aria-label="LinkedIn"><span class="contact-tooltip" aria-hidden="true">LinkedIn</span>
+          <svg class="filled-icon" viewBox="5.1 4.2 15.1 14.7" aria-hidden="true"><path d="M5.3 8.9h3.1v10H5.3v-10Zm1.6-4.7a1.8 1.8 0 1 1 0 3.6 1.8 1.8 0 0 1 0-3.6Zm3.4 4.7h3v1.4h.1c.4-.8 1.5-1.7 3-1.7 3.2 0 3.8 2.1 3.8 4.9v5.4h-3.1v-4.8c0-1.2 0-2.7-1.6-2.7s-1.9 1.3-1.9 2.6v4.9h-3.1v-10Z"></path></svg>
+        </a>
+        <a class="contact-icon" href="https://github.com/sin4ch" target="_blank" rel="noopener" aria-label="GitHub"><span class="contact-tooltip" aria-hidden="true">GitHub</span>
+          <svg class="filled-icon" viewBox="0.5 0.5 23 22.4" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.29 9.39 7.86 10.91.58.1.79-.25.79-.55v-2.16c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18A10.99 10.99 0 0 1 12 6.04c.98 0 1.96.13 2.88.39 2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.42-2.69 5.39-5.25 5.67.41.36.78 1.06.78 2.14v3.18c0 .3.21.66.79.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"></path></svg>
+        </a>
+        <a class="contact-icon" href="https://x.com/sin4ch" target="_blank" rel="noopener" aria-label="X"><span class="contact-tooltip" aria-hidden="true">X</span>
+          <svg class="filled-icon" viewBox="2.7 3 19 18" aria-hidden="true"><path d="M13.9 10.6 20.9 3h-1.7l-6 6.5L8.3 3H2.7l7.4 9.8L2.7 21h1.7l6.5-7.1 5.2 7.1h5.6l-7.8-10.4Zm-2.3 2.5-.8-1L4.9 4.2h2.6l4.8 6.4.8 1 6.3 8.3h-2.6l-5.2-6.8Z"></path></svg>
+        </a>
+        <a class="contact-icon" href="https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view" target="_blank" rel="noopener" aria-label="Resume"><span class="contact-tooltip" aria-hidden="true">Resume</span>
+          <svg viewBox="4 2 16 20" aria-hidden="true"><path d="M8 13H14M8 17H16M13 3H5V21H19V9M13 3H14L19 8V9M13 3V7C13 8 14 9 15 9H19" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </div>
+  </div>
+  <script src="/gallery.js" defer></script>
+  <script src="/main.js" defer></script>
+</body>
+</html>
