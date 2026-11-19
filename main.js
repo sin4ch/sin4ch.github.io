@@ -1,47 +1,27 @@
-/* ============================================
-   JS TABLE OF CONTENTS
-   ============================================
-   1.  Constants & Configuration
-   2.  Shared State
-   3.  Loading Screen
-   4.  Favicon
-   5.  Navigation & Routing
-   6.  Section Filters
-   7.  Scroll Indicator
-   8.  Photo Carousel Positioning
-   9.  Window Resize & Visibility
-   10. Theme Toggle
-   11. Cursor Follower
-   12. GitHub Stats
-   13. Boot
-   ============================================ */
-
-
-/* ============================================
-   1. CONSTANTS & CONFIGURATION
-   ============================================ */
-const VALID_SECTIONS = ['home', 'projects', 'opensource', 'writing', 'talks', 'gallery', 'experience'];
-const SECTION_PAGE_TITLES = {
-  home: 'Osinachi Okpara - AI Developer Advocate and Software Engineer',
-  projects: 'Projects - Osinachi Okpara',
-  opensource: 'Open Source - Osinachi Okpara',
-  writing: 'Writing - Osinachi Okpara',
-  talks: 'Speaking and Hosting - Osinachi Okpara',
-  gallery: 'Gallery - Osinachi Okpara',
-  experience: 'Experience - Osinachi Okpara'
-};
-const EXTERNAL_REDIRECTS = {
-  'linkedin': 'https://linkedin.com/in/osinachiokpara',
-  'github': 'https://github.com/sin4ch',
-  'x': 'https://x.com/sin4ch',
-  'twitter': 'https://x.com/sin4ch',
-  'email': 'mailto:okparaosi17@gmail.com',
-  'resume': 'https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view'
-};
 const STAR_PATH = 'M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z';
 const FORK_PATH = 'M5 3.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm0 2.122a2.25 2.25 0 1 0-1.5 0v.878A2.25 2.25 0 0 0 5.75 8.5h1.5v2.128a2.251 2.251 0 1 0 1.5 0V8.5h1.5a2.25 2.25 0 0 0 2.25-2.25v-.878a2.25 2.25 0 1 0-1.5 0v.878a.75.75 0 0 1-.75.75h-4.5A.75.75 0 0 1 5 6.25v-.878Zm3.75 7.378a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm3-8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z';
+
+const loadingScreen = document.getElementById('loading-screen');
+const loadingPercentage = document.getElementById('loading-percentage');
+const loadingProgress = window.LoadingProgress;
+const mainWrapper = document.getElementById('main-wrapper');
+const navItems = document.querySelectorAll('.nav-item');
+const sections = document.querySelectorAll('section');
+const sectionIds = [...sections].map(section => section.id);
+const hamburger = document.getElementById('hamburger');
+const sidebar = document.getElementById('sidebar');
+const mobileQuery = window.matchMedia('(max-width: 768px)');
+const routeControls = new Map();
+
+document.querySelector('.mobile-menu-contact')
+  .append(...document.querySelector('.contact-links').cloneNode(true).children);
+
 function getSectionPath(sectionId) {
   return sectionId === 'home' ? '/' : `/${sectionId}/`;
+}
+
+function toSection(route) {
+  return sectionIds.includes(route) ? route : 'home';
 }
 
 function getPathRoute() {
@@ -52,74 +32,39 @@ function getQueryRoute() {
   return new URLSearchParams(window.location.search).get('section')?.toLowerCase() || '';
 }
 
-const sectionFilterControllers = new Map();
-const projectSortControllers = new Map();
-
-function getRouteControlParam(sectionId) {
-  if (sectionId === 'writing' || sectionId === 'talks' || sectionId === 'projects') return 'sort';
-  return null;
+function currentUrl() {
+  return window.location.pathname + window.location.search + window.location.hash;
 }
 
-function updateRouteControlQuery(sectionId, paramName, value, defaultValue) {
+function cycleFocus(event, elements) {
+  event.preventDefault();
+  if (!elements.length) return;
+  const index = elements.indexOf(document.activeElement);
+  const next = event.shiftKey
+    ? (index <= 0 ? elements.length : index) - 1
+    : (index + 1) % elements.length;
+  elements[next].focus();
+}
+
+function updateRouteControlQuery(sectionId, value, defaultValue) {
   const url = new URL(window.location.href);
   url.pathname = getSectionPath(sectionId);
   url.searchParams.delete('section');
-  url.searchParams.delete('f');
-  if (value === defaultValue) {
-    url.searchParams.delete(paramName);
-  } else {
-    url.searchParams.set(paramName, value);
-  }
-
-  history.pushState(
-    { ...(history.state || {}), section: sectionId, [paramName]: value },
-    '',
-    url.pathname + url.search + url.hash
-  );
+  if (value === defaultValue) url.searchParams.delete('sort');
+  else url.searchParams.set('sort', value);
+  history.pushState({ ...(history.state || {}), section: sectionId, sort: value }, '', url.pathname + url.search + url.hash);
 }
 
 function syncRouteControlsFromUrl(sectionId) {
   const url = new URL(window.location.href);
-  const paramName = getRouteControlParam(sectionId);
-
-  ['f', 'sort'].forEach(param => {
-    if (param !== paramName) url.searchParams.delete(param);
-  });
+  const keepSort = routeControls.get(sectionId)?.sync(url.searchParams.get('sort'));
   url.searchParams.delete('section');
-
-  let result = null;
-  if (paramName) {
-    const controller = sectionFilterControllers.get(sectionId)
-      || projectSortControllers.get(sectionId);
-    if (controller) {
-      const value = url.searchParams.has(paramName) ? url.searchParams.get(paramName) : null;
-      result = controller(value);
-    }
-  }
-
-  if (result && (!result.valid || result.value === result.defaultValue)) {
-    url.searchParams.delete(paramName);
-  }
-
+  if (!keepSort) url.searchParams.delete('sort');
   const nextUrl = url.pathname + url.search + url.hash;
-  const currentUrl = window.location.pathname + window.location.search + window.location.hash;
-  if (nextUrl !== currentUrl) {
+  if (nextUrl !== currentUrl()) {
     history.replaceState({ ...(history.state || {}), section: sectionId }, '', nextUrl);
   }
 }
-
-
-
-
-/* ============================================
-   2. SHARED STATE
-   ============================================ */
-const loadingScreen = document.getElementById('loading-screen');
-const loadingPercentage = document.getElementById('loading-percentage');
-const loadingProgress = window.LoadingProgress;
-const mainWrapper = document.getElementById('main-wrapper');
-const navItems = document.querySelectorAll('.nav-item');
-const sections = document.querySelectorAll('section');
 
 function setElementTag(element, tagName) {
   if (!element || element.tagName.toLowerCase() === tagName) return element;
@@ -133,39 +78,22 @@ function setElementTag(element, tagName) {
 }
 
 function syncPageHeading(targetId) {
-  let mobileTitle = document.getElementById('mobileSectionTitle');
-  let homeName = document.querySelector('.home-name');
-
-  if (targetId === 'home') {
-    homeName = setElementTag(homeName, 'h1');
-    mobileTitle = setElementTag(mobileTitle, 'span');
-    if (mobileTitle) mobileTitle.textContent = '';
-    return;
-  }
-
-  homeName = setElementTag(homeName, 'span');
-  mobileTitle = setElementTag(mobileTitle, 'h1');
+  const isHome = targetId === 'home';
+  setElementTag(document.querySelector('.home-name'), isHome ? 'h1' : 'span');
+  const mobileTitle = setElementTag(document.getElementById('mobileSectionTitle'), isHome ? 'span' : 'h1');
+  if (!mobileTitle) return;
   const activeNav = [...navItems].find(nav => nav.dataset.target === targetId);
-  if (mobileTitle) {
-    mobileTitle.textContent = activeNav
-      ? (activeNav.textContent.trim() || targetId)
-      : targetId;
-  }
+  mobileTitle.textContent = isHome ? '' : (activeNav?.textContent.trim() || targetId);
 }
 
 function syncPageMetadata(targetId) {
-  document.title = SECTION_PAGE_TITLES[targetId] || SECTION_PAGE_TITLES.home;
+  document.title = document.getElementById(targetId)?.dataset.title || document.getElementById('home').dataset.title;
   const canonical = document.querySelector('link[rel="canonical"]');
   if (canonical) {
     canonical.href = new URL(getSectionPath(targetId), window.location.origin).href;
   }
 }
 
-
-
-/* ============================================
-   3. LOADING SCREEN
-   ============================================ */
 function waitForSiteStyles() {
   const stylesheet = document.getElementById('site-stylesheet');
   if (!stylesheet || stylesheet.dataset.loaded === 'true') return Promise.resolve();
@@ -178,16 +106,13 @@ async function initLoadingSequence() {
   loadingProgress.report('scripts');
   await Promise.all([
     waitForSiteStyles(),
+    document.fonts.load('1rem InterVariable'),
     window.PortfolioGallery.preloadInitialImages(loadingProgress)
   ]);
   loadingProgress.complete();
-  await waitForDisplayedProgress(99.5);
+  await loadingProgress.waitFor(99.5);
   completeLoading();
   window.PortfolioGallery.loadRemainingImages();
-}
-
-function waitForDisplayedProgress(target) {
-  return loadingProgress.waitFor(target);
 }
 
 function completeLoading() {
@@ -196,7 +121,6 @@ function completeLoading() {
   setTimeout(() => {
     loadingScreen.classList.add('hidden');
     document.documentElement.classList.remove('loading-active');
-    document.body.classList.remove('loading-active');
     mainWrapper.classList.add('visible');
     handleInitialRoute();
     setTimeout(updatePinnedFilter, 100);
@@ -210,34 +134,19 @@ function completeLoading() {
   }, 300);
 }
 
-
-
-/* ============================================
-   4. FAVICON
-   ============================================ */
-/* ============================================
-   5. NAVIGATION & ROUTING
-   ============================================ */
 function showSection(targetId, updateUrl = true) {
   if (window.PortfolioGallery.isLightboxOpen()) {
     window.PortfolioGallery.closeLightbox();
   }
 
-  sections.forEach(section => {
-    section.classList.remove('active');
-  });
-  const targetSection = document.getElementById(targetId);
-  if (targetSection) {
-    targetSection.classList.add('active');
-    window.scrollTo({ top: 0, behavior: 'auto' });
-  }
+  const isHome = targetId === 'home';
+  sections.forEach(section => section.classList.toggle('active', section.id === targetId));
+  if (document.getElementById(targetId)) window.scrollTo({ top: 0, behavior: 'auto' });
   navItems.forEach(nav => {
-    nav.classList.remove('active');
-    nav.removeAttribute('aria-current');
-    if (nav.dataset.target === targetId) {
-      nav.classList.add('active');
-      nav.setAttribute('aria-current', 'page');
-    }
+    const isActive = nav.dataset.target === targetId;
+    nav.classList.toggle('active', isActive);
+    if (isActive) nav.setAttribute('aria-current', 'page');
+    else nav.removeAttribute('aria-current');
   });
   syncPageHeading(targetId);
   syncPageMetadata(targetId);
@@ -247,11 +156,9 @@ function showSection(targetId, updateUrl = true) {
   syncRouteControlsFromUrl(targetId);
   const carouselWrapper = document.getElementById('carousel-wrapper');
   if (carouselWrapper) {
-    carouselWrapper.classList.toggle('visible', targetId === 'home');
-    carouselWrapper.classList.toggle('hidden', targetId !== 'home');
+    carouselWrapper.classList.toggle('visible', isHome);
+    carouselWrapper.classList.toggle('hidden', !isHome);
   }
-  const isHome = targetId === 'home';
-  document.body.classList.toggle('home-active', isHome);
   document.documentElement.classList.toggle('home-active', isHome);
   window.PortfolioGallery.onSectionChange(targetId);
   packFilterRows();
@@ -260,38 +167,20 @@ function showSection(targetId, updateUrl = true) {
 }
 
 function handleInitialRoute() {
-  const path = getPathRoute();
-  if (EXTERNAL_REDIRECTS[path]) {
-    window.location.replace(EXTERNAL_REDIRECTS[path]);
-    return;
-  }
-  const query = getQueryRoute();
-  const route = query || path || 'home';
-  const targetSection = VALID_SECTIONS.includes(route)  ? route : 'home';
+  const targetSection = toSection(getQueryRoute() || getPathRoute() || 'home');
   const url = new URL(window.location.href);
   url.pathname = getSectionPath(targetSection);
   url.searchParams.delete('section');
-  history.replaceState(
-    { section: targetSection },
-    '',
-    url.pathname + url.search + url.hash
-  );
+  history.replaceState({ section: targetSection }, '', url.pathname + url.search + url.hash);
   showSection(targetSection, false);
 }
 
-const hamburger = document.getElementById('hamburger');
-const sidebar = document.getElementById('sidebar');
-const mobileProfilePhoto = document.getElementById('mobileProfilePhoto');
-
-if (mobileProfilePhoto) {
-  mobileProfilePhoto.addEventListener('click', () => {
-    if (sidebar.classList.contains('menu-open')) {
-      showMenuSection('home');
-    } else {
-      showSection('home');
-    }
-  });
+function navigate(targetId) {
+  if (sidebar.classList.contains('menu-open')) showMenuSection(targetId);
+  else showSection(targetId);
 }
+
+document.getElementById('mobileProfilePhoto')?.addEventListener('click', () => navigate('home'));
 
 function getFocusableMenuElements() {
   return [...sidebar.querySelectorAll('button, a[href]'),
@@ -312,35 +201,32 @@ function repaintMobileMenuText() {
 
 let menuScrollY = 0;
 
+function setMenuState(open) {
+  sidebar.classList.toggle('menu-open', open);
+  document.documentElement.classList.toggle('menu-active', open);
+  hamburger.classList.toggle('open', open);
+  hamburger.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+  hamburger.setAttribute('aria-expanded', String(open));
+}
+
 function openMobileMenu() {
   if (sidebar.classList.contains('menu-open')) return;
   menuScrollY = window.scrollY;
   document.body.style.top = `-${menuScrollY}px`;
-  sidebar.classList.add('menu-open');
-  document.body.classList.add('menu-active');
-  document.documentElement.classList.add('menu-active');
-  hamburger.classList.add('open');
-  hamburger.setAttribute('aria-label', 'Close menu');
-  hamburger.setAttribute('aria-expanded', 'true');
+  setMenuState(true);
   repaintMobileMenuText();
   window.setTimeout(repaintMobileMenuText, 380);
-  const firstNav = sidebar.querySelector('a.nav-item:not([data-target="home"])');
-  if (firstNav) firstNav.focus({ preventScroll: true });
-  document.addEventListener('keydown', handleMenuFocusTrap);
+  sidebar.querySelector('a.nav-item:not([data-target="home"])')?.focus({ preventScroll: true });
+  document.addEventListener('keydown', handleMenuKeydown);
 }
 
 function closeMobileMenu(options = {}) {
   if (!sidebar.classList.contains('menu-open')) return;
-  sidebar.classList.remove('menu-open');
-  document.body.classList.remove('menu-active');
-  document.documentElement.classList.remove('menu-active');
+  setMenuState(false);
   document.body.style.top = '';
   window.scrollTo({ top: menuScrollY, behavior: 'instant' });
   updatePinnedFilter();
-  hamburger.classList.remove('open');
-  hamburger.setAttribute('aria-label', 'Open menu');
-  hamburger.setAttribute('aria-expanded', 'false');
-  document.removeEventListener('keydown', handleMenuFocusTrap);
+  document.removeEventListener('keydown', handleMenuKeydown);
   if (options.focusHamburger) {
     hamburger.focus({ preventScroll: true });
   }
@@ -354,31 +240,14 @@ function showMenuSection(targetId) {
   sections.forEach(s => s.style.transition = '');
 }
 
-function handleMenuFocusTrap(e) {
-  if (e.key === 'Escape') {
-    closeMobileMenu({ focusHamburger: true });
-    return;
-  }
-  if (e.key !== 'Tab') return;
-  e.preventDefault();
-  const focusable = Array.from(getFocusableMenuElements());
-  if (focusable.length === 0) return;
-  const currentIndex = focusable.indexOf(document.activeElement);
-  let nextIndex;
-  if (e.shiftKey) {
-    nextIndex = currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1;
-  } else {
-    nextIndex = currentIndex >= focusable.length - 1 ? 0 : currentIndex + 1;
-  }
-  focusable[nextIndex].focus();
+function handleMenuKeydown(event) {
+  if (event.key === 'Escape') closeMobileMenu({ focusHamburger: true });
+  else if (event.key === 'Tab') cycleFocus(event, getFocusableMenuElements());
 }
 
 hamburger.addEventListener('click', () => {
-  if (sidebar.classList.contains('menu-open')) {
-    closeMobileMenu();
-  } else {
-    openMobileMenu();
-  }
+  if (sidebar.classList.contains('menu-open')) closeMobileMenu();
+  else openMobileMenu();
 });
 
 sidebar.addEventListener('click', event => {
@@ -392,48 +261,62 @@ sidebar.addEventListener('click', event => {
   }
 
   const targetId = link.dataset.target;
-  if (!VALID_SECTIONS.includes(targetId)) return;
+  if (!sectionIds.includes(targetId)) return;
   const destination = new URL(link.href, window.location.href);
   if (destination.origin !== window.location.origin) return;
   const destinationRoute = destination.pathname.replace(/^\/|\/$/g, '').toLowerCase() || 'home';
   if (destinationRoute !== targetId) return;
 
   event.preventDefault();
-  if (sidebar.classList.contains('menu-open')) {
-    showMenuSection(targetId);
-  } else {
-    showSection(targetId);
-  }
+  navigate(targetId);
 });
 
 document.querySelectorAll('.home-work-link').forEach(link => {
-  link.addEventListener('click', () => {
-    openMobileMenu();
-  });
+  link.addEventListener('click', openMobileMenu);
 });
 
 window.addEventListener('popstate', (event) => {
-  if (event.state && event.state.section) {
-    showSection(event.state.section, false);
-  } else {
-    const route = getPathRoute() || 'home';
-    const targetSection = VALID_SECTIONS.includes(route)  ? route : 'home';
-    showSection(targetSection, false);
-  }
+  showSection(event.state?.section || toSection(getPathRoute() || 'home'), false);
 });
 
+function initRouteControl(control, section, valueKey, apply) {
+  const buttons = [...control.querySelectorAll('.section-filter-button')];
+  const defaultButton = buttons.find(button => button.classList.contains('active')) || buttons[0];
+  const valueOf = button => button?.dataset[valueKey];
+  let activeButton = defaultButton;
 
+  function select(button, updateUrl = false) {
+    if (!button) return;
+    activeButton = button;
+    buttons.forEach(other => {
+      const isActive = other === button;
+      other.classList.toggle('active', isActive);
+      other.setAttribute('aria-pressed', String(isActive));
+    });
+    apply(valueOf(button));
+    updatePinnedFilter();
+    if (updateUrl) updateRouteControlQuery(section.id, valueOf(button), valueOf(defaultButton));
+  }
 
-/* ============================================
-   6. SECTION FILTERS
-   ============================================ */
+  routeControls.set(section.id, {
+    sync(value) {
+      const button = value === null ? defaultButton : buttons.find(other => valueOf(other) === value);
+      select(button || defaultButton);
+      return Boolean(button) && button !== defaultButton;
+    },
+    refresh() {
+      select(activeButton);
+    }
+  });
+  buttons.forEach(button => button.addEventListener('click', () => select(button, true)));
+  select(defaultButton);
+}
+
 function initSectionFilters() {
-  document.querySelectorAll('.section-filter').forEach(filter => {
+  document.querySelectorAll('.section-filter[data-filter-section]').forEach(filter => {
     const section = document.getElementById(filter.dataset.filterSection);
     if (!section) return;
-    const items = Array.from(section.querySelectorAll('.items > .item'));
-    const buttons = Array.from(filter.querySelectorAll('.section-filter-button'));
-    const defaultButton = buttons.find(button => button.classList.contains('active')) || buttons[0];
+    const items = [...section.querySelectorAll('.items > .item')];
     let currentGroup = '';
 
     items.forEach(item => {
@@ -452,195 +335,76 @@ function initSectionFilters() {
       return item.dataset.filterCategory === selected;
     }
 
-    function applyFilter(activeButton, updateUrl = false) {
-      if (!activeButton) return;
-      const selected = activeButton.dataset.filterValue;
+    initRouteControl(filter, section, 'filterValue', selected => {
       const isFavouriteFilter = selected === 'favourite';
+      const order = item => Number(item.dataset.filterOrder || 999);
       let lastVisibleGroup = '';
-
-      buttons.forEach(button => {
-        const isActive = button === activeButton;
-        button.classList.toggle('active', isActive);
-        button.setAttribute('aria-pressed', String(isActive));
-      });
 
       const visibleItems = [];
       items.forEach(item => {
         const meta = item.querySelector('.item-meta');
         item.style.order = isFavouriteFilter ? item.dataset.filterOrder || '999' : '';
-        if (meta) {
-          meta.textContent = isFavouriteFilter ? '' : item.dataset.originalMeta;
-        }
-
+        if (meta) meta.textContent = isFavouriteFilter ? '' : item.dataset.originalMeta;
         const matches = itemMatchesFilter(item, selected);
         item.hidden = !matches;
         item.classList.remove('filter-first-visible');
-        if (matches) {
-          visibleItems.push(item);
-        }
+        if (matches) visibleItems.push(item);
       });
 
-      const orderedVisibleItems = isFavouriteFilter
-        ? [...visibleItems].sort((a, b) => Number(a.dataset.filterOrder || 999) - Number(b.dataset.filterOrder || 999))
-        : visibleItems;
+      if (isFavouriteFilter) visibleItems.sort((a, b) => order(a) - order(b));
 
-      orderedVisibleItems.forEach((item, index) => {
+      visibleItems.forEach((item, index) => {
         const meta = item.querySelector('.item-meta');
         if (!meta) return;
-
-        if (index === 0) {
-          item.classList.add('filter-first-visible');
-        }
-
+        if (index === 0) item.classList.add('filter-first-visible');
         const group = item.dataset.filterGroup || '';
-        const shouldPromoteGroup = !isFavouriteFilter && selected !== 'all' && group && group !== lastVisibleGroup && !item.dataset.originalMeta;
-        if (shouldPromoteGroup) {
+        if (!isFavouriteFilter && selected !== 'all' && group && group !== lastVisibleGroup && !item.dataset.originalMeta) {
           meta.textContent = group;
         }
         lastVisibleGroup = group || lastVisibleGroup;
       });
 
       section.classList.toggle('filter-compact', selected !== 'all');
-      updatePinnedFilter();
-      if (updateUrl) {
-        updateRouteControlQuery(
-          section.id,
-          'sort',
-          selected,
-          defaultButton?.dataset.filterValue
-        );
-      }
-    }
-
-    sectionFilterControllers.set(section.id, value => {
-      const selectedButton = value === null
-        ? defaultButton
-        : buttons.find(button => button.dataset.filterValue === value);
-      applyFilter(selectedButton || defaultButton);
-      return {
-        valid: value === null || Boolean(selectedButton),
-        value: selectedButton?.dataset.filterValue,
-        defaultValue: defaultButton?.dataset.filterValue
-      };
     });
-
-    buttons.forEach(button => {
-      button.addEventListener('click', () => applyFilter(button, true));
-    });
-
-    applyFilter(defaultButton);
   });
 }
 
 function initProjectSort() {
-  document.querySelectorAll('.project-sort').forEach(sortControl => {
+  document.querySelectorAll('.project-sort[data-sort-section]').forEach(sortControl => {
     const section = document.getElementById(sortControl.dataset.sortSection);
     if (!section) return;
-
     const itemsContainer = section.querySelector('.items');
-    const items = Array.from(section.querySelectorAll('.items > .item'));
-    const buttons = Array.from(sortControl.querySelectorAll('.section-filter-button'));
-    const originalItems = [...items];
+    const items = [...itemsContainer.querySelectorAll(':scope > .item')];
 
-    function syncProjectYears(showYears) {
-      if (!showYears) {
-        Array.from(itemsContainer.children).forEach(item => {
-          const meta = item.querySelector('.item-meta');
-          if (meta) meta.textContent = '';
-        });
-        return;
-      }
+    items.forEach(item => {
+      item.dataset.projectYear = item.querySelector('.item-meta')?.textContent.trim() || '';
+    });
+
+    initRouteControl(sortControl, section, 'sortValue', selected => {
+      const count = item => Number(selected === 'stars' ? item.dataset.projectStars : item.dataset.projectForks) || 0;
+      const sortedItems = selected === 'date'
+        ? items
+        : [...items].sort((a, b) => count(b) - count(a) || items.indexOf(a) - items.indexOf(b));
+      sortedItems.forEach(item => itemsContainer.appendChild(item));
 
       let lastYear = '';
-      Array.from(itemsContainer.children).forEach(item => {
+      sortedItems.forEach(item => {
         const meta = item.querySelector('.item-meta');
         if (!meta) return;
-        const year = item.dataset.projectYear || '';
+        const year = selected === 'date' ? item.dataset.projectYear : '';
         meta.textContent = year && year !== lastYear ? year : '';
         if (year) lastYear = year;
       });
-    }
-
-    items.forEach(item => {
-      const meta = item.querySelector('.item-meta');
-      item.dataset.projectYear = meta?.textContent.trim() || '';
-      item.dataset.projectStars = '0';
-      item.dataset.projectForks = '0';
     });
-
-    const defaultButton = buttons.find(button => button.classList.contains('active')) || buttons[0];
-
-    function applySort(activeButton, updateUrl = false) {
-      if (!activeButton) return;
-      const selected = activeButton.dataset.sortValue;
-      buttons.forEach(button => {
-        const isActive = button === activeButton;
-        button.classList.toggle('active', isActive);
-        button.setAttribute('aria-pressed', String(isActive));
-      });
-
-      const sortedItems = selected === 'date'
-        ? originalItems
-        : [...items].sort((a, b) => {
-            const aValue = Number(selected === 'stars' ? a.dataset.projectStars : a.dataset.projectForks) || 0;
-            const bValue = Number(selected === 'stars' ? b.dataset.projectStars : b.dataset.projectForks) || 0;
-            return bValue - aValue || originalItems.indexOf(a) - originalItems.indexOf(b);
-          });
-
-      sortedItems.forEach(item => itemsContainer.appendChild(item));
-      syncProjectYears(selected === 'date');
-      updatePinnedFilter();
-      if (updateUrl) {
-        updateRouteControlQuery(
-          section.id,
-          'sort',
-          selected,
-          defaultButton?.dataset.sortValue
-        );
-      }
-    }
-
-    projectSortControllers.set(section.id, value => {
-      const selectedButton = value === null
-        ? defaultButton
-        : buttons.find(button => button.dataset.sortValue === value);
-      applySort(selectedButton || defaultButton);
-      return {
-        valid: value === null || Boolean(selectedButton),
-        value: selectedButton?.dataset.sortValue,
-        defaultValue: defaultButton?.dataset.sortValue
-      };
-    });
-
-    document.addEventListener('projectstatschange', () => {
-      const activeButton = buttons.find(button => button.classList.contains('active'));
-      if (activeButton && activeButton.dataset.sortValue !== 'date') {
-        applySort(activeButton);
-      }
-    });
-
-    buttons.forEach(button => {
-      button.addEventListener('click', () => applySort(button, true));
-    });
-
-    applySort(defaultButton);
   });
 }
 
-/* ============================================
-   6b. MOBILE STICKY FILTER (pins the filter bar under the top nav on
-   small screens, but only if CSS position:sticky has visibly failed;
-   otherwise it stays out of the way)
-   ============================================ */
-const mobilePinMQ = window.matchMedia('(max-width: 768px)');
 let pinnedFilter = null;
 let pinnedPlaceholder = null;
 
 function getPinnedTopbarHeight() {
-  if (!mobilePinMQ.matches) return 0;
-  const bar = document.getElementById('mobile-top-bar');
-  if (!bar) return 0;
-  return bar.getBoundingClientRect().height;
+  if (!mobileQuery.matches) return 0;
+  return document.getElementById('mobile-top-bar')?.getBoundingClientRect().height || 0;
 }
 
 function syncPinnedFilter(topbarH) {
@@ -649,13 +413,8 @@ function syncPinnedFilter(topbarH) {
   pinnedFilter.style.top = topbarH + 'px';
   pinnedFilter.style.left = rect.left + 'px';
   pinnedFilter.style.width = rect.width + 'px';
-  // The pinned filter extends the top curtain's solid zone behind itself,
-  // stopping the same --top-fade-tuck short of the bars' bottom edge.
-  const topFade = document.getElementById('top-fade');
-  if (topFade) {
-    const filterH = pinnedFilter.getBoundingClientRect().height;
-    topFade.style.setProperty('--top-fade-solid', `calc(${Math.round(topbarH + filterH)}px - var(--top-fade-tuck))`);
-  }
+  const filterH = pinnedFilter.getBoundingClientRect().height;
+  document.getElementById('top-fade')?.style.setProperty('--fade-solid', `calc(${Math.round(topbarH + filterH)}px - var(--fade-tuck))`);
 }
 
 function unpinFilter() {
@@ -665,39 +424,25 @@ function unpinFilter() {
   pinnedFilter.style.left = '';
   pinnedFilter.style.width = '';
   pinnedFilter.style.zIndex = '';
-  const topFade = document.getElementById('top-fade');
-  if (topFade) topFade.style.removeProperty('--top-fade-solid');
-  if (pinnedPlaceholder && pinnedPlaceholder.parentNode) {
-    pinnedPlaceholder.parentNode.removeChild(pinnedPlaceholder);
-  }
+  document.getElementById('top-fade')?.style.removeProperty('--fade-solid');
+  pinnedPlaceholder?.remove();
   pinnedPlaceholder = null;
   pinnedFilter = null;
 }
 
 function updatePinnedFilter() {
-  if (!mobilePinMQ.matches) {
+  if (!mobileQuery.matches) {
     unpinFilter();
     return;
   }
-  // Fixed-body menu locking resets window.scrollY, but preserves the visible page.
-  // Keep the filter where it was until the original scroll position is restored.
   if (sidebar.classList.contains('menu-open')) return;
-  const activeSection = document.querySelector('section.active');
-  const activeFilter = activeSection ? activeSection.querySelector('.section-filter') : null;
-  if (pinnedFilter && pinnedFilter !== activeFilter) {
-    unpinFilter();
-  }
-  if (!activeFilter) {
-    unpinFilter();
-    return;
-  }
+  const activeFilter = document.querySelector('section.active .section-filter');
+  if (pinnedFilter !== activeFilter) unpinFilter();
+  if (!activeFilter) return;
   const topbarH = getPinnedTopbarHeight();
   if (pinnedFilter) {
-    if (pinnedPlaceholder && pinnedPlaceholder.getBoundingClientRect().top >= topbarH + 8) {
-      unpinFilter();
-      return;
-    }
-    syncPinnedFilter(topbarH);
+    if (pinnedPlaceholder.getBoundingClientRect().top >= topbarH + 8) unpinFilter();
+    else syncPinnedFilter(topbarH);
     return;
   }
   const rect = activeFilter.getBoundingClientRect();
@@ -705,7 +450,7 @@ function updatePinnedFilter() {
     pinnedPlaceholder = document.createElement('div');
     pinnedPlaceholder.setAttribute('aria-hidden', 'true');
     pinnedPlaceholder.style.height = rect.height + 'px';
-    activeFilter.parentNode.insertBefore(pinnedPlaceholder, activeFilter);
+    activeFilter.before(pinnedPlaceholder);
     pinnedFilter = activeFilter;
     pinnedFilter.style.position = 'fixed';
     pinnedFilter.style.zIndex = '50';
@@ -716,50 +461,37 @@ function updatePinnedFilter() {
 window.addEventListener('scroll', updatePinnedFilter, { passive: true });
 window.addEventListener('pageshow', updatePinnedFilter);
 
-
-/* ============================================
-   6c. FILTER ROW PACKING (groups each visual row of filter buttons
-   into its own bordered box, so boxes hug their row instead of
-   stretching full-width)
-   ============================================ */
-let packFilterTimer = null;
-
 function packFilterRows() {
   document.querySelectorAll('.section-filter').forEach(filter => {
-    const existingRows = Array.from(filter.querySelectorAll(':scope > .section-filter-row'));
-    existingRows.forEach(row => {
-      while (row.firstChild) filter.insertBefore(row.firstChild, row);
-      row.remove();
-    });
-    const buttons = Array.from(filter.querySelectorAll(':scope > .section-filter-button'));
+    filter.querySelectorAll(':scope > .section-filter-row').forEach(row => row.replaceWith(...row.childNodes));
+    const buttons = [...filter.querySelectorAll(':scope > .section-filter-button')];
     if (!buttons.length) return;
     const filterWidth = filter.clientWidth;
     if (filterWidth <= 0) return;
     const label = filter.querySelector(':scope > .section-filter-label');
     const labelWidth = label ? Math.ceil(label.getBoundingClientRect().width) + 8 : 0;
-    const widths = buttons.map(button => Math.ceil(button.getBoundingClientRect().width));
     const rows = [];
     let current = [];
     let currentWidth = 0;
     let capacity = filterWidth - labelWidth;
-    buttons.forEach((button, index) => {
-      if (current.length && currentWidth + widths[index] > capacity) {
+    buttons.forEach(button => {
+      const width = Math.ceil(button.getBoundingClientRect().width);
+      if (current.length && currentWidth + width > capacity) {
         rows.push(current);
         current = [];
         currentWidth = 0;
         capacity = filterWidth;
       }
       current.push(button);
-      currentWidth += widths[index];
+      currentWidth += width;
     });
     if (current.length) rows.push(current);
-    const rowElements = [];
-    rows.forEach(rowButtons => {
+    const rowElements = rows.map(rowButtons => {
       const row = document.createElement('div');
       row.className = 'section-filter-row';
-      rowButtons.forEach(button => row.appendChild(button));
+      row.append(...rowButtons);
       filter.appendChild(row);
-      rowElements.push(row);
+      return row;
     });
     const rowLefts = rowElements.map(row => row.getBoundingClientRect().left);
     rowElements.forEach((row, index) => {
@@ -768,48 +500,25 @@ function packFilterRows() {
       row.style.setProperty('--exposed-top-line-width', `${exposedWidth}px`);
     });
     if (pinnedFilter) {
-      const pinnedHeight = pinnedFilter.getBoundingClientRect().height;
-      if (pinnedPlaceholder) pinnedPlaceholder.style.height = pinnedHeight + 'px';
+      pinnedPlaceholder.style.height = pinnedFilter.getBoundingClientRect().height + 'px';
       syncPinnedFilter(getPinnedTopbarHeight());
     }
   });
 }
 
-function schedulePackFilterRows() {
-  window.clearTimeout(packFilterTimer);
-  packFilterTimer = window.setTimeout(packFilterRows, 150);
-}
-
-window.addEventListener('resize', schedulePackFilterRows);
-if (document.fonts && document.fonts.ready) {
-  document.fonts.ready.then(() => packFilterRows());
-}
-
-
-
-/* ============================================
-   8. PHOTO CAROUSEL POSITIONING
-   ============================================ */
-function isMobileLayout() {
-  return window.innerWidth <= 768;
-}
+document.fonts?.ready.then(packFilterRows);
 
 function positionCarousel() {
   const wrapper = document.getElementById('carousel-wrapper');
   const themeToggle = document.getElementById('themeToggle');
   const contactBar = document.getElementById('contact-bar');
   if (!wrapper || !themeToggle || !contactBar) return;
-  if (isMobileLayout()) {
-    const homeSection = document.getElementById('home');
-    const isHomeActive = homeSection && homeSection.classList.contains('active');
-    if (!isHomeActive) { wrapper.style.display = 'none'; return; }
-    const homeIntro = document.querySelector('.home-intro');
-    const homeWorkLink = document.querySelector('.home-work-link');
-    if (!homeIntro) return;
-    const anchorEl = homeWorkLink || homeIntro;
-    const anchorRect = anchorEl.getBoundingClientRect();
+  if (mobileQuery.matches) {
+    if (!document.getElementById('home')?.classList.contains('active')) { wrapper.style.display = 'none'; return; }
+    const anchorEl = document.querySelector('.home-work-link') || document.querySelector('.home-intro');
+    if (!anchorEl) return;
     const bottomInset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--spacing')) || 24;
-    const topPos = anchorRect.bottom + bottomInset;
+    const topPos = anchorEl.getBoundingClientRect().bottom + bottomInset;
     const availableHeight = window.innerHeight - topPos - bottomInset;
     if (availableHeight < 60) { wrapper.style.display = 'none'; return; }
     wrapper.style.display = '';
@@ -821,27 +530,20 @@ function positionCarousel() {
     wrapper.style.display = '';
     wrapper.style.bottom = 'auto';
     wrapper.style.maxHeight = '';
-    const toggleRect = themeToggle.getBoundingClientRect();
-    const contactRect = contactBar.getBoundingClientRect();
-    const margin = 24;
-    const top = toggleRect.bottom + margin;
-    const bottom = contactRect.top;
-    const height = bottom - top;
+    const top = themeToggle.getBoundingClientRect().bottom + 24;
+    const height = contactBar.getBoundingClientRect().top - top;
     wrapper.style.top = top + 'px';
     wrapper.style.height = Math.max(height, 100) + 'px';
   }
 }
 
-/* ============================================
-   9. WINDOW RESIZE & VISIBILITY
-   ============================================ */
 let lastColCount = window.PortfolioGallery.getColumnCount();
 let resizeTimer = null;
 let resizeFrame = null;
 
 function applyResizeLayout() {
   resizeFrame = null;
-  if (window.innerWidth > 768 && sidebar.classList.contains('menu-open')) {
+  if (!mobileQuery.matches && sidebar.classList.contains('menu-open')) {
     closeMobileMenu();
   }
   updatePinnedFilter();
@@ -858,6 +560,7 @@ window.addEventListener('resize', () => {
   window.clearTimeout(resizeTimer);
   resizeTimer = window.setTimeout(() => {
     document.body.classList.remove('is-resizing');
+    packFilterRows();
   }, 150);
 
   if (resizeFrame === null) resizeFrame = requestAnimationFrame(applyResizeLayout);
@@ -870,48 +573,17 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-
-
-/* ============================================
-   10. THEME TOGGLE
-   ============================================ */
-const LIGHT_THEME_COLOR = '#ffead3';
-const DARK_THEME_COLOR = '#121212';
-
-function updateSystemThemeColor(isDark) {
-  const color = isDark ? DARK_THEME_COLOR : LIGHT_THEME_COLOR;
-  const themeColor = document.getElementById('system-theme-color');
-
-  // Keep the same element so Chrome can observe the theme-color update in an installed PWA.
-  themeColor?.setAttribute('content', color);
-
-  document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
-}
-
 function toggleTheme() {
-  const isDark = document.body.classList.toggle('dark-mode');
-  document.documentElement.classList.toggle('dark-mode', isDark);
-  updateSystemThemeColor(isDark);
+  const isDark = document.documentElement.classList.toggle('dark-mode');
+  document.getElementById('system-theme-color')?.setAttribute('content', isDark ? '#121212' : '#ffead3');
   try {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   } catch {}
 }
 
+document.getElementById('themeToggle').addEventListener('click', toggleTheme);
+document.getElementById('themeToggleMobile')?.addEventListener('click', toggleTheme);
 
-// The early theme script already read the saved choice before the first paint.
-document.body.classList.toggle('dark-mode', document.documentElement.classList.contains('dark-mode'));
-updateSystemThemeColor(document.documentElement.classList.contains('dark-mode'));
-
-const themeToggle = document.getElementById('themeToggle');
-const themeToggleMobile = document.getElementById('themeToggleMobile');
-themeToggle.addEventListener('click', toggleTheme);
-if (themeToggleMobile) themeToggleMobile.addEventListener('click', toggleTheme);
-
-
-
-/* ============================================
-   11. CURSOR FOLLOWER
-   ============================================ */
 const cursorFollower = document.getElementById('cursorFollower');
 const cursorVisibleQuery = window.matchMedia('(min-width: 1025px)');
 const coarsePointerQuery = window.matchMedia('(hover: none) and (pointer: coarse)');
@@ -945,7 +617,7 @@ document.addEventListener('mousemove', event => {
   mouseX = event.clientX;
   mouseY = event.clientY;
 });
-document.querySelectorAll('a, button, .theme-toggle').forEach(el => {
+document.querySelectorAll('a, button').forEach(el => {
   el.addEventListener('mouseenter', () => cursorFollower.classList.add('hovering'));
   el.addEventListener('mouseleave', () => cursorFollower.classList.remove('hovering'));
 });
@@ -955,75 +627,46 @@ reducedCursorMotionQuery.addEventListener('change', syncCursorAnimation);
 document.addEventListener('visibilitychange', syncCursorAnimation);
 syncCursorAnimation();
 
-
-/* ============================================
-   12. GITHUB STATS
-   ============================================ */
-function fetchGitHubStats() {
-  const els = document.querySelectorAll('.item-stats[data-repo]');
-  if (!els.length) return;
-
-  function renderStats(el, stars, forks) {
-    const item = el.closest('.item');
-    if (item) {
-      item.dataset.projectStars = String(stars);
-      item.dataset.projectForks = String(forks);
-    }
-    el.innerHTML =
-      '<span class="stat-badge"><svg viewBox="0 0 16 16" fill="currentColor"><path d="' + STAR_PATH + '"/></svg> ' + stars + '</span>' +
-      '<span class="stat-badge"><svg viewBox="0 0 16 16" fill="currentColor"><path d="' + FORK_PATH + '"/></svg> ' + forks + '</span>';
-    document.dispatchEvent(new CustomEvent('projectstatschange'));
+function renderStats(el, stars, forks) {
+  const item = el.closest('.item');
+  if (item) {
+    item.dataset.projectStars = String(stars);
+    item.dataset.projectForks = String(forks);
   }
-
-  els.forEach(function(el) {
-    var repo = el.getAttribute('data-repo');
-    var bakedStars = parseInt(el.getAttribute('data-stars'), 10);
-    var bakedForks = parseInt(el.getAttribute('data-forks'), 10);
-    if (!isNaN(bakedStars) && !isNaN(bakedForks)) {
-      renderStats(el, bakedStars, bakedForks);
-    }
-    var cacheKey = 'gh-stats-' + repo;
-    var cached = null;
-    try {
-      cached = JSON.parse(localStorage.getItem(cacheKey));
-    } catch(e) {}
-
-    var isFresh = cached && (Date.now() - cached.ts < 86400000);
-
-    if (isFresh) {
-      renderStats(el, cached.stars, cached.forks);
-      return;
-    }
-
-    if (cached) {
-      renderStats(el, cached.stars, cached.forks);
-    }
-
-    fetch('https://api.github.com/repos/' + repo)
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        if (typeof data.stargazers_count === 'number') {
-          var stars = data.stargazers_count;
-          var forks = data.forks_count;
-          renderStats(el, stars, forks);
-          try {
-            localStorage.setItem(cacheKey, JSON.stringify({ stars: stars, forks: forks, ts: Date.now() }));
-          } catch(e) {}
-        }
-      })
-      .catch(function() {});
-  });
+  el.innerHTML =
+    '<span class="stat-badge"><svg viewBox="0 0 16 16" fill="currentColor"><path d="' + STAR_PATH + '"/></svg> ' + stars + '</span>' +
+    '<span class="stat-badge"><svg viewBox="0 0 16 16" fill="currentColor"><path d="' + FORK_PATH + '"/></svg> ' + forks + '</span>';
 }
 
+function initGitHubStats() {
+  const refreshSort = () => routeControls.get('projects')?.refresh();
+  document.querySelectorAll('.item-stats[data-repo]').forEach(el => {
+    const repo = el.dataset.repo;
+    const cacheKey = 'gh-stats-' + repo;
+    let cached = null;
+    try {
+      cached = JSON.parse(localStorage.getItem(cacheKey));
+    } catch {}
+    const stars = parseInt(el.dataset.stars, 10);
+    const forks = parseInt(el.dataset.forks, 10);
+    if (cached) renderStats(el, cached.stars, cached.forks);
+    else if (!isNaN(stars) && !isNaN(forks)) renderStats(el, stars, forks);
+    if (cached && Date.now() - cached.ts < 86400000) return;
 
-/* ============================================
-   13. BOOT
-   ============================================ */
-initOrganizationLogos();
-initSectionFilters();
-initProjectSort();
-fetchGitHubStats();
-initLoadingSequence();
+    fetch('https://api.github.com/repos/' + repo)
+      .then(response => response.json())
+      .then(data => {
+        if (typeof data.stargazers_count !== 'number') return;
+        renderStats(el, data.stargazers_count, data.forks_count);
+        refreshSort();
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({ stars: data.stargazers_count, forks: data.forks_count, ts: Date.now() }));
+        } catch {}
+      })
+      .catch(() => {});
+  });
+  refreshSort();
+}
 
 function initOrganizationLogos() {
   document.querySelectorAll('.experience-logo').forEach(img => {
@@ -1036,16 +679,14 @@ function initOrganizationLogos() {
       .map(word => word[0])
       .join('')
       .toUpperCase();
-    img.loading = 'eager';
-    img.decoding = 'async';
     const reveal = () => wrapper.classList.add('logo-loaded');
-    const fail = () => wrapper.classList.add('logo-failed');
-    if (img.complete) {
-      if (img.naturalWidth) reveal();
-      else fail();
-    } else {
-      img.addEventListener('load', reveal, { once: true });
-      img.addEventListener('error', fail, { once: true });
-    }
+    if (img.complete && img.naturalWidth) reveal();
+    else img.addEventListener('load', reveal, { once: true });
   });
 }
+
+initOrganizationLogos();
+initSectionFilters();
+initProjectSort();
+initGitHubStats();
+initLoadingSequence();

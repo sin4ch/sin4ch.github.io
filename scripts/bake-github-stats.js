@@ -1,18 +1,15 @@
-// Save live counts in the source HTML, then regenerate the section pages:
-//     bun scripts/bake-github-stats.js
-//     bun scripts/generate-route-pages.js
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 
-async function fetchJson(url, timeoutMs = 10000) {
+async function fetchJson(url) {
   const response = await fetch(url, {
     headers: {
       'User-Agent': 'sin4ch-site-builder',
       'Accept': 'application/vnd.github+json'
     },
-    signal: AbortSignal.timeout(timeoutMs)
+    signal: AbortSignal.timeout(10000)
   });
   if (!response.ok) throw new Error(`HTTP ${response.status} for ${url}`);
   return response.json();
@@ -50,12 +47,12 @@ function updateStats(html, counts) {
   return result;
 }
 
-async function bakeStats(html, fetchRepo = repo => fetchJson('https://api.github.com/repos/' + repo)) {
+async function bakeStats(html) {
   const counts = new Map();
   const errors = [];
   for (const repo of getRepos(html)) {
     try {
-      const data = await fetchRepo(repo);
+      const data = await fetchJson('https://api.github.com/repos/' + repo);
       const stars = data.stargazers_count;
       const forks = data.forks_count;
       if (![stars, forks].every(value => Number.isSafeInteger(value) && value >= 0)) {
@@ -81,11 +78,7 @@ async function main() {
   if (result.errors.length) process.exitCode = 1;
 }
 
-if (require.main === module) {
-  main().catch(error => {
-    console.error(error.message);
-    process.exitCode = 1;
-  });
-}
-
-module.exports = { fetchJson, getRepos, updateStats, bakeStats };
+main().catch(error => {
+  console.error(error.message);
+  process.exitCode = 1;
+});

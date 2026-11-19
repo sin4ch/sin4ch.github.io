@@ -1,29 +1,3 @@
-/* ============================================
-   CSS TABLE OF CONTENTS
-   ============================================
-   1.  Reset & CSS Custom Properties
-   2.  Base & Typography
-   3.  Layout
-   4.  Navigation
-   5.  Contact Bar
-   6.  Sections & Content Items
-   7.  Home Section
-   8.  Gallery
-   9.  Photo Carousel
-   10. Lightbox / Image Viewer
-   11. Theme Toggle & Dark Mode
-   12. Loading Screen
-   13. Cursor Follower
-   14. Responsive - Tablet (max-width: 1024px)
-   15. Responsive - Mobile (max-width: 768px)
-   16. Responsive - Small Mobile (max-width: 480px)
-   17. Responsive - Touch Devices
-   ============================================ */
-
-
-/* ============================================
-   1. RESET & CSS CUSTOM PROPERTIES
-   ============================================ */
 * {
   margin: 0;
   padding: 0;
@@ -39,8 +13,6 @@
   --bg-light: var(--color-cream);
   --text-dark: var(--color-ink);
   --text-muted: rgba(18, 18, 18, 0.6);
-  --item-secondary: var(--text-muted);
-  --text-muted-70: var(--text-muted);
   --spacing: clamp(16px, 3vw, 40px);
   --line-color: rgba(18, 18, 18, 0.2);
   --font-size-body: 1rem;
@@ -50,32 +22,7 @@
   --font-size-menu: 2rem;
 }
 
-@font-face {
-  font-family: 'InterVariable';
-  font-style: normal;
-  font-weight: 300 500;
-  font-display: swap;
-  src: url('https://rsms.me/inter/font-files/InterVariable.woff2?v=4.1') format('woff2');
-}
-
-@font-face {
-  font-family: 'InterVariable';
-  font-style: italic;
-  font-weight: 300 500;
-  font-display: swap;
-  src: url('https://rsms.me/inter/font-files/InterVariable-Italic.woff2?v=4.1') format('woff2');
-}
-
-
-/* ============================================
-   2. BASE & TYPOGRAPHY
-   ============================================ */
 ::selection {
-  background-color: var(--text-dark);
-  color: var(--bg-light);
-}
-
-::-moz-selection {
   background-color: var(--text-dark);
   color: var(--bg-light);
 }
@@ -88,28 +35,28 @@ html {
   scrollbar-width: thin;
   scrollbar-color: var(--text-dark) transparent;
   background-color: var(--bg-light);
-  background-image: none;
   color-scheme: light;
 }
 
 body {
   min-height: 100%;
   min-height: 100svh;
-  /* Sideways lock lives here (not on html): it hides off-canvas content
-     like the translated phone menu, while leaving position:sticky working.
-     Wide content (e.g. cursor follower) stays clamped in script instead. */
   overflow-x: clip;
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
   touch-action: pan-y pinch-zoom;
   scrollbar-width: thin;
   scrollbar-color: var(--text-dark) transparent;
   background-color: var(--bg-light);
-  background-image: none;
+  font-family: var(--font-sans);
+  color: var(--text-dark);
+  line-height: 1.6;
+  -webkit-font-smoothing: subpixel-antialiased;
+  -moz-osx-font-smoothing: auto;
+  text-rendering: optimizeLegibility;
 }
 
 html.loading-active,
-body.loading-active {
+html.loading-active body {
   overflow: hidden;
   height: 100vh;
   height: 100dvh;
@@ -140,23 +87,13 @@ body::-webkit-scrollbar-thumb {
   border-radius: 999px;
 }
 
-html::-webkit-scrollbar-thumb:hover,
-body::-webkit-scrollbar-thumb:hover {
-  background-color: var(--text-dark);
-}
-
-body {
-  font-family: var(--font-sans);
-  color: var(--text-dark);
-  line-height: 1.6;
-  -webkit-font-smoothing: subpixel-antialiased;
-  -moz-osx-font-smoothing: auto;
-  text-rendering: optimizeLegibility;
-}
-
 a {
   color: var(--text-dark);
   text-decoration: none;
+}
+
+button {
+  font-family: inherit;
 }
 
 a,
@@ -173,10 +110,6 @@ button:focus:not(:focus-visible),
   outline: none;
 }
 
-
-/* ============================================
-   3. LAYOUT
-   ============================================ */
 .main-wrapper {
   min-height: 100vh;
   min-height: 100svh;
@@ -221,17 +154,11 @@ body.is-resizing .sidebar {
   touch-action: pan-y pinch-zoom;
 }
 
-/* Mobile-only fade curtains: full definitions live in the mobile media
-   block. Desktop keeps its original opaque bars and mask. */
 #top-fade,
 #bottom-fade {
   display: none;
 }
 
-
-/* ============================================
-   4. NAVIGATION
-   ============================================ */
 .nav-links {
   display: flex;
   flex-direction: column;
@@ -239,7 +166,6 @@ body.is-resizing .sidebar {
 }
 
 .nav-item {
-  font-family: inherit;
   font-size: var(--font-size-small);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -252,20 +178,9 @@ body.is-resizing .sidebar {
   padding: 0;
   width: fit-content;
   white-space: nowrap;
-  text-decoration: none;
-}
-
-.sidebar,
-.mobile-top-bar,
-.hamburger {
-  font-family: var(--font-sans);
 }
 
 @media (min-width: 769px) {
-  .sidebar {
-    font-family: var(--font-sans);
-  }
-
   .sidebar .nav-item {
     font-size: var(--font-size-body);
     font-weight: 400;
@@ -279,10 +194,7 @@ body.is-resizing .sidebar {
   }
 }
 
-.nav-item:hover {
-  color: var(--text-dark);
-}
-
+.nav-item:hover,
 .nav-item.active {
   color: var(--text-dark);
 }
@@ -291,7 +203,6 @@ body.is-resizing .sidebar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0;
   margin-bottom: 4px;
 }
 
@@ -299,8 +210,6 @@ body.is-resizing .sidebar {
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  border: none;
-  outline: none;
 }
 
 .mobile-top-bar {
@@ -337,10 +246,6 @@ body.is-resizing .sidebar {
   transform: translateY(-4px) rotate(-45deg);
 }
 
-
-/* ============================================
-   5. CONTACT BAR
-   ============================================ */
 .contact-bar {
   position: fixed;
   bottom: 0;
@@ -353,7 +258,6 @@ body.is-resizing .sidebar {
   padding: 24px var(--spacing) var(--spacing);
   background-color: var(--bg-light);
   z-index: 100;
-  font-family: var(--font-sans);
 }
 
 .profile-photo {
@@ -377,18 +281,6 @@ body.is-resizing .sidebar {
   gap: 20px;
   flex-wrap: nowrap;
   white-space: nowrap;
-  margin-left: 0;
-}
-
-.contact-bar a {
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.contact-bar a:hover {
-  color: var(--text-dark);
-  text-decoration: none;
 }
 
 .contact-icon {
@@ -399,6 +291,11 @@ body.is-resizing .sidebar {
   width: 18px;
   height: 18px;
   color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.contact-icon:hover {
+  color: var(--text-dark);
 }
 
 .contact-tooltip {
@@ -412,7 +309,6 @@ body.is-resizing .sidebar {
   border: 1px solid var(--text-muted);
   border-radius: var(--badge-radius);
   color: var(--text-muted);
-  font-family: var(--font-sans);
   font-size: var(--font-size-badge);
   font-weight: 400;
   line-height: 1.2;
@@ -441,7 +337,6 @@ body.is-resizing .sidebar {
   stroke-linejoin: round;
 }
 
-/* Wide envelope: fills its box edge-to-edge like the other marks fill theirs */
 .contact-icon[aria-label="Email"] svg {
   flex: none;
   width: 16.5px;
@@ -457,9 +352,6 @@ body.is-resizing .sidebar {
   display: none;
 }
 
-/* ============================================
-   6. SECTIONS & CONTENT ITEMS
-   ============================================ */
 section {
   position: relative;
   display: none;
@@ -486,7 +378,6 @@ section.filter-compact {
 }
 
 .section-description {
-  font-family: var(--font-sans);
   font-size: var(--font-size-body);
   line-height: 1.3;
   color: var(--text-dark);
@@ -494,8 +385,6 @@ section.filter-compact {
 }
 
 .section-filter {
-  /* Sticky at its own natural offset, so the bar never travels: it sits
-     exactly where it loads while content slides beneath it. */
   position: sticky;
   top: var(--spacing);
   z-index: 50;
@@ -503,15 +392,10 @@ section.filter-compact {
   justify-content: flex-end;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0;
-  margin-bottom: 0;
   padding: 8px 0 16px;
   background-color: var(--bg-light);
-  font-family: var(--font-sans);
 }
 
-/* Mask: paints everything above the bar in page background, so scrolled
-   content never shows past it (desktop only; mobile keeps its top gap). */
 .section-filter::before {
   content: "";
   position: absolute;
@@ -523,7 +407,6 @@ section.filter-compact {
 }
 
 .section-filter-label {
-  font-family: var(--font-sans);
   font-size: var(--font-size-badge);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -540,7 +423,6 @@ section.filter-compact {
   background: transparent;
   color: var(--text-muted);
   cursor: pointer;
-  font-family: inherit;
   font-size: var(--font-size-badge);
   letter-spacing: 0.1em;
   line-height: 1.2;
@@ -553,8 +435,6 @@ section.filter-compact {
   border-left: none;
 }
 
-/* Row boxes built by packFilterRows(): each hugs exactly one row of buttons,
-   so wrapped rows never stretch a box full-width. */
 .section-filter-row {
   position: relative;
   display: flex;
@@ -588,7 +468,6 @@ section.filter-compact {
   color: var(--bg-light) !important;
 }
 
-/* Keep the selected fill from covering the button's translucent border. */
 .section-filter-button.active {
   background-clip: padding-box;
 }
@@ -596,7 +475,6 @@ section.filter-compact {
 .items {
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .item {
@@ -616,7 +494,6 @@ section.filter-compact {
 }
 
 .item-meta {
-  font-family: var(--font-sans);
   font-size: var(--font-size-small);
   letter-spacing: 0.1em;
   color: var(--text-muted);
@@ -626,7 +503,6 @@ section.filter-compact {
 }
 
 .item-meta:empty {
-  display: block;
   border-top: none;
 }
 
@@ -651,7 +527,6 @@ section.filter-compact {
 .items > .item:has(.item-meta:empty):first-child .item-content,
 .items > .item:has(.item-meta:empty).filter-first-visible .item-content {
   border-top: none;
-  padding-top: 12px;
 }
 
 #experience .items > .item:first-child .item-content {
@@ -664,11 +539,10 @@ section.filter-compact {
 }
 
 .item-tags {
-  font-family: var(--font-sans);
   font-size: var(--font-size-body);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text-muted-70);
+  color: var(--text-muted);
 }
 
 .item-title {
@@ -680,41 +554,21 @@ section.filter-compact {
 .item-subtitle {
   font-size: var(--font-size-body);
   line-height: 1.35;
-  color: var(--item-secondary);
+  color: var(--text-muted);
 }
 
 .item-content a {
   color: inherit;
-  text-decoration: none;
 }
 
 .date-text {
-  font-family: var(--font-sans);
   display: inline-flex;
   align-items: center;
   gap: 8px;
 }
 
-.article-badge {
-  font-family: var(--font-sans);
-  background: var(--bg-light);
-  color: var(--text-muted);
-  border: 1px solid var(--text-muted);
-  padding: var(--badge-padding);
-  border-radius: var(--badge-radius);
-  font-size: var(--font-size-badge);
-  letter-spacing: 0.1em;
-  line-height: 1.2;
-}
-
 .meta-link {
   color: inherit;
-}
-
-#experience .item-subtitle,
-#experience .experience-duration,
-#opensource .item-subtitle {
-  font-family: var(--font-sans);
 }
 
 #experience .item-content,
@@ -743,9 +597,7 @@ section.filter-compact {
   corner-shape: squircle;
   background-color: var(--line-color);
   color: var(--text-muted);
-  font-family: var(--font-sans);
   font-size: var(--font-size-small);
-  text-decoration: none;
 }
 
 .experience-logo-link::before {
@@ -798,10 +650,6 @@ section.filter-compact {
   display: contents;
 }
 
-#opensource .opensource-card-link {
-  -webkit-tap-highlight-color: transparent;
-}
-
 #opensource .opensource-card-link:focus-visible .experience-details {
   outline: 2px solid var(--text-dark);
   outline-offset: 4px;
@@ -812,14 +660,10 @@ section.filter-compact {
   -webkit-tap-highlight-color: transparent;
 }
 
-.source-ref {
-  display: inline;
-}
-
 .item-description {
   font-size: var(--font-size-body);
   line-height: 1.35;
-  color: var(--item-secondary);
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
@@ -838,12 +682,11 @@ section.filter-compact {
 }
 
 .item-stats {
-  font-family: var(--font-sans);
   font-size: var(--font-size-small);
   letter-spacing: 0.1em;
   line-height: 1.2;
   text-transform: uppercase;
-  color: var(--text-muted-70);
+  color: var(--text-muted);
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
@@ -854,9 +697,9 @@ section.filter-compact {
   display: none;
 }
 
+.article-badge,
 .stat-badge,
 .role-badge {
-  font-family: var(--font-sans);
   background: var(--bg-light);
   color: var(--text-muted);
   border: 1px solid var(--text-muted);
@@ -864,6 +707,14 @@ section.filter-compact {
   border-radius: var(--badge-radius);
   font-size: var(--font-size-badge);
   letter-spacing: 0.1em;
+}
+
+.article-badge {
+  line-height: 1.2;
+}
+
+.stat-badge,
+.role-badge {
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -874,59 +725,37 @@ section.filter-compact {
   height: 10px;
 }
 
-#talks .item-meta {
-  font-family: var(--font-sans);
-}
-
-#talks .item-tags,
-#talks .role-badge {
-  font-family: var(--font-sans);
-}
-
-#talks .item-subtitle {
-  font-family: var(--font-sans);
-}
-
 #talks .item-tags {
   font-size: var(--font-size-small);
   margin-top: 2px;
   line-height: 1.2;
 }
 
-
-
-/* ============================================
-   7. HOME SECTION
-   ============================================ */
 .home-intro {
-  --home-name-size: var(--font-size-large);
-  --home-role-size: var(--font-size-large);
-  font-size: var(--home-name-size);
+  font-size: var(--font-size-large);
   font-weight: 500;
   line-height: 1.35;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-top: 0;
   max-width: min(760px, 100%);
 }
 
 .home-intro a {
   color: inherit;
-  text-decoration: none;
 }
 
 .home-name {
   color: var(--text-dark);
-  font-size: var(--home-name-size);
+  font-size: var(--font-size-large);
   line-height: 1.35;
   font-weight: inherit;
   margin: 0;
 }
 
 .home-roles {
-  color: var(--item-secondary);
-  font-size: var(--home-role-size);
+  color: var(--text-muted);
+  font-size: var(--font-size-large);
   font-weight: 400;
   line-height: 1.35;
 }
@@ -939,12 +768,10 @@ section.filter-compact {
   border-radius: 0;
   background: transparent;
   color: var(--text-dark);
-  font-family: var(--font-sans);
   font-size: var(--font-size-body);
   line-height: 1.1;
   cursor: pointer;
   padding: 0;
-  text-decoration: none;
 }
 
 .home-work-link span {
@@ -958,16 +785,8 @@ section.filter-compact {
   transform: translateX(3px);
 }
 
-/* ============================================
-   8. GALLERY
-   ============================================ */
 #gallery {
-  position: relative;
   overflow-x: hidden;
-}
-
-#gallery .bento-grid {
-  width: 100%;
 }
 
 .bento-grid {
@@ -1050,10 +869,6 @@ section.filter-compact {
   opacity: 1;
 }
 
-
-/* ============================================
-   9. PHOTO CAROUSEL
-   ============================================ */
 .photo-carousel-wrapper {
   position: fixed;
   left: 0;
@@ -1087,7 +902,6 @@ section.filter-compact {
   overflow-y: hidden;
   overscroll-behavior-x: contain;
   scrollbar-width: none;
-  -ms-overflow-style: none;
   touch-action: pan-x pinch-zoom;
   user-select: none;
 }
@@ -1112,10 +926,6 @@ section.filter-compact {
   background: var(--line-color);
 }
 
-
-/* ============================================
-   10. LIGHTBOX / IMAGE VIEWER
-   ============================================ */
 .lightbox {
   position: fixed;
   top: 0;
@@ -1124,6 +934,7 @@ section.filter-compact {
   height: 100%;
   --lightbox-control-gap: 68px;
   --lightbox-strip-size: 56px;
+  --lightbox-image-max: calc(100vh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px - var(--lightbox-strip-size));
   padding:
     calc(var(--spacing) + var(--lightbox-control-gap) + 38px)
     var(--spacing)
@@ -1165,10 +976,6 @@ section.filter-compact {
   transform-origin: left center;
 }
 
-.lightbox.active .lightbox-story-progress.is-running {
-  animation: story-progress 5s linear forwards;
-}
-
 @keyframes story-progress {
   from { transform: scaleX(0); }
   to { transform: scaleX(1); }
@@ -1183,7 +990,6 @@ section.filter-compact {
   border: 0;
   background: transparent;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .gallery-item:focus-visible {
@@ -1221,7 +1027,6 @@ section.filter-compact {
   align-items: center;
   gap: 8px;
   color: var(--color-cream);
-  font-family: var(--font-sans);
   font-size: var(--font-size-small);
   line-height: 1.2;
   text-transform: none;
@@ -1313,7 +1118,7 @@ section.filter-compact {
 .lightbox-content {
   position: relative;
   max-width: calc(100vw - (var(--spacing) * 2));
-  max-height: calc(100vh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px - var(--lightbox-strip-size));
+  max-height: var(--lightbox-image-max);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1321,7 +1126,7 @@ section.filter-compact {
 
 .lightbox-content img {
   max-width: 100%;
-  max-height: calc(100vh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px - var(--lightbox-strip-size));
+  max-height: var(--lightbox-image-max);
   object-fit: contain;
 }
 
@@ -1367,22 +1172,14 @@ section.filter-compact {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: color 0.16s ease, border-color 0.16s ease, transform 0.16s ease, opacity 0.3s ease, visibility 0s;
-  font-family: var(--font-sans);
+  transition: color 0.16s ease, opacity 0.3s ease, visibility 0s;
 }
 
-.lightbox-close:hover {
-  border-color: var(--color-cream);
-}
-
-/* Pausing fades everything but the photo; playing brings it back. */
 .lightbox-story-bar,
 .lightbox-thumbs {
   transition: opacity 0.3s ease, visibility 0s;
 }
 
-/* Visibility flips only after the fade-out, but at once on fade-in, so
-   the controls are focusable the moment they come back. */
 .lightbox.is-chrome-hidden .lightbox-story-bar,
 .lightbox.is-chrome-hidden .lightbox-close,
 .lightbox.is-chrome-hidden .lightbox-thumbs,
@@ -1455,7 +1252,6 @@ section.filter-compact {
   padding: 6px 12px;
   background: rgba(0, 0, 0, 0.55);
   color: var(--color-cream);
-  font-family: var(--font-sans);
   font-size: var(--font-size-small);
   line-height: 1.2;
 }
@@ -1496,8 +1292,6 @@ section.filter-compact {
   display: flex;
   gap: 6px;
   height: var(--lightbox-strip-size);
-  /* Half the strip on each side, so the first and last thumbnails can
-     also sit in the middle. */
   padding: 2px 50%;
   overflow-x: auto;
   overflow-y: hidden;
@@ -1512,8 +1306,6 @@ section.filter-compact {
 }
 
 .lightbox-thumb {
-  /* Same height for all; the width follows the photo's shape (set from
-     gallery.js), so landscape and portrait read at a glance. */
   position: relative;
   flex: 0 0 auto;
   width: auto;
@@ -1527,7 +1319,6 @@ section.filter-compact {
   opacity: 0.4;
   cursor: pointer;
   transition: opacity 0.2s ease;
-  -webkit-tap-highlight-color: transparent;
 }
 
 .lightbox-thumb img {
@@ -1540,8 +1331,6 @@ section.filter-compact {
   opacity: 1;
 }
 
-/* Border drawn as its own layer above the photo, so a composited image
-   can't paint over it. */
 .lightbox-thumb.is-active::after {
   content: '';
   position: absolute;
@@ -1561,10 +1350,6 @@ section.filter-compact {
   }
 }
 
-
-/* ============================================
-   11. THEME TOGGLE & DARK MODE
-   ============================================ */
 .theme-toggle {
   width: 12px;
   height: 12px;
@@ -1581,29 +1366,12 @@ section.filter-compact {
   --bg-light: var(--color-ink);
   --text-dark: var(--color-cream);
   --text-muted: rgba(255, 234, 211, 0.6);
-  --item-secondary: var(--text-muted);
-  --text-muted-70: var(--text-muted);
   --line-color: rgba(255, 234, 211, 0.2);
   color-scheme: dark;
 }
 
-
-/* ============================================
-   12. LOADING SCREEN
-   ============================================ */
 .loading-screen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: var(--bg-light);
-  z-index: 100000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-  opacity: 1;
 }
 
 .loading-screen.hidden {
@@ -1611,23 +1379,6 @@ section.filter-compact {
   pointer-events: none;
   visibility: hidden;
 }
-
-.loading-content {
-  text-align: center;
-  color: var(--text-dark);
-  font-family: var(--font-sans);
-}
-
-.loading-percentage {
-  font-family: var(--font-sans);
-  font-size: var(--font-size-body);
-  font-weight: 400;
-  letter-spacing: 0.1em;
-  display: inline-block;
-  width: 5ch;
-  text-align: right;
-}
-
 
 @media (prefers-reduced-motion: reduce) {
   .cursor-follower {
@@ -1677,7 +1428,6 @@ section.filter-compact {
     scroll-behavior: auto;
   }
 
-  .gallery-skeleton,
   .progressive-image-preview,
   .lightbox-preview,
   .lightbox-hint-arrow,
@@ -1691,17 +1441,11 @@ section.filter-compact {
   }
 }
 
-
-/* ============================================
-   13. CURSOR FOLLOWER
-   ============================================ */
 .cursor-follower {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background-color: transparent;
-  /* Anchor to the viewport corner; without top/left the circle starts
-     from its in-flow spot, which moves when the lightbox locks scroll. */
   position: fixed;
   top: 0;
   left: 0;
@@ -1732,10 +1476,6 @@ section.filter-compact {
   }
 }
 
-
-/* ============================================
-   14. RESPONSIVE - TABLET (max-width: 1024px)
-   ============================================ */
 @media (max-width: 1024px) {
   .layout {
     grid-template-columns: 1fr 2fr;
@@ -1762,7 +1502,6 @@ section.filter-compact {
 
   .item-content {
     grid-column: 1;
-    padding-top: 12px;
   }
 
   .item-meta {
@@ -1774,13 +1513,8 @@ section.filter-compact {
     display: none;
   }
 
-
 }
 
-
-/* ============================================
-   15. RESPONSIVE - MOBILE (max-width: 768px)
-   ============================================ */
 @media (max-width: 768px) {
   :root {
     --mobile-route-top-offset: 168px;
@@ -1791,116 +1525,79 @@ section.filter-compact {
     overflow: auto;
     height: auto;
     overscroll-behavior: auto;
-    touch-action: pan-y pinch-zoom;
-    scrollbar-width: thin;
   }
 
   html.home-active,
-  body.home-active {
+  html.home-active body {
     height: 100vh;
     height: 100svh;
   }
 
-  /* pengzhe.ng-style fade curtains, mobile only: content dissolves into
-     the top header, and the bottom edge keeps hinting that content is
-     still behind it. The curtains sit above page content but below both
-     filter bars (z-index 50), so they can never cover the filters. */
   #top-fade,
   #bottom-fade {
     display: block;
-  }
-
-  /* No curtains on Home. While the hamburger menu is open they stay in
-     place underneath it: the menu surface is opaque, full-screen, and
-     z-index 10010 — far above the curtains' z-index 40 — so the curtains
-     can never paint on top of the menu. */
-  body.home-active #top-fade,
-  body.home-active #bottom-fade {
-    display: none;
-  }
-
-  /* Curtain shapes: the top solid band stops --top-fade-tuck above the
-     bottom of the bars it sits behind (the 60px top bar, or top bar +
-     pinned filter, set from main.js), then fades over --top-fade-len. The
-     bottom is solid only under the home indicator, then fades over
-     --bottom-fade-len. Both fades use smoothstep (3t^2 - 2t^3), flat at
-     both ends so neither edge shows a line. */
-  #top-fade {
-    --top-fade-tuck: 20px;
-    --top-fade-len: 72px;
-    --top-fade-solid: calc(60px + env(safe-area-inset-top, 0px) - var(--top-fade-tuck));
     position: fixed;
-    top: 0;
     left: 0;
     right: 0;
-    height: calc(var(--top-fade-solid) + var(--top-fade-len));
+    height: calc(var(--fade-solid) + var(--fade-len));
     z-index: 40;
     pointer-events: none;
-    background: linear-gradient(to bottom,
+    background: linear-gradient(var(--fade-dir),
       var(--bg-light) 0,
-      var(--bg-light) var(--top-fade-solid),
-      color-mix(in srgb, var(--bg-light) 98%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.0833),
-      color-mix(in srgb, var(--bg-light) 92.6%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.1667),
-      color-mix(in srgb, var(--bg-light) 84.4%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.25),
-      color-mix(in srgb, var(--bg-light) 74.1%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.3333),
-      color-mix(in srgb, var(--bg-light) 62.4%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.4167),
-      color-mix(in srgb, var(--bg-light) 50%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.5),
-      color-mix(in srgb, var(--bg-light) 37.6%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.5833),
-      color-mix(in srgb, var(--bg-light) 25.9%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.6667),
-      color-mix(in srgb, var(--bg-light) 15.6%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.75),
-      color-mix(in srgb, var(--bg-light) 7.4%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.8333),
-      color-mix(in srgb, var(--bg-light) 2%, transparent) calc(var(--top-fade-solid) + var(--top-fade-len) * 0.9167),
-      transparent calc(var(--top-fade-solid) + var(--top-fade-len)),
+      var(--bg-light) var(--fade-solid),
+      color-mix(in srgb, var(--bg-light) 98%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.0833),
+      color-mix(in srgb, var(--bg-light) 92.6%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.1667),
+      color-mix(in srgb, var(--bg-light) 84.4%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.25),
+      color-mix(in srgb, var(--bg-light) 74.1%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.3333),
+      color-mix(in srgb, var(--bg-light) 62.4%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.4167),
+      color-mix(in srgb, var(--bg-light) 50%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.5),
+      color-mix(in srgb, var(--bg-light) 37.6%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.5833),
+      color-mix(in srgb, var(--bg-light) 25.9%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.6667),
+      color-mix(in srgb, var(--bg-light) 15.6%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.75),
+      color-mix(in srgb, var(--bg-light) 7.4%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.8333),
+      color-mix(in srgb, var(--bg-light) 2%, transparent) calc(var(--fade-solid) + var(--fade-len) * 0.9167),
+      transparent calc(var(--fade-solid) + var(--fade-len)),
       transparent 100%);
+  }
+
+  #top-fade {
+    --fade-dir: to bottom;
+    --fade-tuck: 20px;
+    --fade-len: 72px;
+    --fade-solid: calc(60px + env(safe-area-inset-top, 0px) - var(--fade-tuck));
+    top: 0;
   }
 
   #bottom-fade {
-    --bottom-fade-solid: env(safe-area-inset-bottom, 0px);
-    --bottom-fade-len: 64px;
-    position: fixed;
+    --fade-dir: to top;
+    --fade-solid: env(safe-area-inset-bottom, 0px);
+    --fade-len: 64px;
     bottom: 0;
-    left: 0;
-    right: 0;
-    height: calc(var(--bottom-fade-solid) + var(--bottom-fade-len));
-    z-index: 40;
-    pointer-events: none;
-    background: linear-gradient(to top,
-      var(--bg-light) 0,
-      var(--bg-light) var(--bottom-fade-solid),
-      color-mix(in srgb, var(--bg-light) 98%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.0833),
-      color-mix(in srgb, var(--bg-light) 92.6%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.1667),
-      color-mix(in srgb, var(--bg-light) 84.4%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.25),
-      color-mix(in srgb, var(--bg-light) 74.1%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.3333),
-      color-mix(in srgb, var(--bg-light) 62.4%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.4167),
-      color-mix(in srgb, var(--bg-light) 50%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.5),
-      color-mix(in srgb, var(--bg-light) 37.6%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.5833),
-      color-mix(in srgb, var(--bg-light) 25.9%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.6667),
-      color-mix(in srgb, var(--bg-light) 15.6%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.75),
-      color-mix(in srgb, var(--bg-light) 7.4%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.8333),
-      color-mix(in srgb, var(--bg-light) 2%, transparent) calc(var(--bottom-fade-solid) + var(--bottom-fade-len) * 0.9167),
-      transparent calc(var(--bottom-fade-solid) + var(--bottom-fade-len)),
-      transparent 100%);
   }
 
-  /* Photos show the wash far more than text, so Gallery gets short fades. */
+  html.home-active #top-fade,
+  html.home-active #bottom-fade {
+    display: none;
+  }
+
   body:has(#gallery.active) #top-fade {
-    --top-fade-len: 40px;
+    --fade-len: 40px;
   }
 
   body:has(#gallery.active) #bottom-fade {
-    --bottom-fade-len: 32px;
+    --fade-len: 32px;
   }
 
   html.home-active,
-  body.home-active,
+  html.home-active body,
   html.menu-active,
-  body.menu-active {
+  html.menu-active body {
     overflow: hidden;
     overscroll-behavior: none;
     touch-action: pinch-zoom;
   }
 
-  body.menu-active {
+  html.menu-active body {
     position: fixed;
     width: 100%;
   }
@@ -1920,11 +1617,6 @@ section.filter-compact {
     left: 0;
     right: 0;
     z-index: 10020;
-    background-color: transparent;
-    background-image: none;
-    border: 0;
-    box-shadow: none;
-    outline: 0;
   }
 
   .mobile-top-bar-actions {
@@ -1939,7 +1631,6 @@ section.filter-compact {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: var(--font-sans);
     font-size: var(--font-size-body);
     font-weight: 500;
     color: var(--text-dark);
@@ -1962,12 +1653,9 @@ section.filter-compact {
     margin-top: 0;
   }
 
-  /* JavaScript pins mobile filters below the top bar after they scroll up. */
   .section-filter {
     position: relative;
     top: auto;
-    z-index: 50;
-    margin-bottom: 0;
     padding: 0 0 16px;
     background-color: transparent;
     align-items: flex-start;
@@ -1993,7 +1681,7 @@ section.filter-compact {
     padding-top: calc(var(--mobile-route-top-offset) + env(safe-area-inset-top, 0px));
   }
 
-  body.home-active .layout {
+  html.home-active .layout {
     padding-top: calc(var(--mobile-home-top-offset) + env(safe-area-inset-top, 0px));
   }
 
@@ -2007,8 +1695,6 @@ section.filter-compact {
     width: auto;
     z-index: 10010;
     background-color: var(--bg-light);
-    display: flex;
-    flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
     gap: 24px;
@@ -2031,11 +1717,9 @@ section.filter-compact {
   }
 
   .nav-links {
-    flex-direction: column;
     gap: 8px;
     align-items: flex-start;
     width: 100%;
-    font-family: var(--font-sans);
   }
 
   .nav-links.menu-text-repaint {
@@ -2049,7 +1733,6 @@ section.filter-compact {
     letter-spacing: 0;
     line-height: 1.1;
     padding: 2px 0;
-    text-align: left;
     text-transform: none;
     font-weight: 400;
   }
@@ -2073,24 +1756,12 @@ section.filter-compact {
     justify-content: center;
     flex-wrap: wrap;
     gap: 6px;
-    margin-top: 0;
-    font-family: var(--font-sans);
-  }
-
-  .mobile-menu-contact a {
-    color: var(--text-muted);
-    text-decoration: none;
   }
 
   .mobile-menu-contact .contact-icon {
     width: 36px;
     height: 36px;
     padding: 8px;
-  }
-
-  .mobile-menu-contact a:hover {
-    color: var(--text-dark);
-    text-decoration: none;
   }
 
   .contact-bar {
@@ -2104,11 +1775,7 @@ section.filter-compact {
   }
 
   .home-intro {
-    --home-name-size: var(--font-size-large);
-    --home-role-size: var(--font-size-large);
     display: block;
-    margin-top: 0;
-    line-height: 1.35 !important;
   }
 
   .home-name {
@@ -2127,7 +1794,6 @@ section.filter-compact {
 
   #experience {
     min-height: auto;
-    padding-bottom: 0;
   }
 
   .lightbox {
@@ -2138,78 +1804,19 @@ section.filter-compact {
       calc(var(--spacing) + var(--lightbox-control-gap) + 38px)
       var(--spacing)
       calc(var(--spacing) + var(--lightbox-control-gap) + var(--lightbox-strip-size) + 10px);
-  }
-
-  .lightbox-story-bar {
-    left: var(--spacing);
-    right: var(--spacing);
+    --lightbox-image-max: calc(100dvh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px - var(--lightbox-strip-size));
   }
 
   .lightbox-close {
-    position: absolute;
     top: calc(var(--spacing) + env(safe-area-inset-top, 0px) + 10px);
     right: 0;
     width: 44px;
     height: 44px;
     font-size: var(--font-size-body);
-    border: none;
   }
 
-  .lightbox-content {
-    order: initial;
-    max-width: calc(100vw - (var(--spacing) * 2));
-    max-height: calc(100vh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px - var(--lightbox-strip-size));
-    max-height: calc(100dvh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px - var(--lightbox-strip-size));
-  }
-
-  .lightbox-content img {
-    max-height: calc(100vh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px - var(--lightbox-strip-size));
-    max-height: calc(100dvh - (var(--spacing) * 2) - (var(--lightbox-control-gap) * 2) - 38px - var(--lightbox-strip-size));
-  }
-
-  .contact-bar {
-    width: auto;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 0;
-  }
-
-  /* Keep the last item clear of the bottom fade curtain (64px fade plus
-     the home-indicator inset). */
   section,
-  section.filter-compact,
-  #experience {
+  section.filter-compact {
     padding-bottom: calc(var(--spacing) + 64px + env(safe-area-inset-bottom, 0px));
-  }
-}
-
-
-/* ============================================
-   16. RESPONSIVE - SMALL MOBILE (max-width: 480px)
-   ============================================ */
-@media (max-width: 480px) {
-  #gallery {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-
-
-  .profile-photo {
-    display: none;
-  }
-
-  .contact-links {
-    margin-left: 0;
-  }
-}
-
-
-/* ============================================
-   17. RESPONSIVE - TOUCH DEVICES
-   ============================================ */
-@media (hover: none) and (pointer: coarse) {
-  section {
-    scrollbar-width: thin;
   }
 }

@@ -5,26 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Page Not Found - Redirecting...</title>
   <script>
-    // External URL redirects
-    const externalRedirects = {
-      'linkedin': 'https://linkedin.com/in/osinachiokpara',
-      'github': 'https://github.com/sin4ch',
-      'x': 'https://x.com/sin4ch',
-      'twitter': 'https://x.com/sin4ch',
-      'email': 'mailto:okparaosi17@gmail.com',
-      'resume': 'https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view'
-    };
-    const validSections = ['projects', 'opensource', 'writing', 'talks', 'gallery', 'experience'];
-    
-    const path = window.location.pathname.replace(/^\/|\/$/g, '').toLowerCase();
-    if (externalRedirects[path]) {
-      window.location.replace(externalRedirects[path]);
-    } else if (validSections.includes(path)) {
-      window.location.replace('/?section=' + encodeURIComponent(path));
-    } else {
-      // Redirect to home page for any unknown paths
-      window.location.replace('/');
-    }
+    const redirects = {"linkedin":"https://linkedin.com/in/osinachiokpara","github":"https://github.com/sin4ch","x":"https://x.com/sin4ch","twitter":"https://x.com/sin4ch","email":"mailto:okparaosi17@gmail.com","resume":"https://drive.google.com/file/d/1L5ceYqwEsZa2TuNwEsT65-IAWpmQLh8Y/view"};
+    const sections = ["projects","opensource","writing","talks","gallery","experience"];
+    const route = location.pathname.replace(/^\/|\/$/g, '').toLowerCase();
+    location.replace(redirects[route] || (sections.includes(route) ? '/' + route + '/' : '/'));
   </script>
 </head>
 <body>

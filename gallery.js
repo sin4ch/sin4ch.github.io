@@ -1,6 +1,3 @@
-/* ============================================
-   GALLERY MODULE
-   ============================================ */
 (function() {
   const MINIMUM_LOADER_MS = 700;
   const SOFT_LOADER_MS = 2500;
@@ -77,6 +74,19 @@
     return fastConnectionConfirmed ? 'fast' : 'standard';
   }
 
+  function isLightboxOpen() {
+    return lightbox.classList.contains('active');
+  }
+
+  function recordDuration(duration) {
+    recentImageDurations.push(duration);
+    if (recentImageDurations.length > 8) recentImageDurations.shift();
+  }
+
+  function estimatedSlideWidth(imageData) {
+    return (imageData.width / imageData.height) * 200 + 8;
+  }
+
   function shuffle(images) {
     const result = [...images];
     for (let i = result.length - 1; i > 0; i--) {
@@ -89,7 +99,7 @@
   async function loadGalleryData() {
     if (galleryData) return galleryData;
     try {
-      const response = await fetch('/gallery/gallery.json?v=2');
+      const response = await fetch('/gallery/gallery.json');
       if (!response.ok) throw new Error('Gallery manifest request failed');
       const data = await response.json();
       if (data.images && data.images.length > 0) {
@@ -125,9 +135,7 @@
           if (loader.decode) await loader.decode();
         } catch (error) {}
         state.status = 'loaded';
-        state.duration = performance.now() - startedAt;
-        recentImageDurations.push(state.duration);
-        if (recentImageDurations.length > 8) recentImageDurations.shift();
+        recordDuration(performance.now() - startedAt);
         maybeWarmCarousel();
         resolve(state);
       }, { once: true });
@@ -186,7 +194,12 @@
     loadingAnimationObserver?.unobserve(container);
   }
 
-  async function revealOriginal(container, original, preview, imageData, priority = 'auto') {
+  function markFailed(container) {
+    container.classList.add('image-load-failed');
+    stopLoadingAnimation(container);
+  }
+
+  async function revealOriginal({ el: container, original, preview, imageData }, priority = 'auto') {
     if (container.classList.contains('is-sharp')) return true;
     try {
       await requestImage(imageData, priority);
@@ -202,8 +215,7 @@
       }, 100);
       return true;
     } catch (error) {
-      container.classList.add('image-load-failed');
-      stopLoadingAnimation(container);
+      markFailed(container);
       return false;
     }
   }
@@ -245,7 +257,7 @@
     item.append(preview, original);
     observeLoadingAnimation(item);
     item.addEventListener('click', () => openLightbox(index));
-    galleryElements[index] = { item, preview, original, imageData };
+    galleryElements[index] = { el: item, preview, original, imageData };
     return item;
   }
 
@@ -271,15 +283,10 @@
       const item = createGalleryItem(imageData, index);
       placeInShortestColumn(item, getRenderedImageHeight(imageData));
       if (galleryRevealed.has(index)) {
-        if (imageRequests.get(imageData.id)?.status === 'loaded') {
-          revealOriginal(item, galleryElements[index].original, galleryElements[index].preview, imageData);
-        } else {
-          item.classList.add('image-load-failed');
-          stopLoadingAnimation(item);
-        }
+        if (imageRequests.get(imageData.id)?.status === 'loaded') revealOriginal(galleryElements[index]);
+        else markFailed(item);
       }
     });
-
   }
 
   function startGalleryDownloads() {
@@ -291,9 +298,7 @@
       requestImage(imageData, index < firstGroupSize ? 'high' : 'auto')
         .then(() => galleryResults.set(index, true))
         .catch(() => galleryResults.set(index, false))
-        .finally(() => {
-          flushGalleryResults();
-        });
+        .finally(flushGalleryResults);
     });
   }
 
@@ -316,11 +321,8 @@
     galleryRevealed.add(index);
     const entry = galleryElements[index];
     if (!entry) return;
-    if (succeeded) revealOriginal(entry.item, entry.original, entry.preview, entry.imageData);
-    else {
-      entry.item.classList.add('image-load-failed');
-      stopLoadingAnimation(entry.item);
-    }
+    if (succeeded) revealOriginal(entry);
+    else markFailed(entry.el);
   }
 
   function createCarouselSlide(imageData) {
@@ -333,7 +335,7 @@
     const { preview, original } = createImageLayers(imageData, 'carousel');
     slide.append(preview, original);
     observeLoadingAnimation(slide);
-    carouselSlides.set(imageData.id, { slide, preview, original, imageData });
+    carouselSlides.set(imageData.id, { el: slide, preview, original, imageData });
     return slide;
   }
 
@@ -366,24 +368,23 @@
       rootMargin: `0px ${marginPercent}%`,
       threshold: 0.01
     });
-    carouselSlides.forEach(({ slide }) => carouselObserver.observe(slide));
+    carouselSlides.forEach(({ el }) => carouselObserver.observe(el));
   }
 
   function revealCarouselImage(imageData, priority = 'auto') {
     const entry = carouselSlides.get(imageData.id);
     if (!entry) return Promise.resolve(false);
-    return revealOriginal(entry.slide, entry.original, entry.preview, imageData, priority);
+    return revealOriginal(entry, priority);
   }
 
   function getInitialCarouselImages() {
     const carousel = document.getElementById('photo-carousel');
     const targetWidth = carousel?.clientWidth || window.innerWidth;
-    const estimatedHeight = 200;
     const result = [];
     let coveredWidth = 0;
     for (const imageData of carouselImages) {
       result.push(imageData);
-      coveredWidth += (imageData.width / imageData.height) * estimatedHeight + 8;
+      coveredWidth += estimatedSlideWidth(imageData);
       if (coveredWidth >= targetWidth && result.length >= 2) break;
     }
     return result;
@@ -441,7 +442,7 @@
           .then((succeeded) => {
             if (succeeded) {
               sharpCount++;
-              sharpCoverage += (imageData.width / imageData.height) * 200 + 8;
+              sharpCoverage += estimatedSlideWidth(imageData);
             }
           })
           .catch(() => {})
@@ -484,7 +485,7 @@
     const buffer = carousel.clientWidth * (profile === 'slow' ? 0.75 : 2);
     const carouselRect = carousel.getBoundingClientRect();
     carouselSlides.forEach((entry) => {
-      const rect = entry.slide.getBoundingClientRect();
+      const rect = entry.el.getBoundingClientRect();
       if (rect.right >= carouselRect.left - buffer && rect.left <= carouselRect.right + buffer) {
         revealCarouselImage(entry.imageData);
       }
@@ -509,16 +510,6 @@
 
     function getSlideWidth(slide) {
       return slide ? slide.offsetWidth + 8 : 0;
-    }
-    function prependLastSlide() {
-      const last = track.lastElementChild;
-      const first = track.firstElementChild;
-      if (!last || !first || last === first) return;
-      const lastWidth = getSlideWidth(last);
-      if (lastWidth <= 0) return;
-      track.insertBefore(last, first);
-      scrollPosition += lastWidth;
-      carousel.scrollLeft = scrollPosition;
     }
     function addBackwardScrollBuffer(count = 3) {
       let addedWidth = 0;
@@ -586,7 +577,7 @@
     }, { passive: true });
     carousel.addEventListener('scroll', () => {
       scrollPosition = carousel.scrollLeft;
-      if (scrollPosition < 12) prependLastSlide();
+      if (scrollPosition < 12) addBackwardScrollBuffer(1);
       if (isTouchScrolling) resumeAfterTouchScrollSettles();
     }, { passive: true });
   }
@@ -618,7 +609,7 @@
   }
 
   function closeLightbox() {
-    if (!lightbox.classList.contains('active')) return;
+    if (!isLightboxOpen()) return;
     lightboxRequestToken++;
     lightbox.classList.remove('active');
     backgroundStates.forEach(([element, wasInert]) => { element.inert = wasInert; });
@@ -672,8 +663,6 @@
     });
   }
 
-  // Highlights the current photo's thumbnail and centres it, unless the
-  // viewer is browsing the strip themselves.
   function syncThumbStrip(behavior) {
     if (!lightboxThumbs || !thumbButtons.length) return;
     thumbButtons.forEach((button, index) => {
@@ -709,7 +698,7 @@
 
     try {
       await requestImage(imageData, 'high');
-      if (token !== lightboxRequestToken || !lightbox.classList.contains('active')) return;
+      if (token !== lightboxRequestToken || !isLightboxOpen()) return;
       lightboxImg.fetchPriority = 'high';
       lightboxImg.src = imageData.url;
       try {
@@ -717,8 +706,7 @@
       } catch (error) {}
       if (token !== lightboxRequestToken) return;
       lightbox.classList.add('is-sharp');
-      recentImageDurations.push(performance.now() - startedAt);
-      if (recentImageDurations.length > 8) recentImageDurations.shift();
+      recordDuration(performance.now() - startedAt);
       prefetchLightboxNeighbours();
       startStoryTimer();
     } catch (error) {
@@ -766,15 +754,12 @@
       clearTimeout(storyTimer);
       storyTimer = null;
     }
-    if (lightboxStoryProgress) {
-      lightboxStoryProgress.classList.remove('is-running');
-      lightboxStoryProgress.style.animation = 'none';
-    }
+    if (lightboxStoryProgress) lightboxStoryProgress.style.animation = 'none';
   }
 
   function startStoryTimer(duration = STORY_DURATION) {
     stopStoryTimer();
-    if (!lightboxStoryProgress || !lightbox.classList.contains('active')) return;
+    if (!lightboxStoryProgress || !isLightboxOpen()) return;
     storyRemaining = duration;
     storyStartedAt = performance.now();
     storyPaused = false;
@@ -788,12 +773,11 @@
     lightboxStoryProgress.style.animation = 'none';
     lightboxStoryProgress.offsetHeight;
     lightboxStoryProgress.style.animation = `story-progress ${duration}ms linear forwards`;
-    lightboxStoryProgress.classList.add('is-running');
     storyTimer = setTimeout(showNextImage, duration);
   }
 
   function pauseStoryTimer() {
-    if (storyPaused || !lightboxStoryProgress || !lightbox.classList.contains('active')) return;
+    if (storyPaused || !lightboxStoryProgress || !isLightboxOpen()) return;
     if (storyTimer) {
       clearTimeout(storyTimer);
       storyTimer = null;
@@ -813,7 +797,6 @@
     storyTimer = setTimeout(showNextImage, storyRemaining);
   }
 
-  // While paused, everything but the photo fades away; playing brings it back.
   function setChromeHidden(hidden, delay = 0) {
     window.clearTimeout(chromeHideTimer);
     chromeHideTimer = null;
@@ -822,7 +805,7 @@
       return;
     }
     chromeHideTimer = window.setTimeout(() => {
-      if (storyPaused && lightbox.classList.contains('active')) {
+      if (storyPaused && isLightboxOpen()) {
         lightbox.classList.add('is-chrome-hidden');
       }
     }, delay);
@@ -836,7 +819,6 @@
     if (withLabel) lightboxPlayState.classList.add('has-label');
   }
 
-  // The "Tap to play" label shows on a visitor's first pause only.
   function takeFirstPauseHint() {
     try {
       if (localStorage.getItem(PAUSE_HINT_SEEN_KEY)) return false;
@@ -879,7 +861,6 @@
   }
 
   function bindLightboxEvents() {
-    if (!lightbox) return;
     lightboxClose.addEventListener('click', closeLightbox);
     lightboxTapPrev.addEventListener('click', showPrevImage);
     lightboxTapNext.addEventListener('click', showNextImage);
@@ -891,17 +872,10 @@
     }
     lightboxPauseZone.addEventListener('click', togglePause);
     document.addEventListener('keydown', (event) => {
-      if (!lightbox.classList.contains('active')) return;
+      if (!isLightboxOpen()) return;
       if (event.key === 'Tab') {
-        // Keyboard users must be able to see the controls they move to.
         setChromeHidden(false);
-        const controls = [...lightbox.querySelectorAll('button:not(:disabled):not([tabindex="-1"])')];
-        const index = controls.indexOf(document.activeElement);
-        const next = event.shiftKey
-          ? (index <= 0 ? controls.length - 1 : index - 1)
-          : (index + 1) % controls.length;
-        event.preventDefault();
-        controls[next].focus();
+        cycleFocus(event, [...lightbox.querySelectorAll('button:not(:disabled):not([tabindex="-1"])')]);
       } else if (event.key === 'Escape') {
         closeLightbox();
       } else if (event.key === 'ArrowLeft') {
@@ -916,7 +890,7 @@
 
   bindLightboxEvents();
   reducedMotionQuery.addEventListener('change', () => {
-    if (lightbox.classList.contains('active') && lightbox.classList.contains('is-sharp')) startStoryTimer();
+    if (isLightboxOpen() && lightbox.classList.contains('is-sharp')) startStoryTimer();
   });
 
   window.PortfolioGallery = {
@@ -927,8 +901,6 @@
     loadPhotoCarousel,
     onSectionChange,
     closeLightbox,
-    isLightboxOpen() {
-      return !!lightbox?.classList.contains('active');
-    }
+    isLightboxOpen
   };
 })();
